@@ -1,5 +1,7 @@
 # CLI guide
 
+[Read online](https://acierto.github.io/nexora/#cli) · [Documentation home](https://acierto.github.io/nexora/)
+
 Commands use flags after the command name; positional arguments are rejected.
 `nexora help` and `nexora <command> --help` describe available flags.
 

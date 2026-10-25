@@ -1,5 +1,7 @@
 # How resolution works
 
+[Read online](https://acierto.github.io/nexora/#resolution) · [Documentation home](https://acierto.github.io/nexora/)
+
 Nexora selects active knowledge by explicit metadata. Every restricted dimension
 must match: project AND agent AND files. Within a dimension values are
 alternatives. Omitted or empty lists are unrestricted. A missing request value

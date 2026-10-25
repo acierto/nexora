@@ -1,5 +1,7 @@
 # Your first knowledge registry
 
+[Read online](https://acierto.github.io/nexora/#start) · [Documentation home](https://acierto.github.io/nexora/)
+
 Nexora is a standalone command-line binary. No Docker, server, database, API key,
 or agent installation is needed. You need Go 1.23 or newer to build from source.
 An internet connection may be needed once to download the build dependency;

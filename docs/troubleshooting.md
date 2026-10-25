@@ -1,5 +1,7 @@
 # Troubleshooting
 
+[Read online](https://acierto.github.io/nexora/#troubleshooting) · [Documentation home](https://acierto.github.io/nexora/)
+
 Start with `nexora validate --config path/to/nexora.yaml`. Every configured
 Markdown document must be valid before any command exposes registry data.
 Errors name the configuration or source and file. Commands return exit 1 for

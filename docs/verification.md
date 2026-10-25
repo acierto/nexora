@@ -1,5 +1,7 @@
 # Local MVP verification
 
+[Read online](https://acierto.github.io/nexora/#verification) · [Documentation home](https://acierto.github.io/nexora/)
+
 Verified on 2026-10-25 with Go 1.23.3 on macOS arm64. This records the initial
 implementation check, not a promise of ongoing compatibility on every platform.
 

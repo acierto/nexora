@@ -1,5 +1,7 @@
 # Knowledge format
 
+[Read online](https://acierto.github.io/nexora/#format) · [Documentation home](https://acierto.github.io/nexora/)
+
 Configuration is explicit: read commands default to `./nexora.yaml`; `--config`
 selects another file. Relative source paths resolve against that file, not the
 working directory. Sources can point to shared local directories outside a

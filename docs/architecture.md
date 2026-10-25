@@ -1,5 +1,7 @@
 # Initial architecture decisions
 
+[Read online](https://acierto.github.io/nexora/#architecture) · [Documentation home](https://acierto.github.io/nexora/)
+
 Nexora runs as a standalone Go binary. `cmd/nexora` only handles process startup;
 `internal/cli` coordinates configuration, loading, registry construction, and
 resolution. `internal/knowledge` and `internal/resolver` have no YAML or I/O

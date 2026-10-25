@@ -2,6 +2,10 @@
 
 One knowledge layer. Every AI agent.
 
+**[Read the Nexora docs online](https://acierto.github.io/nexora/)** ·
+[Quickstart](https://acierto.github.io/nexora/#start) ·
+[Interactive playground](https://acierto.github.io/nexora/#playground)
+
 Nexora is a local knowledge registry for AI development workflows. Keep rules,
 skills, references, and decisions in Markdown, then select relevant context using
 explicit project, agent, and file constraints.
