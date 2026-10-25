@@ -94,6 +94,14 @@ JSON validation returns `{ "valid": true, "item_count": N }`; listing returns `{
 
 For init, preflight both target files and every existing destination component before writing. Create targets exclusively and remove only files created by this invocation if a later write fails. Preserve unrelated directories and files; never add a force-overwrite flag in this milestone. The example rule ID is `project/conventions` and is scoped to the initialized project. Native AGENTS.md and CLAUDE.md are untouched.
 
+### 7. User documentation and examples stay executable
+
+README.md is the user entry point, linking docs/getting-started.md, docs/knowledge-format.md, docs/resolution.md, docs/cli.md, docs/troubleshooting.md, and examples/README.md. Keep feature-level documentation alongside implementation tasks; the dedicated documentation section turns these references into a connected learning path and adds practical recipes rather than postponing all documentation until the end.
+
+Use examples/local for a realistic Go API scenario and examples/shared-knowledge for two projects reusing an explicitly configured shared source alongside separate local sources. Each example includes a short explanation, directory tree, runnable commands, expected selected and excluded IDs, and an exercise. Shared/project rules are additive; examples must not imply override support. Agent-specific examples demonstrate matching only, without claiming native agent integration.
+
+Use example files themselves as executable acceptance fixtures, compare stable IDs and reason fields rather than brittle complete terminal transcripts, and check local documentation links. Run the fresh-project quickstart and troubleshooting reproductions against temporary directories. Document source installation until a release distribution actually exists; no documentation website or publishing pipeline is needed for this milestone.
+
 ## Risks / Trade-offs
 
 - Strict metadata is less convenient for existing libraries → provide a small valid example and actionable errors; add import adapters later.

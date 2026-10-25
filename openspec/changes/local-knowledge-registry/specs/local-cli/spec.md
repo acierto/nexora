@@ -56,3 +56,18 @@ The built CLI SHALL run init, validate, list, and resolve without a database, AP
 #### Scenario: Example workflow offline
 - **WHEN** the built executable runs validate and resolve against the supplied example without network access
 - **THEN** both commands succeed with the documented required rule IDs
+
+### Requirement: Practical user documentation
+The repository SHALL provide a linked quickstart, knowledge-authoring guide, CLI reference and recipes, troubleshooting, and local and shared-knowledge examples. Examples MUST contain runnable commands and expected results verified against their actual files. Documentation MUST distinguish supported MVP behavior from deferred integrations and explain that agent filters do not establish agent connections.
+
+#### Scenario: First-time user walkthrough
+- **WHEN** a user follows the documented build, init, author, validate, list, and resolve sequence in a fresh project
+- **THEN** the commands succeed and produce the documented rule selections without undocumented setup
+
+#### Scenario: Shared standards across two projects
+- **WHEN** a user follows the shared-knowledge example for its two project configurations
+- **THEN** applicable shared rules appear in both results and project-restricted rules appear only in their matching project's result
+
+#### Scenario: Diagnose an excluded rule
+- **WHEN** a user follows troubleshooting for a rule excluded by status, project, agent, or file applicability
+- **THEN** the documented explanation and corrected request reproduce the expected exclusion and selection

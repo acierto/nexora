@@ -10,7 +10,7 @@ Nexora needs a useful local foundation before adding agent integrations or seman
 - Load explicitly configured local Markdown sources into an in-memory registry on each invocation.
 - Resolve mandatory rules and applicable optional knowledge using project, agent, and path constraints with stable ordering and selection explanations.
 - Provide `init`, `validate`, `list`, and `resolve` commands with human-readable and JSON output.
-- Provide automated behavior tests and a runnable Go-project example.
+- Provide automated behavior tests, a user quickstart, authoring and CLI guides, troubleshooting, and runnable Go-project and shared-knowledge examples with verified commands and expected results.
 - Defer persisted indexing, keyword/semantic search, overrides, context budgets, full Agent Skills interoperability, MCP, native synchronization, databases, embedding providers, external plugins, HTTP services, and multi-user authorization.
 
 ## Capabilities
