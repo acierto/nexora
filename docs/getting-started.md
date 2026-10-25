@@ -82,7 +82,40 @@ JSON exposes the same selection in `required_rules`, with full items and
 structured `reasons`; the other four groups are empty arrays. For example, path
 evidence includes `{"pattern":"src/auth/**/*.go","file":"src/auth/service.go"}`.
 
-To use the result with an agent today, inspect or manually supply the relevant
-text through that agent's supported workflow. The CLI does not inject it or
-elevate its authority. See [resolution](resolution.md) and the
-[practical examples](../examples/README.md) for more.
+## Add your team's docs
+
+Point a `docs` source at a documentation folder (or a `confluence` source at a
+space), index it, and describe your task:
+
+```yaml
+sources:
+  - id: local
+    path: ./knowledge
+  - id: handbook
+    type: docs
+    path: ./docs
+```
+
+```shell
+nexora index
+nexora resolve --file src/auth/service.go --task "rotate refresh tokens"
+```
+
+The result keeps the same rules and adds a `passages` group with the matching
+documentation sections, their files, and the words that matched. Add `.nexora/`
+(the local index) to `.gitignore`. See [Docs and Confluence](retrieval.md) for
+Confluence, embeddings, and pgvector.
+
+## Connect your agent
+
+Register the MCP server so the agent can ask for context itself, or write the
+always-on rules into its native file:
+
+```shell
+claude mcp add nexora -- nexora mcp --config "$PWD/nexora.yaml"
+nexora sync --agent codex
+```
+
+Nexora delivers text and does not raise its authority above the agent's trusted
+instructions. See [Connect agents](agents.md), [resolution](resolution.md), and
+the [practical examples](../examples/README.md) for more.

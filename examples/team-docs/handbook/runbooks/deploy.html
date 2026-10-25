@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head><title>Deploying commerce-api</title><style>body{font-family:sans-serif}</style></head>
+<body>
+<h1>Deploying commerce-api</h1>
+<p>Deploys go out from the <code>main</code> branch through the release pipeline.</p>
+<h2>Before you deploy</h2>
+<ul>
+  <li>Check that database migrations are backwards compatible.</li>
+  <li>Announce the deploy in the team channel.</li>
+</ul>
+<h2>Rolling back</h2>
+<p>Use the pipeline&rsquo;s <em>rollback</em> action. It redeploys the previous image within five minutes.
+Migrations are never rolled back automatically.</p>
+<table>
+  <tr><th>Environment</th><th>Approval</th></tr>
+  <tr><td>staging</td><td>none</td></tr>
+  <tr><td>production</td><td>one reviewer</td></tr>
+</table>
+</body>
+</html>

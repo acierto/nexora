@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Nexora Docs</title><meta name="description" content="Nexora user guides, CLI reference, and interactive examples for a local AI agent knowledge registry."><link rel="canonical" href="https://acierto.github.io/nexora/"></head><body>
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Nexora Docs</title><meta name="description" content="Nexora: one knowledge layer for every AI agent. Rules, skills, internal docs, and Confluence, delivered to Claude Code, Codex, and other agents over MCP and native files."><link rel="canonical" href="https://acierto.github.io/nexora/"></head><body>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800;900&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
@@ -49,7 +49,7 @@
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} *,*::before,*::after{animation:none!important;transition:none!important} }
-body{margin:0;background:var(--bg);color:var(--fg);font:16.5px/1.62 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--fg);font:16.5px/1.62 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:clip}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--bg-2)}
 .bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
@@ -108,8 +108,9 @@ h1,h2,h3,h4{font-family:var(--display);line-height:1.12;text-wrap:balance;margin
 .side a .ext{margin-left:auto;font-size:11px;color:var(--fg-3)}
 .side a[data-page="home"]{--pc:var(--ink)} .side a[data-page="playground"]{--pc:var(--pink)}
 .side a[data-page="start"]{--pc:var(--mint)} .side a[data-page="format"]{--pc:var(--grape)} .side a[data-page="resolution"]{--pc:var(--ink)}
-.side a[data-page="cli"]{--pc:var(--pink)} .side a[data-page="troubleshooting"]{--pc:var(--tang)}
-.side a[data-page="architecture"]{--pc:var(--sun)} .side a[data-page="verification"]{--pc:var(--mint)}
+.side a[data-page="retrieval"]{--pc:var(--tang)} .side a[data-page="agents"]{--pc:var(--pink)}
+.side a[data-page="cli"]{--pc:var(--grape)} .side a[data-page="troubleshooting"]{--pc:var(--sun)}
+.side a[data-page="architecture"]{--pc:var(--mint)} .side a[data-page="verification"]{--pc:var(--ink)}
 main{min-width:0;padding:30px 40px 100px}
 .toc{position:sticky;top:calc(var(--top) + env(safe-area-inset-top,0px));height:calc(100vh - var(--top) - env(safe-area-inset-top,0px));overflow-y:auto;padding:40px 0 40px 18px;font-size:13.5px}
 .toc .eyebrow{display:block;margin-bottom:12px}
@@ -238,9 +239,12 @@ main{min-width:0;padding:30px 40px 100px}
 .hero{display:flex;flex-direction:column;gap:30px;padding:16px 0 10px}
 .hero-copy{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px 44px;align-items:end}
 .hero-copy .sticker{grid-column:1/-1;justify-self:start}
-.hero-copy .right{padding-bottom:6px}
+.hero-copy h1{grid-column:1/-1;margin-bottom:4px}
+.hero-copy .right{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px 40px}
+.hero-copy .right .lede{flex:1 1 440px;max-width:64ch}
+.hero-copy .right .cta{margin-top:0}
 .sticker{display:inline-flex;align-items:center;gap:8px;font:700 12px/1 var(--display);letter-spacing:.02em;padding:9px 13px;border-radius:999px;background:color-mix(in srgb,var(--sun) 30%,var(--bg-2));color:color-mix(in oklab,var(--sun) 45%,var(--fg));border:1.5px solid color-mix(in srgb,var(--sun) 55%,var(--line));box-shadow:0 3px 0 color-mix(in oklab,var(--sun) 55%,#000);transform:rotate(-2.5deg)}
-.hero h1{font-size:clamp(34px,4.6vw,64px);font-weight:900;letter-spacing:-.045em;line-height:.98;margin:6px 0 22px}
+.hero h1{font-size:clamp(32px,5vw,70px);font-weight:900;letter-spacing:-.045em;line-height:.98;margin:6px 0 22px}
 .hero h1 .hl{background:linear-gradient(95deg,var(--ink),var(--grape) 45%,var(--pink) 90%);-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.04em}
 .keys{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin-bottom:22px}
 .key{--kc:var(--ink);font:700 15px/1 var(--mono);padding:12px 16px 11px;border-radius:13px;color:var(--kc);background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border:1.5px solid color-mix(in srgb,var(--kc) 45%,var(--line-2));box-shadow:0 6px 0 color-mix(in oklab,var(--kc) 55%,var(--bg-2)),0 14px 22px -10px color-mix(in srgb,var(--kc) 60%,transparent);transform:translateY(-3px);transition:transform .12s,box-shadow .12s;cursor:default}
@@ -288,16 +292,16 @@ main{min-width:0;padding:30px 40px 100px}
 .stk span{font-size:14px;color:var(--fg-2)}
 
 .install{margin:44px 0 0}
-.sec{margin-top:80px}
+.sec{margin-top:80px;scroll-margin-top:calc(var(--top) + 24px)}
 .sec > .eyebrow{display:inline-block;margin-bottom:12px;padding:6px 10px;border-radius:999px;background:var(--bg-2);border:1.5px solid var(--line-2);color:var(--fg-2)}
 .sec > h2{font-size:clamp(28px,3.4vw,40px);font-weight:800;letter-spacing:-.04em;margin-bottom:10px}
 .sec > h2 em{font-style:normal;background:linear-gradient(95deg,var(--grape),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
 .sec > .sub{color:var(--fg-2);max-width:62ch;margin:0 0 26px;font-size:17px}
 .docs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-@media (min-width:1181px){ .docs-grid a:nth-child(1),.docs-grid a:nth-child(7){grid-column:span 2} }
+
 .card{--pc:var(--ink);display:flex;flex-direction:column;gap:8px;padding:20px 20px 18px;border:1.5px solid color-mix(in srgb,var(--pc) 30%,var(--line));border-radius:20px;background:var(--bg-2);color:var(--fg);min-width:0;box-shadow:0 5px 0 color-mix(in srgb,var(--pc) 40%,var(--line-2))}
 a.card:hover{text-decoration:none;box-shadow:0 10px 0 color-mix(in srgb,var(--pc) 40%,var(--line-2)),0 30px 40px -24px color-mix(in srgb,var(--pc) 70%,transparent)}
-.card .badge{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font:900 17px/1 var(--display);color:#fff;background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 80%,#fff),var(--pc));box-shadow:0 4px 0 color-mix(in oklab,var(--pc) 55%,#000);margin-bottom:6px;transform:translateZ(30px)}
+.card .badge,.step .badge{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font:900 17px/1 var(--display);color:#fff;background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 80%,#fff),var(--pc));box-shadow:0 4px 0 color-mix(in oklab,var(--pc) 55%,#000);margin-bottom:6px;transform:translateZ(30px)}
 .card h3{font-size:17px;transform:translateZ(20px)}
 .card p{margin:0;font-size:14.5px;color:var(--fg-2)}
 .card .foot{margin-top:auto;padding-top:10px;font:500 12px var(--mono);color:var(--fg-3)}
@@ -415,6 +419,164 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
 .sdlg kbd{font-size:11px;padding:2px 6px;border-radius:5px;background:var(--bg-3)}
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:14px;font-weight:700;font-size:14px;z-index:60;box-shadow:var(--shadow)}
 
+
+.diag-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1.2fr;gap:12px}
+.diag-grid .dd-sub{display:none}
+@media (max-width:1000px){.diag-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.diag-grid{grid-template-columns:1fr}}
+
+/* ---------- story sections ---------- */
+.stage-cap{margin:-12px 0 0;font-size:13.5px;color:var(--fg-3);text-align:center}
+.lede code,.sub code,.ticks code,.road code,.cmp code,.kind code,.exit code,.step p code{font:500 .86em var(--mono);background:var(--bg-3);padding:2px 6px;border-radius:6px;color:var(--fg)}
+.sec > h2 code.h{font:700 .82em var(--mono);letter-spacing:-.02em;background:var(--ink-soft);color:var(--ink);padding:.04em .28em;border-radius:12px}
+.versus{display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);gap:14px;align-items:stretch}
+.vs-col{--pc:var(--miss);padding:22px;border-radius:24px;min-width:0;background:linear-gradient(160deg,color-mix(in srgb,var(--pc) 9%,var(--bg-2)),var(--bg-2) 60%);border:1.5px solid color-mix(in srgb,var(--pc) 28%,var(--line));box-shadow:0 6px 0 color-mix(in srgb,var(--pc) 30%,var(--line-2))}
+.vs-col.after{--pc:var(--mint)}
+.vs-h{position:relative;z-index:2;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.vs-h b{font:700 17px/1.2 var(--display);letter-spacing:-.02em}
+.pile{position:relative;height:250px;margin:16px 0 12px;perspective:900px}
+.pile .f{position:absolute;left:var(--x);top:var(--y);display:flex;flex-direction:column;gap:2px;padding:9px 12px;border-radius:12px;background:var(--bg-2);border:1.5px solid var(--line-2);box-shadow:0 4px 0 var(--line-2),0 16px 24px -16px rgb(30 25 60 / .35);font:600 12.5px var(--mono);max-width:46%;white-space:nowrap;transform:rotateX(14deg) rotate(var(--r));animation:drift 7s ease-in-out var(--d) infinite}
+.pile .f span{overflow:hidden;text-overflow:ellipsis}
+.pile .f small{font:500 11px var(--sans);color:var(--fg-3)}
+.pile .f em{color:var(--miss);font-style:normal;font-weight:700}
+.pile .f.warn{border-color:color-mix(in srgb,var(--miss) 45%,var(--line-2));box-shadow:0 4px 0 color-mix(in srgb,var(--miss) 35%,var(--line-2)),0 16px 24px -16px rgb(30 25 60 / .35)}
+@keyframes drift{50%{transform:rotateX(14deg) rotate(calc(var(--r) * -.6)) translateY(-6px)}}
+.ticks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:14.5px}
+.ticks li{display:flex;gap:10px;align-items:flex-start}
+.ticks li::before{content:"✗";flex:none;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font:700 12px var(--mono);background:var(--miss-soft);color:var(--miss)}
+.ticks li.v::before{content:"✓";background:var(--match-soft);color:var(--match)}
+.vs-mid{position:relative;display:grid;place-items:center}
+.vs-mid::before{content:"";position:absolute;left:-14px;right:-14px;top:50%;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--miss),var(--ink),var(--mint));opacity:.7}
+.vs-mid::after{content:"";position:absolute;right:-12px;top:calc(50% - 6px);width:12px;height:12px;border-top:3px solid var(--mint);border-right:3px solid var(--mint);transform:rotate(45deg);opacity:.85}
+.pillcmd{position:relative;z-index:1;writing-mode:vertical-rl;transform:rotate(180deg);font:700 13px var(--mono);padding:16px 10px;border-radius:999px;background:var(--fg);color:var(--bg);box-shadow:3px 0 0 color-mix(in srgb,var(--ink) 60%,var(--fg)),0 14px 24px -10px rgb(30 25 60 / .5)}
+.iso{height:230px;margin:44px 0 12px;display:grid;place-items:center;perspective:1200px}
+.iso .stack{position:relative;width:210px;height:130px;transform:translateY(34px) rotateX(58deg) rotateZ(-40deg);transform-style:preserve-3d}
+.slab{position:absolute;inset:0;border-radius:18px;display:flex;align-items:flex-end;padding:8px 16px;background:color-mix(in srgb,var(--kc) 18%,var(--bg-2));border:1.5px solid color-mix(in srgb,var(--kc) 60%,var(--line));box-shadow:-9px 9px 0 color-mix(in srgb,var(--kc) 42%,var(--line-2));transform:translateZ(calc(var(--i) * 36px));animation:lift 5s ease-in-out calc(var(--i) * .25s) infinite}
+.slab span{font:700 15px var(--mono);color:color-mix(in oklab,var(--kc) 70%,var(--fg))}
+@keyframes lift{50%{transform:translateZ(calc(var(--i) * 42px))}}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.step{--pc:var(--ink);display:flex;flex-direction:column;gap:8px;min-width:0;padding:20px;border-radius:22px;background:var(--bg-2);border:1.5px solid color-mix(in srgb,var(--pc) 30%,var(--line));box-shadow:0 6px 0 color-mix(in srgb,var(--pc) 40%,var(--line-2))}
+.step h3{font-size:17px}
+.step p{margin:0;font-size:14.5px;color:var(--fg-2)}
+.mini{margin:8px 0 0;margin-top:auto;padding:14px;border-radius:14px;background:var(--code-bg);color:var(--code-fg);font-size:12.5px;line-height:1.55;overflow-x:auto}
+.mini code{font-family:var(--mono)}
+.cmp-wrap{overflow-x:auto;border:1.5px solid var(--line-2);border-radius:20px;background:var(--bg-2);box-shadow:0 5px 0 var(--line-2)}
+.cmp{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px}
+.cmp th,.cmp td{padding:13px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.cmp th{font:700 13.5px var(--display);letter-spacing:-.01em}
+.cmp th small{display:block;font:500 12px var(--sans);color:var(--fg-3);margin-top:3px;letter-spacing:0}
+.cmp th.nx{color:var(--ink)}
+.cmp thead th:nth-child(3){background:color-mix(in srgb,var(--ink) 9%,var(--bg-2))}
+.cmp td:nth-child(3){background:color-mix(in srgb,var(--ink) 4%,var(--bg-2))}
+.cmp td:first-child{font-weight:700}
+.cmp tr:last-child td{border-bottom:0}
+.cmp .dim{margin-right:8px}
+.road{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding-top:42px}
+.road::before{content:"";position:absolute;left:26px;right:26px;top:16px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--mint),var(--ink) 35%,var(--grape) 68%,var(--line-2))}
+.stop{--pc:var(--mint);position:relative;padding:20px 18px 18px;border-radius:20px;background:var(--bg-2);border:1.5px solid color-mix(in srgb,var(--pc) 28%,var(--line));box-shadow:0 5px 0 color-mix(in srgb,var(--pc) 35%,var(--line-2))}
+.stop::before{content:"";position:absolute;top:-35px;left:18px;width:18px;height:18px;border-radius:50%;background:var(--pc);box-shadow:0 0 0 5px var(--bg),0 0 0 7px color-mix(in srgb,var(--pc) 40%,transparent)}
+.stop.now::before{animation:ping 2.4s ease-out infinite}
+@keyframes ping{0%{box-shadow:0 0 0 5px var(--bg),0 0 0 7px color-mix(in srgb,var(--pc) 50%,transparent)}70%{box-shadow:0 0 0 5px var(--bg),0 0 0 16px transparent}100%{box-shadow:0 0 0 5px var(--bg),0 0 0 7px color-mix(in srgb,var(--pc) 50%,transparent)}}
+.stop.next{--pc:var(--ink)} .stop.then{--pc:var(--grape)} .stop.later{--pc:var(--fg-3);border-style:dashed}
+.road .stop.now:nth-child(2){--pc:var(--ink)} .road .stop.now:nth-child(3){--pc:var(--grape)}
+.st{display:inline-block;margin-bottom:12px;font:700 10.5px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;padding:6px 9px;border-radius:999px;color:color-mix(in oklab,var(--pc) 75%,var(--fg));background:color-mix(in srgb,var(--pc) 13%,var(--bg-2))}
+.stop h3{font-size:17px;margin-bottom:10px}
+.stop ul{margin:0;padding-left:18px;font-size:14px;color:var(--fg-2);display:flex;flex-direction:column;gap:6px}
+.stop li::marker{color:var(--pc)}
+@media (max-width:1180px){ .road{grid-template-columns:repeat(2,minmax(0,1fr));padding-top:0} .road::before,.stop::before{display:none} }
+@media (max-width:1000px){
+  .steps{grid-template-columns:1fr}
+  .versus{grid-template-columns:1fr}
+  .vs-mid{height:64px}
+  .vs-mid::before{left:50%;right:auto;top:-14px;bottom:-14px;width:3px;height:auto;background:linear-gradient(180deg,var(--miss),var(--ink),var(--mint))}
+  .vs-mid::after{right:auto;left:calc(50% - 6px);top:auto;bottom:-12px;transform:rotate(135deg)}
+  .pillcmd{writing-mode:horizontal-tb;transform:none;padding:10px 16px}
+}
+@media (max-width:560px){ .road{grid-template-columns:1fr} .pile .f{max-width:48%;font-size:11.5px} }
+
+
+/* ---------- built / planned ---------- */
+.tag{display:inline-flex;align-items:center;gap:5px;font:700 10px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:7px;white-space:nowrap;vertical-align:middle;border:1.5px solid transparent}
+.tag.built{background:var(--match-soft);color:var(--match)}
+.tag.built::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.tag.planned{background:transparent;color:var(--warn);border:1.5px dashed color-mix(in srgb,var(--warn) 65%,transparent)}
+.tag.planned::before{content:"";width:6px;height:6px;border-radius:50%;border:1.5px solid currentColor;box-sizing:border-box}
+.status-strip{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;margin-top:6px}
+.status-strip > div{flex:1 1 300px;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:16px;background:var(--bg-2);border:1.5px solid var(--line-2);font-size:14px;color:var(--fg-2);line-height:1.45}
+.status-strip > div:nth-child(2){background:transparent;border-style:dashed}
+.status-strip > a{align-self:center;font-weight:700;font-size:14px;padding:8px 4px;white-space:nowrap}
+.stage-cap .tag{margin-right:6px}
+.ticks li > span{display:inline}
+.ticks .tag{margin-left:6px;transform:translateY(-1px)}
+.slab.planned{background:color-mix(in srgb,var(--kc) 8%,var(--bg-2));border-style:dashed;box-shadow:none}
+.slab.planned span{opacity:.8}
+.slab.planned span::after{content:" · planned";font-size:11px;font-weight:600}
+.legend2{display:flex;gap:10px;margin:-6px 0 22px}
+.flow{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr)) minmax(140px,.75fr);gap:30px;overflow-x:auto;padding:4px 4px 12px}
+.fcol{position:relative;display:flex;flex-direction:column;gap:12px;min-width:0}
+.fcol h4{font:700 11px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3);margin:0 0 4px}
+.fcol:not(:last-child)::after{content:"";position:absolute;right:-22px;top:calc(50% - 7px);width:12px;height:12px;border-top:2.5px solid var(--fg-3);border-right:2.5px solid var(--fg-3);transform:rotate(45deg);opacity:.6}
+.node{display:flex;flex-direction:column;gap:5px;padding:12px 14px;border-radius:14px;background:var(--bg-2);border:1.5px solid color-mix(in srgb,var(--match) 45%,var(--line));box-shadow:0 4px 0 color-mix(in srgb,var(--match) 32%,var(--line-2))}
+.node b{font:700 14px/1.25 var(--display);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.node b::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--match);flex:none}
+.node .s{font-size:12.5px;color:var(--fg-2);line-height:1.45}
+.node .s code{font:500 11.5px var(--mono);background:var(--bg-3);padding:1px 5px;border-radius:5px}
+.node.planned{background:transparent;border:1.5px dashed color-mix(in srgb,var(--warn) 45%,var(--line-2));box-shadow:none}
+.node.planned b{color:var(--fg-2)}
+.node.planned b::before{background:transparent;border:1.5px solid var(--warn)}
+.agents .ag{padding:9px 12px;border-radius:12px;background:var(--fg);color:var(--bg);font:600 13px var(--sans);box-shadow:0 3px 0 color-mix(in srgb,var(--fg) 55%,var(--bg))}
+.agents .ag.o{background:transparent;color:var(--fg-2);border:1.5px dashed var(--line-2);box-shadow:none}
+.agnote{margin:4px 0 0;font-size:12.5px;color:var(--fg-3)}
+.callout.v0{align-items:start;background:color-mix(in srgb,var(--match) 7%,var(--bg-2));border-color:color-mix(in srgb,var(--match) 30%,var(--line))}
+.callout.v0 .tag{margin-top:1px}
+@media (max-width:1000px){
+  .flow{grid-template-columns:1fr;gap:34px;overflow:visible}
+  .fcol:not(:last-child)::after{right:auto;left:calc(50% - 6px);top:auto;bottom:-24px;transform:rotate(135deg)}
+  .agents{flex-direction:row;flex-wrap:wrap}
+  .agents h4,.agnote{flex-basis:100%}
+}
+
+
+/* ---------- retrieval demo ---------- */
+.sd-terms{font-size:13px;color:var(--fg-3);margin-bottom:10px}
+.sd-terms code{font-size:12px}
+.sd-out{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.sd-out li{padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg)}
+.sd-out li:first-child{border-color:color-mix(in srgb,var(--tang) 45%,var(--line));box-shadow:0 3px 0 color-mix(in srgb,var(--tang) 30%,var(--line-2))}
+.sd-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.sd-h b{font:700 14px var(--display);letter-spacing:-.01em}
+.sd-rank{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font:700 11px var(--display);background:var(--tang);color:#fff;flex:none}
+.sd-loc{margin-left:auto;font:500 12px var(--mono);color:var(--fg-3)}
+.sd-why{font-size:12.5px;color:var(--fg-2);margin:6px 0;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.sd-why code{font-size:11.5px}
+.sd-id{font:500 11.5px var(--mono);color:var(--fg-3)}
+.sd-out p{margin:0;font-size:13.5px;color:var(--fg-2);white-space:pre-line}
+.sd-none{color:var(--fg-3);font-style:italic}
+
+/* ---------- custom dropdown ---------- */
+.dd{position:relative;min-width:0}
+.dd-native{position:absolute!important;opacity:0;pointer-events:none;width:1px!important;height:1px;overflow:hidden}
+.dd-btn{width:100%;display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 12px;border-radius:13px;border:1.5px solid var(--line-2);background:var(--bg-2);color:var(--fg);box-shadow:0 3px 0 var(--line-2);text-align:left;font:600 13.5px var(--mono);transition:border-color .15s,box-shadow .15s,transform .1s}
+.dd-btn:hover{border-color:color-mix(in srgb,var(--ink) 45%,var(--line-2))}
+.dd-btn:active{transform:translateY(1px)}
+.dd-btn[aria-expanded="true"]{border-color:var(--ink);box-shadow:0 3px 0 color-mix(in srgb,var(--ink) 45%,var(--line-2)),0 0 0 4px color-mix(in srgb,var(--ink) 14%,transparent)}
+.dd-btn .kd,.dd-list .kd{width:9px;height:9px;border-radius:3px;background:var(--kc);flex:none;transform:rotate(45deg)}
+.dd-val{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd-val.muted,.dd-list .muted .v{font-family:var(--sans);font-weight:600;font-style:italic;color:var(--fg-2)}
+.dd-sub{font:500 12px var(--sans);color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.dd-btn .chev{margin-left:auto;flex:none;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;background:var(--bg-3);color:var(--fg-2);transition:transform .2s}
+.dd-btn .chev svg{width:14px;height:14px}
+.dd-btn[aria-expanded="true"] .chev{transform:rotate(180deg);background:var(--ink);color:var(--ink-fg)}
+.dd-list{position:fixed;z-index:45;margin:0;padding:6px;list-style:none;background:var(--bg-2);border:1.5px solid var(--line-2);border-radius:16px;box-shadow:0 6px 0 var(--line-2),0 26px 50px -18px rgb(30 25 60 / .4);max-height:320px;overflow-y:auto;animation:pop .14s ease-out}
+.dd-list li{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;font:600 13.5px var(--mono);color:var(--fg)}
+.dd-list li .v{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd-list li .s{font:500 12px var(--sans);color:var(--fg-3);margin-left:auto;padding-left:12px;white-space:nowrap}
+.dd-list li.act{background:var(--bg-3)}
+.dd-list li[aria-selected="true"]{color:var(--ink);background:var(--ink-soft)}
+.dd-list li .ck{width:16px;height:16px;flex:none;color:var(--ink);opacity:0}
+.dd-list li[aria-selected="true"] .ck{opacity:1}
+.dd-list .sep{height:1px;background:var(--line);margin:5px 6px;padding:0;pointer-events:none}
+
 /* ---------- responsive ---------- */
 @media (max-width:1180px){ .shell{grid-template-columns:var(--side) minmax(0,1fr) 0} .toc{display:none} main{padding:28px 28px 80px} .docs-grid{grid-template-columns:repeat(2,minmax(0,1fr))} .kinds{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @media (max-width:1000px){ .hero-copy{grid-template-columns:1fr} .hero-stage{height:520px} }
@@ -456,7 +618,7 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
   </button>
   <a class="brand" href="#home" aria-label="Nexora home">
     <span class="logo"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 23V9l9 9V9" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M20 19l5 4M25 19l-5 4" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg></span>
-    nexora <small>v0 · local</small>
+    nexora <small>open source</small>
   </a>
   <span class="spacer"></span>
   <nav aria-label="Primary">
@@ -477,17 +639,22 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
   <aside class="side" id="side" aria-label="Documentation">
     <div class="grp"><span class="eyebrow">Overview</span>
       <a href="#home" data-page="home"><span class="dot"></span>Nexora</a>
+      <a href="#why" data-anchor="why" style="--pc:var(--miss)"><span class="dot"></span>Why Nexora</a>
+      <a href="#status" data-anchor="status" style="--pc:var(--mint)"><span class="dot"></span>How it fits together</a>
+      <a href="#roadmap" data-anchor="roadmap" style="--pc:var(--grape)"><span class="dot"></span>Roadmap</a>
       <a href="#playground" data-page="playground"><span class="dot"></span>Resolution playground</a>
     </div>
     <div class="grp"><span class="eyebrow">Guides</span>
       <a href="#start" data-page="start"><span class="n">01</span>Getting started</a>
       <a href="#format" data-page="format"><span class="n">02</span>Knowledge format</a>
       <a href="#resolution" data-page="resolution"><span class="n">03</span>How resolution works</a>
-      <a href="#cli" data-page="cli"><span class="n">04</span>CLI guide</a>
-      <a href="#troubleshooting" data-page="troubleshooting"><span class="n">05</span>Troubleshooting</a>
+      <a href="#retrieval" data-page="retrieval"><span class="n">04</span>Docs and Confluence</a>
+      <a href="#agents" data-page="agents"><span class="n">05</span>Connect agents</a>
+      <a href="#cli" data-page="cli"><span class="n">06</span>CLI guide</a>
+      <a href="#troubleshooting" data-page="troubleshooting"><span class="n">07</span>Troubleshooting</a>
     </div>
     <div class="grp"><span class="eyebrow">Project</span>
-      <a href="#architecture" data-page="architecture"><span class="dot"></span>Architecture decisions</a>
+      <a href="#architecture" data-page="architecture"><span class="dot"></span>Architecture</a>
       <a href="#verification" data-page="verification"><span class="dot"></span>Verification record</a>
       <a href="https://github.com/acierto/nexora/tree/main/examples" target="_blank" rel="noopener">Example catalog <span class="ext">↗</span></a>
       <a href="https://github.com/acierto/nexora" target="_blank" rel="noopener">Source on GitHub <span class="ext">↗</span></a>
@@ -582,34 +749,121 @@ JSON exposes the same selection in `required_rules`, with full items and
 structured `reasons`; the other four groups are empty arrays. For example, path
 evidence includes `{"pattern":"src/auth/**/*.go","file":"src/auth/service.go"}`.
 
-To use the result with an agent today, inspect or manually supply the relevant
-text through that agent's supported workflow. The CLI does not inject it or
-elevate its authority. See [resolution](resolution.md) and the
-[practical examples](../examples/README.md) for more.
+## Add your team's docs
+
+Point a `docs` source at a documentation folder (or a `confluence` source at a
+space), index it, and describe your task:
+
+```yaml
+sources:
+  - id: local
+    path: ./knowledge
+  - id: handbook
+    type: docs
+    path: ./docs
+```
+
+```shell
+nexora index
+nexora resolve --file src/auth/service.go --task "rotate refresh tokens"
+```
+
+The result keeps the same rules and adds a `passages` group with the matching
+documentation sections, their files, and the words that matched. Add `.nexora/`
+(the local index) to `.gitignore`. See [Docs and Confluence](retrieval.md) for
+Confluence, embeddings, and pgvector.
+
+## Connect your agent
+
+Register the MCP server so the agent can ask for context itself, or write the
+always-on rules into its native file:
+
+```shell
+claude mcp add nexora -- nexora mcp --config "$PWD/nexora.yaml"
+nexora sync --agent codex
+```
+
+Nexora delivers text and does not raise its authority above the agent's trusted
+instructions. See [Connect agents](agents.md), [resolution](resolution.md), and
+the [practical examples](../examples/README.md) for more.
 </script>
 <script type="text/markdown" id="md-format"># Knowledge format
 
 [Read online](https://acierto.github.io/nexora/#format) · [Documentation home](https://acierto.github.io/nexora/)
 
-Configuration is explicit: read commands default to `./nexora.yaml`; `--config`
-selects another file. Relative source paths resolve against that file, not the
-working directory. Sources can point to shared local directories outside a
-project. Roots must be readable, distinct, and non-overlapping. Source root paths
-are canonicalized, but symlink entries inside source trees are rejected.
+Nexora reads one configuration file, `nexora.yaml`, and two kinds of content:
+**knowledge items** (rules, skills, references, and decisions written as Markdown
+with front matter, selected deterministically) and **documentation** (ordinary
+docs folders and Confluence spaces, indexed into passages and retrieved for a
+task). This page covers the configuration and the knowledge format. Retrieval is
+described in [Docs and Confluence](retrieval.md).
+
+## Configuration
+
+Configuration is explicit: commands default to `./nexora.yaml`, and `--config`
+selects another file. Relative paths resolve against that file, not the working
+directory. Sources can point to shared local directories outside a project.
 
 ```yaml
 schema_version: 1
 project: commerce-api
 sources:
-  - id: local
+  - id: local                  # knowledge source (type defaults to knowledge)
     path: ./knowledge
+  - id: handbook
+    type: docs                 # Markdown, text, and HTML; no front matter needed
+    path: ./handbook
+    projects: [commerce-api]   # optional
+  - id: wiki
+    type: confluence
+    url: https://your-company.atlassian.net/wiki
+    spaces: [PAY, ARCH]
+    user_env: CONFLUENCE_USER
+    token_env: CONFLUENCE_TOKEN
+index:                         # optional; these are the defaults plus an embedding provider
+  store: local
+  path: .nexora/index.json
+  embeddings:
+    provider: ollama
+    model: nomic-embed-text
+  chunk:
+    max_chars: 1200
+    overlap_chars: 150
 ```
 
-`project`, source `id`, and source `path` must be nonempty. Source IDs must be
-unique. Unknown fields, duplicate keys, extra YAML documents, explicit nulls,
-and values with incorrect types fail validation. Optional fields should be
-omitted rather than set to null. Configuration does not expand environment
-variables or `~` and does not discover parent configurations.
+Only `schema_version`, `project`, and one source are required. The smallest
+valid file, which `nexora init` writes, has a single knowledge source.
+
+| Field | Applies to | Meaning / default |
+| --- | --- | --- |
+| `schema_version` | file | Required; must be `1` |
+| `project` | file | Required project ID used when `--project` is omitted |
+| `sources[].id` | all sources | Required, unique; appears in provenance and passage IDs |
+| `sources[].type` | all sources | `knowledge` (default), `docs`, or `confluence` |
+| `sources[].path` | knowledge, docs | Required directory; readable, canonical, not overlapping another root |
+| `sources[].projects` | docs, confluence | Only return this source's passages for these projects; omitted means every project |
+| `sources[].url` | confluence | Required base URL, for example `https://x.atlassian.net/wiki` |
+| `sources[].spaces` | confluence | Required list of unique space keys |
+| `sources[].token_env` | confluence | Required name of the environment variable holding the API token |
+| `sources[].user_env` | confluence | Name of the variable holding the user (Cloud email); enables basic auth, otherwise bearer |
+| `index.store` | index | `local` (default) or `pgvector` |
+| `index.path` | local store | Index file, default `.nexora/index.json` |
+| `index.dsn_env` / `index.table` | pgvector store | Variable holding the connection string; table, default `nexora_passages` |
+| `index.embeddings.*` | index | `provider` (`none`, `ollama`, `openai`), `model`, `url`, `api_key_env`, `dimensions` |
+| `index.chunk.*` | index | `max_chars` (200-20000, default 1200), `overlap_chars` (default 150) |
+
+Unknown fields, duplicate keys, extra YAML documents, explicit nulls, and values
+with incorrect types fail validation, at every level. Optional fields should be
+omitted rather than set to null. Fields that belong to another source type are
+rejected: a knowledge source cannot set `url` or `projects`, and a confluence
+source cannot set `path`. Configuration never contains secrets and does not
+expand environment variables or `~`; fields ending in `_env` name a variable that
+is read only when Nexora needs it. Parent directories are not searched.
+
+Source root paths are canonicalized, but symlink entries inside source trees are
+rejected.
+
+## Path patterns
 
 File applicability uses repository-relative, case-sensitive paths with `/`
 separators. `*` matches zero or more characters within one segment, `?` matches
@@ -724,7 +978,8 @@ changes the digest. Load times and filesystem modification times are not version
 Duplicate IDs fail with both locations; source order does not override knowledge.
 
 Use dedicated source directories for metadata-bearing knowledge. Keep ordinary
-README files outside those directories. A typical source contains `rules/`,
+README files outside those directories, or put ordinary documentation in a
+separate `type: docs` source, which needs no front matter. A typical source contains `rules/`,
 `skills/`, `references/`, and `decisions/`, but directories do not infer item kinds.
 
 Example of invalid metadata (must fail validation):
@@ -739,6 +994,26 @@ required: true
 ---
 This document is invalid even though its body is present.
 ```
+
+## Documentation sources
+
+Files in a `docs` source need no Nexora metadata. Nexora reads `.md`,
+`.markdown`, `.txt`, `.html`, and `.htm` files in stable order, requires UTF-8,
+rejects symlink entries, and skips leading YAML front matter without parsing it,
+so existing docs (including Jekyll or Docusaurus pages) work as they are. HTML
+and Confluence pages are converted to text that keeps headings, lists, tables,
+and code blocks; nothing is rendered or executed.
+
+`nexora index` splits each document into passages at headings and paragraphs.
+A passage records its source, document, heading trail (for example
+`Refund policy › Partial refunds`), location, and the SHA-256 digest of the
+document. Passage IDs have the form `<source>:<document>#<n>`, such as
+`handbook:payments/refunds.md#3` or `wiki:page-42#1`.
+
+Documentation never becomes a knowledge item. It has no `kind`, `required`, or
+`applies_to`, and it cannot be selected as a required rule. Put instructions an
+agent must follow in knowledge sources, and reference material in docs. See
+[Docs and Confluence](retrieval.md) for indexing, search, embeddings, and pgvector.
 </script>
 <script type="text/markdown" id="md-resolution"># How resolution works
 
@@ -763,14 +1038,355 @@ evidence records matching patterns and normalized file names in stable order.
 Duplicate request files do not duplicate knowledge or evidence.
 
 Optional matches are applicability matches, not semantic recommendations. There
-is no search query, token budget, truncation, or inferred conflict resolution.
-Inspect both rules if their content conflicts and edit your knowledge explicitly.
+is no token budget, truncation, or inferred conflict resolution. Inspect both
+rules if their content conflicts and edit your knowledge explicitly.
+
+## Passages from documentation
+
+With `--task`, resolution also searches indexed documentation and adds a sixth
+array, `passages`. It is always present in JSON and empty without a task.
+Passages come from `docs` and `confluence` sources, are ranked by keyword search
+and optional embeddings, and carry their own explanations (see
+[Docs and Confluence](retrieval.md)). They are reference material, never rules:
+the five knowledge groups are computed first and are identical with or without
+`--task`. A passage cannot add, remove, reorder, or demote a required rule.
+Passages from a source with `projects` appear only for those projects.
 
 This is a single-user local registry. Project and agent filters are not
 authorization. Anyone with access to source files can read them. Selected text
 remains retrieved knowledge; it does not outrank the trusted instructions of the
 agent receiving it. `--agent codex` or `--agent claude` only supplies a matching
-value; it does not connect to either agent.
+value; it does not connect to either agent. To deliver results to an agent, see
+[Connect agents](agents.md).
+</script>
+<script type="text/markdown" id="md-retrieval"># Docs and Confluence
+
+[Read online](https://acierto.github.io/nexora/#retrieval) · [Documentation home](https://acierto.github.io/nexora/)
+
+Rules and skills tell an agent how to work. Most of what your team knows lives
+somewhere else: architecture notes, runbooks, policies, and Confluence pages.
+Nexora indexes that documentation and returns the passages that matter for a
+task, each with its source and the reason it was picked.
+
+Documentation never becomes a rule. Required rules are still selected only by
+project, agent, and file metadata; retrieval cannot add, remove, or reorder them.
+
+## Add documentation sources
+
+Sources have a `type`. The default, `knowledge`, holds front-matter knowledge as
+before. Add `docs` for local documentation folders and `confluence` for spaces:
+
+```yaml
+schema_version: 1
+project: commerce-api
+sources:
+  - id: rules
+    path: ./knowledge
+  - id: handbook
+    type: docs
+    path: ./handbook
+  - id: wiki
+    type: confluence
+    url: https://your-company.atlassian.net/wiki
+    spaces: [PAY, ARCH]
+    user_env: CONFLUENCE_USER      # Cloud: your Atlassian email
+    token_env: CONFLUENCE_TOKEN    # Cloud API token or Data Center personal access token
+    projects: [commerce-api]       # optional: only return these passages for this project
+```
+
+A `docs` source reads `.md`, `.markdown`, `.txt`, `.html`, and `.htm` files in
+stable order. Files need no front matter; any leading YAML front matter is skipped.
+Like knowledge sources, docs roots must not overlap other roots, symlink entries
+are rejected, and files must be UTF-8. Nothing is rendered or executed.
+
+A `confluence` source reads current pages of each listed space through the
+Confluence REST API (`/rest/api/content` with `body.storage`). With `user_env`
+set, Nexora uses basic authentication (Cloud email plus API token). Without it,
+the token is sent as a bearer token (Data Center personal access tokens).
+Credentials are read from the named environment variables only when indexing;
+configuration never contains secrets.
+
+`projects` limits a documentation source to the listed projects. Without it,
+passages are available to every project. This is an applicability filter, not
+authorization.
+
+## Build the index
+
+Indexing is an explicit step. It is the only time Nexora reads documentation or
+calls Confluence:
+
+```shell
+nexora index                 # every docs and confluence source
+nexora index --source wiki   # rebuild one source, keep the others
+nexora index --json          # report as JSON
+```
+
+Each document is split into passages at Markdown headings (HTML and Confluence
+headings are converted first), packed by paragraph up to `max_chars` characters
+(1200 by default), with up to `overlap_chars` (150 by default) repeated from the
+previous passage of the same section. A passage keeps its source, title, heading
+trail such as `Refund policy › Partial refunds`, location (relative path or page
+URL), and the SHA-256 digest of its document. Passage IDs look like
+`handbook:payments/refunds.md#3` or `wiki:page-42#1` and stay stable while a
+document is unchanged.
+
+If reading a source or calling an embedding provider fails, the command exits 1
+and the stored index is left as it was.
+
+## Search and resolve with a task
+
+```shell
+nexora search --query "rollback production deploy" --limit 3
+nexora resolve --agent codex --file src/payments/refund.go --task "add partial refunds"
+```
+
+`search` returns passages. `resolve --task` returns the usual rule, skill,
+reference, and decision groups plus a `passages` group. The `passages` array is
+always present in JSON and empty without `--task`. `--limit` (1-50, default 5)
+caps the number of passages.
+
+If documentation sources are configured but nothing has been indexed, `--task`
+and `search` fail with `run nexora index`. Without documentation sources, the
+`passages` group is simply empty.
+
+## How passages are ranked
+
+Every hit explains itself:
+
+```json
+{
+  "passage": {
+    "id": "handbook:runbooks/deploy.html#3",
+    "source_id": "handbook",
+    "source_type": "docs",
+    "document_id": "runbooks/deploy.html",
+    "title": "Deploying commerce-api",
+    "heading": "Deploying commerce-api › Rolling back",
+    "text": "Use the pipeline’s rollback action. It redeploys the previous image within five minutes. …",
+    "location": "runbooks/deploy.html",
+    "digest": "f3d8438b4070ec8f5bf9bd774536aaf14cf1dd2f6847c21b380a75b5a20b29bb",
+    "projects": []
+  },
+  "score": 0.016393,
+  "reasons": [
+    { "method": "keyword", "rank": 1, "score": 5.5829, "terms": ["rollback", "production", "deploy"] }
+  ]
+}
+```
+
+Without embeddings, Nexora ranks with BM25 keyword scoring. Words are lowercased,
+common stop words are dropped, and a small suffix rule lets `refunds` and
+`refunded` match `refund`; matched terms are shown in that normalized form. With
+embeddings, a second list ranks passages by cosine similarity. The two lists are
+merged with reciprocal rank fusion (k = 60), so a passage found by both methods
+rises to the top, and each method's rank appears in `reasons`. Ties are broken by
+passage ID, so the same index and query always give the same result.
+
+## Embeddings (optional)
+
+Keyword search works offline with no API key. To match by meaning, configure an
+embedding provider:
+
+```yaml
+index:
+  embeddings:
+    provider: ollama               # local, no key
+    model: nomic-embed-text
+    # url: http://localhost:11434  # default
+```
+
+```yaml
+index:
+  embeddings:
+    provider: openai               # any OpenAI-compatible /embeddings endpoint
+    model: text-embedding-3-small
+    api_key_env: OPENAI_API_KEY
+    # url: https://api.openai.com/v1
+    # dimensions: 1536             # optional; must match what the model returns
+```
+
+The index records the model. Searching with a different model, or with no model
+when the index has embeddings, fails and asks you to run `nexora index` again.
+Rebuilding one source with `--source` also requires the same model as the rest of
+the index; run `nexora index` without `--source` to switch models.
+
+Queries are embedded too, so `search` and `resolve --task` call the provider when
+embeddings are configured.
+
+## pgvector (optional)
+
+The default store is one JSON file at `.nexora/index.json` next to the
+configuration (change it with `index.path`). Add `.nexora/` to `.gitignore`.
+For larger collections or a shared database, store passages in PostgreSQL with
+the [pgvector](https://github.com/pgvector/pgvector) extension:
+
+```yaml
+index:
+  store: pgvector
+  dsn_env: NEXORA_DATABASE_URL     # e.g. postgres://user:pass@localhost:5432/nexora?sslmode=disable
+  table: nexora_passages           # default
+  embeddings:
+    provider: ollama
+    model: nomic-embed-text
+    dimensions: 768                # enables an HNSW cosine index
+```
+
+Nexora runs `CREATE EXTENSION IF NOT EXISTS vector`, so the database user needs
+permission for that, or the extension must already be installed. It creates the
+passage table with a generated full-text column (GIN index), a `vector` column
+(HNSW index when `dimensions` is set), and a `<table>_meta` table for the model.
+A full `nexora index` recreates both tables; `--source` replaces one source in a
+transaction. Keyword candidates come from PostgreSQL full-text search and
+semantic candidates from pgvector's cosine distance; the fusion and explanations
+are the same as the local store.
+
+## Configuration reference
+
+| Field | Meaning / default |
+| --- | --- |
+| `sources[].type` | `knowledge` (default), `docs`, or `confluence` |
+| `sources[].path` | Directory for `knowledge` and `docs` sources |
+| `sources[].url` | Confluence base URL, for example `https://x.atlassian.net/wiki` |
+| `sources[].spaces` | Confluence space keys, at least one, unique |
+| `sources[].token_env` | Environment variable with the Confluence token (required for confluence) |
+| `sources[].user_env` | Environment variable with the Confluence user; enables basic auth |
+| `sources[].projects` | Restrict a docs or confluence source to these projects |
+| `index.store` | `local` (default) or `pgvector` |
+| `index.path` | Local index file, default `.nexora/index.json` relative to the config |
+| `index.dsn_env` | Environment variable with the PostgreSQL connection string (pgvector) |
+| `index.table` | pgvector table name, default `nexora_passages` |
+| `index.embeddings.provider` | `none` (default), `ollama`, or `openai` |
+| `index.embeddings.model` | Embedding model name (required with a provider) |
+| `index.embeddings.url` | Provider base URL; defaults per provider |
+| `index.embeddings.api_key_env` | Environment variable with the API key (openai) |
+| `index.embeddings.dimensions` | Expected vector size; enables the pgvector HNSW index |
+| `index.chunk.max_chars` | Maximum passage length, 200-20000, default 1200 |
+| `index.chunk.overlap_chars` | Overlap between passages, up to half of `max_chars`, default 150 |
+
+## Trust boundary
+
+Everything the Confluence token can read is indexed. Anyone who can read the
+index file or database can read those passages, and `projects` filters do not
+change that. Use a token with access to the spaces you mean to share, and keep
+index files out of version control. Retrieved passages are reference material for
+an agent; they do not outrank its trusted instructions, and Nexora never executes
+their content.
+
+Try it with the [team docs example](../examples/team-docs/README.md), then
+[connect your agents](agents.md).
+</script>
+<script type="text/markdown" id="md-agents"># Connect agents
+
+[Read online](https://acierto.github.io/nexora/#agents) · [Documentation home](https://acierto.github.io/nexora/)
+
+Nexora delivers knowledge to agents in two ways that work well together:
+
+- **MCP server.** `nexora mcp` lets Claude Code, Codex, and other MCP clients ask
+  for task-specific rules, skills, and documentation passages while they work.
+- **Native sync.** `nexora sync` writes the rules that always apply into
+  `AGENTS.md` or `CLAUDE.md` and generates `SKILL.md` files, so agents see them
+  even before calling a tool.
+
+## MCP server
+
+`nexora mcp` speaks the Model Context Protocol over stdio (newline-delimited
+JSON-RPC 2.0). It supports protocol revisions `2025-06-18`, `2025-03-26`, and
+`2024-11-05`, writes diagnostics only to stderr, and reloads configuration,
+knowledge, and the index on every call, so edits show up without a restart.
+
+Pass an absolute `--config` path, because agents may start the server from
+another directory.
+
+Claude Code:
+
+```shell
+claude mcp add nexora -- nexora mcp --config /path/to/repo/nexora.yaml
+```
+
+Codex (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.nexora]
+command = "nexora"
+args = ["mcp", "--config", "/path/to/repo/nexora.yaml"]
+```
+
+If a documentation source needs credentials (Confluence, OpenAI embeddings, a
+pgvector DSN), the server process needs the same environment variables as the
+CLI. Pass them through your client's MCP environment settings.
+
+### Tools
+
+All tools are read-only.
+
+| Tool | Arguments | Returns |
+| --- | --- | --- |
+| `get_context` | `project`, `agent`, `files`, `task`, `limit` (all optional) | The same groups as `nexora resolve --json`, including `passages` when `task` is set |
+| `search_knowledge` | `query` (required), `project`, `limit` | `{ "hits": [...] }` documentation passages with explanations |
+| `get_knowledge` | `id` (required) | `{ "kind": "knowledge", "item": ... }` or `{ "kind": "passage", "passage": ... }` |
+| `list_skills` | `project`, `agent` | Active skills that apply, with their path restrictions |
+
+`project` defaults to the configured project. Results include the JSON as text
+content and as `structuredContent`. Invalid arguments and failures, such as an
+unknown ID or a missing index, come back as tool errors (`isError: true`) with a
+message the agent can act on.
+
+The server also sends short instructions during initialization: call
+`get_context` before changing code, follow required rules unless trusted
+instructions say otherwise, and treat passages as reference material.
+
+## Native sync
+
+```shell
+nexora sync --agent codex            # AGENTS.md and .agents/skills/<name>/SKILL.md
+nexora sync --agent claude           # CLAUDE.md and .claude/skills/<name>/SKILL.md
+nexora sync --agent codex --check    # write nothing; exit 1 if anything is out of date
+nexora sync --agent codex --dir ../service --project billing-api
+```
+
+Files are written relative to `--dir`, which defaults to the directory of the
+configuration file.
+
+**Instruction file.** Nexora owns one block between `<!-- nexora:begin -->` and
+`<!-- nexora:end -->`. Everything outside the markers is preserved byte for byte;
+a file without markers gets the block appended. The block contains active
+required rules that apply to the project and agent:
+
+- rules without path restrictions under **Always apply**, with their content;
+- path-restricted rules under **When you change matching files**, with their
+  patterns and content;
+- optional rules as a one-line summary each;
+- the generated skills;
+- a pointer to `nexora resolve --task` and the MCP server for task-specific context.
+
+Each rule shows its source and version. Rules restricted to another agent are
+left out.
+
+**Skills.** Every active skill that applies to the project and agent becomes an
+[Agent Skills](https://agentskills.io) compatible `SKILL.md` with `name` and
+`description` front matter. The name is the ID without a leading `skills/`
+segment, with other separators turned into hyphens, so `skills/issue-refund`
+becomes `issue-refund`.
+
+**Protecting your edits.** Sync records what it wrote, with digests, in
+`.nexora/sync-<agent>.json`. It stops without writing anything when:
+
+- a skill file it would write already exists and was not generated by Nexora;
+- a generated skill file or the managed block was edited by hand since the last
+  sync.
+
+Generated skills that no longer apply are removed only if they are unchanged.
+Edit the knowledge files, not the generated output, then sync again. Commit the
+generated files and the manifest together. In CI, `nexora sync --check` fails when
+someone changed knowledge without syncing.
+
+## What this does not do
+
+Nexora delivers text. It does not control how an agent weighs that text against
+its own instructions, and it cannot force an agent to call a tool. Native files
+follow each agent's own discovery and precedence rules. `--agent` values match
+knowledge metadata; they are not authentication. The server is a local, single-user
+stdio process. A remote HTTP server with authorization is future work.
 </script>
 <script type="text/markdown" id="md-cli"># CLI guide
 
@@ -784,13 +1400,18 @@ Commands use flags after the command name; positional arguments are rejected.
 | `init` | `--project ID` | Creates configuration and a scoped example rule; default ID is directory basename |
 | `validate` | `--config PATH`, `--json` | Loads every source; reports validity and item count |
 | `list` | `--config PATH`, `--json` | Lists active, draft, and archived items in ID order |
-| `resolve` | `--config PATH`, `--json`, `--project ID`, `--agent ID`, repeatable `--file PATH` | Returns active applicable knowledge |
+| `resolve` | `--config PATH`, `--json`, `--project ID`, `--agent ID`, repeatable `--file PATH`, `--task TEXT`, `--limit N` | Returns active applicable knowledge; with `--task`, also documentation passages |
+| `index` | `--config PATH`, `--json`, `--source ID` | Indexes every docs and confluence source, or one |
+| `search` | `--config PATH`, `--json`, `--query TEXT` (required), `--project ID`, `--limit N` | Returns documentation passages with explanations |
+| `mcp` | `--config PATH` | Serves knowledge over MCP on stdin/stdout until EOF |
+| `sync` | `--config PATH`, `--json`, `--agent codex\|claude` (required), `--project ID`, `--dir PATH`, `--check` | Writes the managed block and generated skills; `--check` writes nothing |
 
 The default config is `./nexora.yaml`; Nexora never searches parent directories.
 Relative sources resolve against the config's directory. Project defaults to its
 configured value; an invocation override never modifies that file. An absent
 agent excludes agent-restricted items. No files means path-restricted items are
 excluded. A supplied empty project is distinct from omitting the flag.
+`--limit` accepts 1 to 50 and defaults to 5.
 
 ## Recipes
 
@@ -811,9 +1432,36 @@ ID. Repeated file flags select the union of file matches without duplicate items
 The unrelated project selects only the global `go/conventions` and agent-specific
 `agents/codex` rules; the authentication rule is explicitly project-restricted.
 
-`--agent` is a filter value, not a connection to an agent. Agent integration,
-skill execution, automatic instruction synchronization, and instruction
-enforcement are not implemented.
+`--agent` is a filter value, not a connection to an agent. To deliver knowledge
+to an agent, use the MCP server or native sync described in
+[Connect agents](agents.md). Nexora never executes skills or enforces instructions.
+
+## Documentation recipes
+
+These use the [team docs example](../examples/team-docs/README.md) and write its
+index to `examples/team-docs/.nexora/`:
+
+```sh
+nexora index --config examples/team-docs/nexora.yaml
+nexora search --config examples/team-docs/nexora.yaml --query "rollback production deploy" --limit 1
+nexora resolve --config examples/team-docs/nexora.yaml --agent codex --file src/payments/refund.go --task "add partial refunds" --limit 2
+```
+
+Indexing reports 4 documents and 13 passages for the `handbook` source. The search
+returns the runbook passage `handbook:runbooks/deploy.html#3`. The resolve call
+returns the required rules `payments/idempotency` and `observability/logging`, the
+skill `skills/issue-refund`, and two refund-policy passages.
+
+To serve the same knowledge to an agent, or to write it into native files:
+
+```shell
+nexora mcp --config "$PWD/nexora.yaml"
+nexora sync --agent codex
+nexora sync --agent claude --check
+```
+
+`sync --check` exits 1 when files would change or when a generated file was edited
+by hand, which makes it suitable for CI.
 
 ## JSON and shell scripts
 
@@ -821,8 +1469,16 @@ Validation produces `{"valid":true,"item_count":9}`. List produces
 `{"items":[...]}` with full knowledge values. Resolution produces these arrays:
 
 ```json
-{"required_rules":[],"optional_rules":[],"skills":[],"references":[],"decisions":[]}
+{"required_rules":[],"optional_rules":[],"skills":[],"references":[],"decisions":[],"passages":[]}
 ```
+
+`passages` is empty unless `--task` is given. Search produces `{"hits":[...]}`.
+A hit is `{"passage":{...},"score":...,"reasons":[...]}`; passage fields are `id`,
+`source_id`, `source_type`, `document_id`, `title`, `heading`, `text`, `location`,
+`digest`, and `projects`, and each reason has `method` (`keyword` or `semantic`),
+`rank`, `score`, and the matched `terms`. Index produces
+`{"store":...,"model":...,"sources":[{"id","type","documents","passages","embedded"}]}`.
+Sync produces `{"agent","project","changes":[{"path","action"}],"conflicts":[]}`.
 
 Each selection is `{"item":{...},"reasons":[...]}`. Item fields include `id`,
 `name`, `description`, `kind`, `content`, `version`, `status`, `tags`, `priority`,
@@ -847,7 +1503,8 @@ agents/codex
 ```
 
 Success exits 0; unknown commands, flags, and invalid CLI usage exit 2.
-Configuration, source validation, path validation, and I/O failures exit 1.
+Configuration, source validation, path validation, I/O, missing index, embedding,
+Confluence, and sync conflict failures exit 1.
 Failures use stderr and do not return a partial JSON registry. Human-readable
 output also includes content, provenance, and selection reasons. Output is data;
 do not execute knowledge content as shell commands.
@@ -872,6 +1529,15 @@ these failures; unknown commands/flags return 2.
 | Run init a second time | Init refuses existing targets | Edit existing configuration and rules; do not delete user knowledge just to reinitialize |
 | Set `version: 1.0` | YAML numeric value where a string is required | Quote it: `version: "1.0"` |
 | Use `required: true` on a skill | Only rules can be mandatory | Remove `required`; skills are applicable optional procedures |
+| `no documentation index found; run nexora index` | Docs or confluence sources are configured but not indexed yet | Run `nexora index` |
+| `index was built with embeddings "X" but the configuration uses "Y"` | The embedding provider or model changed | Run `nexora index` without `--source` to rebuild every source |
+| `environment variable CONFLUENCE_TOKEN is not set` | Credentials are read from the variables named in `token_env`/`user_env` | Export the variable in the shell or MCP client that runs Nexora |
+| Confluence `HTTP 401` or `HTTP 403` for a space | Wrong user/token pair, or the token cannot read that space | Cloud: set `user_env` to your email and use an API token. Data Center: omit `user_env` and use a personal access token |
+| `embeddings (...): HTTP 404: model not found` | The model is not available at the provider URL | Pull the model (`ollama pull nomic-embed-text`) or fix `model`/`url` |
+| pgvector `extension "vector" is not available` | The PostgreSQL server lacks pgvector | Install pgvector on the server, or have an administrator run `CREATE EXTENSION vector` |
+| A search finds nothing useful | Keyword search needs shared words with the text | Rephrase with the document's terms, or configure embeddings and reindex |
+| `sync stopped; nothing was written` | A generated file or the managed block was edited by hand, or an existing skill file has the same name | Move your edits into the knowledge files, delete or rename the conflicting file, then sync again |
+| `found <!-- nexora:begin --> without <!-- nexora:end -->` | The managed block markers were damaged | Restore both markers or remove the partial block, then sync again |
 
 These cases are reproduced in configuration, Markdown, initialization, and CLI
 tests. For permission failures, ensure the current user can read every source
@@ -907,11 +1573,12 @@ to match. Duplicate IDs cannot be used as overrides. See [resolution](resolution
 
 ## Current boundaries
 
-Nexora does not connect to agents, import arbitrary Agent Skills libraries,
-execute procedures, sync native instructions, or serve MCP/HTTP. It does not
-perform semantic search, truncate to a token budget, or provide remote
-authorization. Supply selected text to your agent manually through its supported
-workflow. Retrieved text does not outrank trusted instructions.
+Nexora serves knowledge over a local stdio MCP server and writes native
+instruction files, but it cannot make an agent call a tool or follow a rule. It
+does not import arbitrary Agent Skills libraries, execute procedures, truncate to
+a token budget, serve MCP over HTTP, or provide remote authorization. Indexed
+Confluence content is readable by anyone who can read the index file or database.
+Retrieved text does not outrank trusted instructions.
 
 Source files are trusted local data. Filters help select relevant items, not
 hide secrets from someone with filesystem access. Concurrent malicious changes
@@ -939,7 +1606,44 @@ never rendered or executed. Every invocation rebuilds an in-memory snapshot;
 persistent indexing and extension interfaces await actual consumers and measured
 needs.
 
-See the [initial verification record](verification.md) for tested behavior and
+## Documentation retrieval and agent delivery
+
+The second milestone adds documentation passages, retrieval, and delivery to
+agents without changing deterministic resolution:
+
+```text
+cmd/nexora -> internal/cli -> app, mcp, nativesync
+app -> config, markdown, registry, resolver, passage, confluence, embed, index, retrieval
+retrieval -> index, embed;  index -> passage;  confluence -> passage
+```
+
+- `passage` converts docs (Markdown, text, HTML) and Confluence storage XHTML into
+  heading-aware passages with provenance. HTML is tokenized with the standard
+  library XML decoder in non-strict mode; nothing is rendered or executed.
+  Passages are a separate type from knowledge items, so documentation can never be
+  selected as a mandatory rule.
+- `confluence` and `embed` are small standard-library HTTP clients (Confluence REST
+  content API; Ollama `/api/embed` and OpenAI-compatible `/embeddings`).
+- `index.Store` is the one new interface, because there are two real
+  implementations: a local JSON file (default, written atomically, BM25 at query
+  time) and PostgreSQL with pgvector. The pgvector store uses `github.com/lib/pq`,
+  a pure-Go driver with no transitive dependencies; it is the only dependency added.
+- `retrieval` merges keyword and semantic candidates with reciprocal rank fusion
+  in Go, so both stores rank and explain hits identically. The index records the
+  embedding model, and mismatches fail instead of silently degrading.
+- `app` coordinates loading for the CLI and MCP server and reloads everything on
+  each call, keeping the no-stale-snapshot behavior of the first milestone.
+- `mcp` is a hand-written stdio JSON-RPC loop. The protocol surface needed
+  (initialize, ping, tools/list, tools/call) is small enough that an SDK
+  dependency is not justified yet.
+- `nativesync` owns only a marked block in `AGENTS.md`/`CLAUDE.md` and the skill
+  files it generated, tracked by digest in `.nexora/sync-<agent>.json`.
+
+Network access is limited to `nexora index` (Confluence, embeddings) and to query
+embedding when a provider is configured. `validate`, `list`, and `resolve` without
+`--task` remain offline.
+
+See the [verification record](verification.md) for tested behavior and
 platform-build limitations.
 </script>
 <script type="text/markdown" id="md-verification"># Local MVP verification
@@ -1005,23 +1709,68 @@ The first release remains local and single-user. Native agent integration,
 full Agent Skills imports, databases, semantic retrieval, and remote authorization
 remain deferred as specified in the proposal. License selection and publication
 are separate work.
+
+## Documentation retrieval and agent delivery
+
+Verified on 2026-10-25 for the `document-retrieval-and-agent-delivery` change,
+with Go 1.24.7 on linux/amd64 building the module at its `go 1.23.0` floor,
+PostgreSQL 16.15, and pgvector 0.6.0.
+
+| Check | Result |
+| --- | --- |
+| `gofmt -l .` | No unformatted files |
+| `go vet ./...` | Passed |
+| `go test ./...` with `NEXORA_TEST_DATABASE_URL` set | All packages passed, including the pgvector store test against a real database |
+| `GOOS=linux/darwin/windows … CGO_ENABLED=0 go build ./cmd/nexora` | ELF amd64, Mach-O arm64, and PE32+ amd64 executables built |
+| `openspec validate document-retrieval-and-agent-delivery --strict --no-interactive` | Valid |
+| `openspec validate local-knowledge-registry --strict --no-interactive` | Valid |
+
+Coverage added by this change:
+
+| Behavior | Verification source |
+| --- | --- |
+| Source types, Confluence fields, index and chunk settings | [Source configuration tests](../internal/config/sources_test.go) |
+| Docs discovery, HTML and Confluence storage conversion, chunking | [Passage tests](../internal/passage/passage_test.go) |
+| Confluence pagination, basic and bearer auth, errors | [Confluence tests](../internal/confluence/confluence_test.go) |
+| Ollama and OpenAI-compatible embeddings | [Embedding tests](../internal/embed/embed_test.go) |
+| Local and pgvector stores, project filtering, model checks | [Index tests](../internal/index/index_test.go) |
+| Rank fusion, explanations, determinism, model mismatch | [Retrieval tests](../internal/retrieval/retrieval_test.go) |
+| MCP handshake, tools, errors, fresh data per call | [MCP tests](../internal/mcp/server_test.go) |
+| Managed block, skills, manifest conflicts, stale files | [Sync tests](../internal/nativesync/nativesync_test.go) |
+| Team docs example, Confluence indexing, MCP and sync binaries | [Retrieval integration tests](../tests/retrieval_test.go) |
+
+The keyless workflow (`validate`, `index`, `search`, `resolve --task`, `sync`,
+and an MCP `initialize`) was run with the team docs example inside a network
+namespace with no network access (`unshare -rn`) and passed.
+
+Embedding providers and Confluence were exercised against local HTTP test servers
+that follow their documented request and response formats, not against a live
+Confluence instance, Ollama, or the OpenAI API. Retrieval quality was checked on
+the bundled example only; measure it on your own documentation before relying on
+ranking. The MCP server was tested with JSON-RPC exchanges over stdio; check your
+agent's MCP client configuration with your own setup.
+
 </script>
 
 <!-- ======================= HOME ======================= -->
 <template id="tpl-home">
 <section class="hero">
   <div class="hero-copy">
-    <span class="sticker">✦ local-first · offline · one Go binary</span>
-    <h1>The right context for <span class="hl">every&nbsp;task.</span></h1>
-    <div class="right"><div class="keys" aria-label="project AND agent AND files">
-      <span class="key">project</span><span class="op">AND</span><span class="key k-pink">agent</span><span class="op">AND</span><span class="key k-mint">files</span>
+    <span class="sticker">✦ open source · local-first · written in Go</span>
+    <h1>One knowledge layer.<br><span class="hl">Every AI&nbsp;agent.</span></h1>
+    <div class="right">
+      <p class="lede">Your team's know-how is spread across agent files (<code>CLAUDE.md</code>, <code>AGENTS.md</code>, Cursor rules), skill folders, internal docs and Confluence. Nexora gathers it in one place, indexes your documentation, and hands each agent exactly what applies to the task, with sources. Over MCP or straight into the files agents already read.</p>
+      <div class="cta">
+        <a class="btn primary" href="#why">Why Nexora</a>
+        <a class="btn pink" href="#start">Get started</a>
+        <a class="btn" href="https://github.com/acierto/nexora" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
     </div>
-    <p class="lede">Nexora keeps your rules, skills, references and decisions as plain Markdown, then picks exactly the ones that apply to the task in front of you. Every pick comes with its reasons. No server, no database, no embeddings.</p>
-    <div class="cta">
-      <a class="btn primary" href="#start">Get started</a>
-      <a class="btn pink" href="#playground">Open the playground</a>
-      <a class="btn" href="https://github.com/acierto/nexora" target="_blank" rel="noopener">GitHub ↗</a>
-    </div></div>
+    <div class="status-strip">
+      <div><span class="tag built">Built</span><span>Rules and skills matched by project, agent and file. Docs and Confluence indexed for retrieval, with optional embeddings and pgvector. MCP server and AGENTS.md / CLAUDE.md sync.</span></div>
+      <div><span class="tag planned">Planned</span><span>Plugins and knowledge packs, a remote server with permission-aware access, and more connectors like Notion.</span></div>
+      <a href="#status">What's built vs planned →</a>
+    </div>
   </div>
   <div class="hero-stage" id="hero-stage">
     <div class="gl"></div>
@@ -1030,39 +1779,181 @@ are separate work.
       <div class="segc" role="group" aria-label="Task file"><span>file</span><button type="button" data-hf="src/auth/service.go">auth/service.go</button><button type="button" data-hf="src/catalog/service.go">catalog/…</button><button type="button" data-hf="">none</button></div>
     </div>
     <div class="hud bot-hud">
-      <div class="count"><b id="hero-n">7</b><span>of 9 knowledge files selected<code id="hero-cmd">nexora resolve</code></span></div>
+      <div class="count"><b id="hero-n">7</b><span>of 9 knowledge files apply to this task<code id="hero-cmd">nexora resolve</code></span></div>
       <div class="legend3d"><span><i style="background:#4b58c9"></i>rule</span><span><i style="background:#3a9e86"></i>skill</span><span><i style="background:#7d68c4"></i>reference</span><span><i style="background:#d9804a"></i>decision</span></div>
     </div>
     <div class="htip" id="hero-tip" hidden></div>
     <ul class="hero-list" id="hero-list" aria-live="polite"></ul>
   </div>
+  <p class="stage-cap">The orbit is the real example registry. Switch the agent or the file and watch which knowledge moves into context.</p>
 </section>
 
-<div class="stickers">
-  <div class="stk tilt"><b>1 binary</b><span>Standalone Go CLI. Builds once, runs offline.</span></div>
-  <div class="stk tilt"><b>1 dep</b><span><code>go.yaml.in/yaml/v3</code>, pinned to v3.0.5.</span></div>
-  <div class="stk tilt"><b>4 kinds</b><span>rule · skill · reference · decision</span></div>
-  <div class="stk tilt"><b>4 verbs</b><span>init · validate · list · resolve</span></div>
-</div>
+<section class="sec" id="why">
+  <span class="eyebrow">Why Nexora</span>
+  <h2>Agents can't see what your <em>team</em> knows.</h2>
+  <p class="sub">Instructions get copied into a different file for every agent (<code>CLAUDE.md</code>, <code>AGENTS.md</code>, Cursor rules) and every repo, and the copies drift. The deeper knowledge, like architecture docs, runbooks, decisions and Confluence pages, isn't visible to agents at all. People paste it in by hand, or the agent guesses.</p>
+  <div class="versus">
+    <div class="vs-col before">
+      <div class="vs-h"><span class="pill no">Today</span><b>Copied everywhere</b></div>
+      <div class="pile" aria-hidden="true">
+        <div class="f" style="--x:1%;--y:4%;--r:-6deg;--d:0s"><span>CLAUDE.md</span><small>shop-api</small></div>
+        <div class="f" style="--x:52%;--y:0%;--r:5deg;--d:.6s"><span>AGENTS.md</span><small>shop-api</small></div>
+        <div class="f" style="--x:5%;--y:38%;--r:3deg;--d:1.2s"><span>.cursor/rules/auth.mdc</span><small>shop-api</small></div>
+        <div class="f warn" style="--x:53%;--y:40%;--r:-4deg;--d:.3s"><span>CLAUDE.md</span><small>billing-api · <em>outdated</em></small></div>
+        <div class="f warn" style="--x:1%;--y:72%;--r:4deg;--d:.9s"><span>Confluence › Payments</span><small><em>invisible to agents</em></small></div>
+        <div class="f warn" style="--x:50%;--y:75%;--r:-3deg;--d:1.5s"><span>docs/adr/0042-tokens.md</span><small><em>never loaded</em></small></div>
+      </div>
+      <ul class="ticks">
+        <li class="x">The same rule is copied into every agent file and repo</li>
+        <li class="x">Copies drift apart and nobody notices</li>
+        <li class="x">Internal docs and Confluence are invisible to agents</li>
+        <li class="x">No record of what the agent relied on, or why</li>
+      </ul>
+    </div>
+    <div class="vs-mid" aria-hidden="true"><span class="pillcmd">nexora resolve</span></div>
+    <div class="vs-col after">
+      <div class="vs-h"><span class="pill ok">With Nexora</span><b>Written once, picked per task</b></div>
+      <div class="iso" aria-hidden="true">
+        <div class="stack">
+          <div class="slab" style="--i:0;--kc:var(--tang)"><span>confluence</span></div>
+          <div class="slab" style="--i:1;--kc:var(--grape)"><span>internal docs</span></div>
+          <div class="slab" style="--i:2;--kc:var(--mint)"><span>skills, references</span></div>
+          <div class="slab" style="--i:3;--kc:var(--ink)"><span>rules, decisions</span></div>
+        </div>
+      </div>
+      <ul class="ticks">
+        <li class="v">One registry for rules, skills, references and decisions</li>
+        <li class="v">Rules scoped by project, agent and file path</li>
+        <li class="v">Internal docs and Confluence searchable, with optional embeddings</li>
+        <li class="v">Every pick cites its source, and every passage links back to its page</li>
+      </ul>
+    </div>
+  </div>
+</section>
 
-<div class="install" id="home-install"></div>
+<section class="sec" id="status">
+  <span class="eyebrow">How it fits together</span>
+  <h2>The whole pipeline, <em>built</em>.</h2>
+  <p class="sub">From your sources to your agents. Solid boxes ship today and are covered by the guides. Dashed boxes are what comes next.</p>
+  <div class="legend2"><span class="tag built">Built</span><span class="tag planned">Planned</span></div>
+  <div class="flow">
+    <div class="fcol"><h4>1 · Sources</h4>
+      <div class="node"><b>Markdown knowledge</b><span class="s">Rules, skills, references and decisions with front matter</span></div>
+      <div class="node"><b>Internal docs</b><span class="s">Markdown, text and HTML folders: architecture notes, runbooks, ADRs</span></div>
+      <div class="node"><b>Confluence</b><span class="s">Spaces through the REST API, Cloud or Data Center</span></div>
+      <div class="node planned"><b>More connectors</b><span class="s">Notion, Google Docs and others as plugins</span></div>
+      <div class="node planned"><b>Permission-aware access</b><span class="s">Mirror source permissions in a shared server</span></div>
+    </div>
+    <div class="fcol"><h4>2 · Registry</h4>
+      <div class="node"><b>Load &amp; validate</b><span class="s">Strict schema, source, version and SHA-256 digest per item</span></div>
+      <div class="node"><b>Ingest &amp; chunk</b><span class="s">Split docs into passages that keep a link to the page</span></div>
+      <div class="node"><b>Local or pgvector index</b><span class="s">JSON file by default, PostgreSQL + pgvector when you need it</span></div>
+    </div>
+    <div class="fcol"><h4>3 · Resolve</h4>
+      <div class="node"><b>Deterministic match</b><span class="s">Project AND agent AND files. Required rules are never dropped.</span></div>
+      <div class="node"><b>Hybrid retrieval</b><span class="s">Keyword plus optional embeddings (Ollama, OpenAI), explained</span></div>
+    </div>
+    <div class="fcol"><h4>4 · Deliver</h4>
+      <div class="node"><b>CLI + JSON</b><span class="s"><code>nexora resolve --json</code>, exit codes for scripts</span></div>
+      <div class="node"><b>MCP server</b><span class="s"><code>get_context(project, task, files)</code></span></div>
+      <div class="node"><b>Native sync</b><span class="s">Generate <code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>SKILL.md</code></span></div>
+    </div>
+    <div class="fcol agents"><h4>5 · Agents</h4>
+      <span class="ag">Claude Code</span><span class="ag">Codex</span><span class="ag">Cursor</span><span class="ag">Copilot</span><span class="ag o">any MCP client</span>
+      <p class="agnote">Through the MCP server or synced native files.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="how">
+  <span class="eyebrow">How it works</span>
+  <h2>Write once. Index. <em>Deliver</em>.</h2>
+  <p class="sub">Three steps. The first run needs no server, database or API key; add Confluence, embeddings and pgvector when you want them.</p>
+  <div class="steps">
+    <div class="step tilt" style="--pc:var(--mint)">
+      <span class="badge">1</span>
+      <h3>Point Nexora at your knowledge</h3>
+      <p>Rules and skills with front matter, plus your docs folders and Confluence spaces.</p>
+<pre class="mini"><code><span class="tk-k">sources</span>:
+  - <span class="tk-k">id</span>: rules
+    <span class="tk-k">path</span>: ./knowledge
+  - <span class="tk-k">id</span>: handbook
+    <span class="tk-k">type</span>: docs
+    <span class="tk-k">path</span>: ./handbook
+  - <span class="tk-k">id</span>: wiki
+    <span class="tk-k">type</span>: confluence
+    <span class="tk-k">spaces</span>: [PAY, ARCH]</code></pre>
+    </div>
+    <div class="step tilt" style="--pc:var(--ink)">
+      <span class="badge">2</span>
+      <h3>Index, then ask for a task</h3>
+      <p>Rules are matched by project, agent and file. Passages are retrieved for the task text.</p>
+<pre class="mini"><code><span class="tk-cmd">nexora</span> index
+<span class="tk-cmd">nexora</span> resolve <span class="tk-f">--agent</span> codex \
+  <span class="tk-f">--file</span> src/payments/refund.go \
+  <span class="tk-f">--task</span> <span class="tk-s">"add partial refunds"</span>
+<span class="tk-c"># Required rules (2) … Skills (1)</span>
+<span class="tk-c"># Passages (2): Refund policy › Partial…</span></code></pre>
+    </div>
+    <div class="step tilt" style="--pc:var(--pink)">
+      <span class="badge">3</span>
+      <h3>Deliver it to your agents</h3>
+      <p>Agents call the MCP server while they work, and always-on rules land in their native files.</p>
+<pre class="mini"><code><span class="tk-cmd">claude</span> mcp add nexora <span class="tk-d">--</span> \
+  nexora mcp <span class="tk-f">--config</span> $PWD/nexora.yaml
+
+<span class="tk-cmd">nexora</span> sync <span class="tk-f">--agent</span> codex
+<span class="tk-c"># AGENTS.md block + .agents/skills/</span></code></pre>
+    </div>
+  </div>
+  <div class="install" id="home-install"></div>
+</section>
 
 <section class="sec" id="home-playground">
   <span class="eyebrow">Live resolver</span>
-  <h2>Watch the <em>AND</em> decide.</h2>
-  <p class="sub">The real 9-file registry from <code>examples/local/</code>, matched with the same rules as the CLI. Change the request and every row shows which dimension let it in or kept it out. Click a row for its reasons and source file.</p>
+  <h2>Project, agent and files must <em>all</em> match.</h2>
+  <p class="sub">The real 9-file registry from <code>examples/local/</code>, matched with the same rules as the CLI. Change the request and every row shows which condition let it in or kept it out. Click a row for its reasons and source file.</p>
   <div id="pg-mount"></div>
+</section>
+
+<section class="sec">
+  <span class="eyebrow">Compared with native files</span>
+  <h2>Keep your <code class="h">AGENTS.md</code>. Stop copying it.</h2>
+  <p class="sub">Native instruction files are great at being loaded automatically, so Nexora writes into them. It stays the place the knowledge lives, and each agent gets the right slice of it.</p>
+  <div class="cmp-wrap"><table class="cmp">
+    <thead><tr><th></th><th>Native files<small>CLAUDE.md, AGENTS.md, rules folders</small></th><th class="nx">Nexora</th></tr></thead>
+    <tbody>
+      <tr><td>One source for every agent</td><td><span class="dim no">✗</span> one file per agent, per repo</td><td><span class="dim ok">✓</span> one registry, shared directories allowed</td></tr>
+      <tr><td>Scoped to the task</td><td><span class="dim any">~</span> by folder location</td><td><span class="dim ok">✓</span> by project, agent and file pattern</td></tr>
+      <tr><td>Explains why something applied</td><td><span class="dim no">✗</span></td><td><span class="dim ok">✓</span> a reason for every condition</td></tr>
+      <tr><td>Provenance</td><td><span class="dim any">~</span> Git history</td><td><span class="dim ok">✓</span> source, path, version, SHA-256 digest</td></tr>
+      <tr><td>Finds relevant internal docs and Confluence pages</td><td><span class="dim no">✗</span></td><td><span class="dim ok">✓</span> indexed passages with links back to the page</td></tr>
+      <tr><td>Loaded by the agent automatically</td><td><span class="dim ok">✓</span></td><td><span class="dim ok">✓</span> MCP server and synced <code>AGENTS.md</code> / <code>CLAUDE.md</code></td></tr>
+    </tbody>
+  </table></div>
 </section>
 
 <section class="sec">
   <span class="eyebrow">Four kinds, one schema</span>
   <h2>Everything is a Markdown file.</h2>
-  <p class="sub">Front matter says what a file is and when it applies. The body is retrieved as text and never executed. Directories don't infer kinds, and priority never overrides another item.</p>
+  <p class="sub">Front matter says what a file is and when it applies. The body is retrieved as text and never executed. Directories don't decide the kind, and priority never overrides another item.</p>
   <div class="kinds">
     <div class="kind tilt"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></div><span class="pill">rule</span><b>Must (or should) follow</b><p>Required by default; <code>required: false</code> makes it optional. The only kind that can be mandatory.</p></div>
     <div class="kind k-skill tilt"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4v-4h4v-4h4V8h4"/><circle cx="20" cy="5" r="1.5"/></svg></div><span class="pill">skill</span><b>A repeatable procedure</b><p>Steps an agent can follow. A <code>SKILL.md</code> can use this schema. Retrieved, never run.</p></div>
     <div class="kind k-ref tilt"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></div><span class="pill">reference</span><b>Where things live</b><p>Layout, boundaries and architecture notes that explain the code without instructing.</p></div>
     <div class="kind k-dec tilt"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg></div><span class="pill">decision</span><b>Why it is this way</b><p>Recorded choices that travel with the project, so nobody re-argues them.</p></div>
+  </div>
+</section>
+
+<section class="sec" id="roadmap">
+  <span class="eyebrow">Where it's heading</span>
+  <h2>From a local CLI to a <em>knowledge layer</em> for every agent.</h2>
+  <p class="sub">The first three milestones have shipped. What comes next is the direction from the design notes; order and scope can change.</p>
+  <div class="road">
+    <div class="stop now"><span class="st">Shipped</span><h3>Local registry</h3><ul><li>Markdown + front matter, four kinds</li><li>Deterministic resolve with reasons</li><li>JSON output and exit codes for scripts</li><li>Single Go binary, works offline</li></ul></div>
+    <div class="stop now"><span class="st">Shipped</span><h3>Docs &amp; Confluence</h3><ul><li><code>docs</code> and <code>confluence</code> sources</li><li>Heading-aware passages with source links</li><li>Keyword search, optional Ollama / OpenAI embeddings</li><li>Local JSON or PostgreSQL + pgvector index</li><li>Required rules stay deterministic</li></ul></div>
+    <div class="stop now"><span class="st">Shipped</span><h3>Reach the agents</h3><ul><li>MCP server: <code>get_context</code>, <code>search_knowledge</code>, <code>get_knowledge</code>, <code>list_skills</code></li><li><code>nexora sync</code> for <code>AGENTS.md</code>, <code>CLAUDE.md</code> and <code>SKILL.md</code></li><li><code>--check</code> for CI</li></ul></div>
+    <div class="stop later"><span class="st">Planned</span><h3>Teams &amp; ecosystem</h3><ul><li>Remote MCP server with authorization</li><li>Respect source permissions, like Confluence restrictions</li><li>More connectors: Notion, Google Docs</li><li>Plugins and shareable knowledge packs</li><li>Version pinning, overrides, context budgets</li></ul></div>
   </div>
 </section>
 
@@ -1079,22 +1970,13 @@ are separate work.
 
 <section class="sec">
   <span class="eyebrow">The manual</span>
-  <h2>Seven short reads.</h2>
+  <h2>Nine short reads.</h2>
   <div class="docs-grid" id="home-docs"></div>
-</section>
-
-<section class="sec">
-  <span class="eyebrow">On the roadmap</span>
-  <h2>Not in v0 yet.</h2>
-  <p class="sub"><code>--agent codex</code> is a filter value, not a connection. Nexora selects knowledge and prints it; handing it to your agent is still your move. These are future work:</p>
-  <div class="notyet">
-    <span>MCP / HTTP server</span><span>native instruction sync</span><span>Agent Skills import</span><span>semantic search</span><span>token budgets</span><span>databases</span><span>remote access</span><span>overrides</span>
-  </div>
 </section>
 
 <footer class="foot">
   <span>Nexora · initial development · license selection pending before public release</span>
-  <span><a href="https://acierto.github.io/nexora/">Open Nexora Docs</a> · Docs rendered from <a href="https://github.com/acierto/nexora/tree/main/docs" target="_blank" rel="noopener">acierto/nexora/docs</a></span>
+  <span>Docs rendered from <a href="https://github.com/acierto/nexora/tree/main/docs" target="_blank" rel="noopener">acierto/nexora/docs</a></span>
 </footer>
 </template>
 
@@ -1152,8 +2034,26 @@ are separate work.
 <div class="widget diag-w">
   <div class="wh"><span class="eyebrow">Try it</span><h3>Why did this rule disappear?</h3><span class="meta">Pick an item from the example registry and a request</span></div>
   <div class="wb">
-    <div class="pg controls" style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1.2fr;gap:12px" id="diag-controls"></div>
+    <div class="diag-grid" id="diag-controls"></div>
     <div id="diag-out" style="margin-top:14px"></div>
+  </div>
+</div>
+</template>
+
+<template id="tpl-searchdemo">
+<div class="widget sd-w">
+  <div class="wh"><span class="eyebrow">Try it</span><h3>Search the example handbook</h3><span class="meta">The 13 passages from examples/team-docs, ranked with the same BM25 rules as the CLI</span></div>
+  <div class="wb">
+    <div class="field"><label for="sd-q">nexora search --query</label><input class="mono" type="text" id="sd-q" value="rollback production deploy" spellcheck="false" autocomplete="off"></div>
+    <div class="samples" style="margin:10px 0 14px">
+      <button class="btn sm" type="button" data-q="rollback production deploy">rollback production deploy</button>
+      <button class="btn sm" type="button" data-q="revoked refresh token reused">revoked refresh token reused</button>
+      <button class="btn sm" type="button" data-q="partial refunds provider limit">partial refunds provider limit</button>
+      <button class="btn sm" type="button" data-q="how long can customers get a refund">how long can customers get a refund</button>
+      <button class="btn sm" type="button" data-q="modules events outbox">modules events outbox</button>
+    </div>
+    <div id="sd-terms" class="sd-terms"></div>
+    <ol id="sd-out" class="sd-out"></ol>
   </div>
 </div>
 </template>
@@ -1336,19 +2236,21 @@ const PAGES = {
   start:{num:'01',title:'Getting started',md:'md-start',file:'getting-started.md',eyebrow:'Guide 01',lede:'Build the binary, initialise a project, add one file-specific rule, and watch it appear and disappear from resolution.'},
   format:{num:'02',title:'Knowledge format',md:'md-format',file:'knowledge-format.md',eyebrow:'Guide 02',lede:'Configuration, path grammar, front-matter fields, and a complete example of every kind.',widgets:[{after:'h2:Markdown metadata',tpl:'tpl-linter',pos:'before-next-h3'},{after:'h2:Markdown metadata',tpl:'tpl-glob',pos:'before'}]},
   resolution:{num:'03',title:'How resolution works',md:'md-resolution',file:'resolution.md',eyebrow:'Guide 03',lede:'Applicability, ordering, provenance, and the trust boundary between retrieved text and trusted instructions.'},
-  cli:{num:'04',title:'CLI guide',md:'md-cli',file:'cli.md',eyebrow:'Guide 04',lede:'Flags, recipes, the JSON envelope, exit codes, and shell scripting.'},
-  troubleshooting:{num:'05',title:'Troubleshooting',md:'md-troubleshooting',file:'troubleshooting.md',eyebrow:'Guide 05',lede:'Common validation errors, and a checklist for the question everyone asks: why did my rule disappear?',widgets:[{after:'h2:Why did a rule disappear?',tpl:'tpl-diagnose',pos:'after-table'}]},
-  architecture:{title:'Initial architecture decisions',md:'md-architecture',file:'architecture.md',eyebrow:'Project',lede:'Why the first implementation is a single Go binary with one pinned dependency and no SDK.'},
-  verification:{title:'Local MVP verification',md:'md-verification',file:'verification.md',eyebrow:'Project',lede:'What was checked on 2026-10-25, how offline execution was proven, and where each specification scenario is tested.'},
+  retrieval:{num:'04',title:'Docs and Confluence',md:'md-retrieval',file:'retrieval.md',eyebrow:'Guide 04',lede:'Index internal documentation and Confluence spaces, search them, and get passages next to your rules, with keyword search, optional embeddings, and pgvector.'},
+  agents:{num:'05',title:'Connect agents',md:'md-agents',file:'agents.md',eyebrow:'Guide 05',lede:'Serve knowledge to Claude Code, Codex, and other MCP clients, and sync always-on rules into AGENTS.md, CLAUDE.md, and SKILL.md files.'},
+  cli:{num:'06',title:'CLI guide',md:'md-cli',file:'cli.md',eyebrow:'Guide 06',lede:'Every command and flag, recipes, the JSON envelopes, exit codes, and shell scripting.'},
+  troubleshooting:{num:'07',title:'Troubleshooting',md:'md-troubleshooting',file:'troubleshooting.md',eyebrow:'Guide 07',lede:'Common validation errors, and a checklist for the question everyone asks: why did my rule disappear?',widgets:[{after:'h2:Why did a rule disappear?',tpl:'tpl-diagnose',pos:'after-table'}]},
+  architecture:{title:'Architecture decisions',md:'md-architecture',file:'architecture.md',eyebrow:'Project',lede:'Package boundaries, the two index stores, why MCP is hand-written, and why lib/pq is the only new dependency.'},
+  verification:{title:'Verification record',md:'md-verification',file:'verification.md',eyebrow:'Project',lede:'What was checked, against real PostgreSQL with pgvector and with networking disabled, and where every behavior is tested.'},
 };
-const ORDER = ['home','playground','start','format','resolution','cli','troubleshooting','architecture','verification'];
+const ORDER = ['home','playground','start','format','resolution','retrieval','agents','cli','troubleshooting','architecture','verification'];
 const TITLES = {home:'Nexora',playground:'Resolution playground'}; for (const k in PAGES) TITLES[k]=PAGES[k].title;
 const slug = s => s.toLowerCase().replace(/<[^>]+>/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 function mapHref(href){
   if (/^https?:/.test(href)) return href;
   const m = href.match(/^(\.\.\/)?([^#]+?)(?:#(.*))?$/); if (!m) return href;
   const file = m[2];
-  const local = {'getting-started.md':'start','knowledge-format.md':'format','resolution.md':'resolution','cli.md':'cli','troubleshooting.md':'troubleshooting','architecture.md':'architecture','verification.md':'verification'};
+  const local = {'getting-started.md':'start','knowledge-format.md':'format','resolution.md':'resolution','retrieval.md':'retrieval','agents.md':'agents','cli.md':'cli','troubleshooting.md':'troubleshooting','architecture.md':'architecture','verification.md':'verification'};
   if (!m[1] && local[file]) return '#'+local[file];
   return GH + (m[1] ? file : 'docs/'+file);
 }
@@ -1361,7 +2263,7 @@ const renderer = {
 marked.use({ renderer, gfm:true });
 function renderMd(src){
   // drop the H1 (page header renders it) and keep the rest
-  const body = src.replace(/^\s*# .*\n/, '');
+  const body = src.replace(/^\s*# .*\n/, '').replace(/^\s*\[Read online\]\([^\n]*\n/, '');
   return marked.parse(body);
 }
 
@@ -1406,7 +2308,7 @@ function mountPlayground(root){
   const selP = $('#pg-project', root), selA = $('#pg-agent', root);
   selP.innerHTML = PRESETS.projects.map(p=>`<option value="${p}">${p}${p==='commerce-api'?' (config default)':''}</option>`).join('') + `<option value="unrelated">unrelated</option><option value="__empty">(empty string: --project "")</option>`;
   selA.innerHTML = `<option value="__none">(omitted: no --agent)</option>` + PRESETS.agents.map(a=>`<option value="${a}">${a}</option>`).join('') + `<option value="Codex">Codex (wrong case)</option><option value="cursor">cursor</option>`;
-  selP.value = 'commerce-api'; selA.value = 'codex';
+  selP.value = 'commerce-api'; selA.value = 'codex'; enhanceSelect(selP); enhanceSelect(selA);
   const pick = (sel, kind) => {
     const v = sel.value;
     if (kind==='Project') state.project = v==='__empty' ? '' : v; else state.agent = v==='__none' ? undefined : v;
@@ -1459,6 +2361,89 @@ function mountPlayground(root){
     wireCopy(panel);
   }
   update();
+}
+
+/* ===================== Custom dropdown ===================== */
+const CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+const CHECK = '<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function optParts(o){ const txt=o.textContent.trim(); const m=txt.match(/^(.*?)\s*\((.+)\)$/); if (!m) return {v:txt,s:'',muted:false}; return m[1] ? {v:m[1],s:m[2],muted:false} : {v:m[2].split(':')[0],s:m[2].includes(':')?m[2].split(':').slice(1).join(':').trim():'',muted:true}; }
+const KCOL = {rule:'var(--ink)',skill:'var(--mint)',reference:'var(--grape)',decision:'var(--tang)'};
+function enhanceSelect(sel){
+  if (!sel || sel.dataset.enh) return; sel.dataset.enh='1';
+  const wrap=document.createElement('div'); wrap.className='dd'; sel.before(wrap); wrap.appendChild(sel);
+  sel.classList.add('dd-native'); sel.tabIndex=-1; sel.setAttribute('aria-hidden','true');
+  const btn=document.createElement('button'); btn.type='button'; btn.className='dd-btn'; btn.id=sel.id+'-dd'; btn.setAttribute('aria-haspopup','listbox'); btn.setAttribute('aria-expanded','false');
+  const list=document.createElement('ul'); list.className='dd-list'; list.id=sel.id+'-ddl'; list.setAttribute('role','listbox'); list.tabIndex=-1; list.hidden=true; btn.setAttribute('aria-controls',list.id);
+  wrap.append(btn,list);
+  const lab = wrap.closest('.field')?.querySelector('label'); if (lab){ lab.htmlFor=btn.id; if(!lab.id) lab.id=btn.id+'-lab'; list.setAttribute('aria-labelledby',lab.id); }
+  let act=-1, typed='', typedT;
+  const opts = () => [...sel.options];
+  const dot = o => o.dataset.kind ? `<span class="kd" style="--kc:${KCOL[o.dataset.kind]}"></span>` : '';
+  const render = () => { const o=sel.options[sel.selectedIndex]; if(!o) return; const p=optParts(o);
+    btn.innerHTML = `${dot(o)}<span class="dd-val${p.muted?' muted':''}">${esc(p.v)}</span>${p.s?`<span class="dd-sub">${esc(p.s)}</span>`:''}<span class="chev">${CHEV}</span>`; };
+  const paint = () => { list.innerHTML = opts().map((o,i)=>{ const p=optParts(o); return `<li role="option" id="${list.id}-${i}" data-i="${i}" aria-selected="${i===sel.selectedIndex}" class="${p.muted?'muted':''}${i===act?' act':''}">${CHECK}${dot(o)}<span class="v">${esc(p.v)}</span>${p.s?`<span class="s">${esc(p.s)}</span>`:''}</li>`; }).join('');
+    if (act>=0){ btn.setAttribute('aria-activedescendant',`${list.id}-${act}`); list.children[act]?.scrollIntoView({block:'nearest'}); } };
+  const place = () => { const r=btn.getBoundingClientRect(); const below=innerHeight-r.bottom-12, above=r.top-12; const h=Math.min(320, list.scrollHeight||320);
+    list.style.minWidth=r.width+'px'; list.style.maxWidth=Math.max(r.width, Math.min(420, innerWidth-24))+'px';
+    let left=Math.min(r.left, innerWidth-12-Math.max(r.width,list.offsetWidth)); list.style.left=Math.max(12,left)+'px';
+    if (below<h && above>below){ list.style.top=''; list.style.bottom=(innerHeight-r.top+8)+'px'; list.style.maxHeight=Math.min(320,above)+'px'; }
+    else { list.style.bottom=''; list.style.top=(r.bottom+8)+'px'; list.style.maxHeight=Math.min(320,Math.max(160,below))+'px'; } };
+  const onDoc = e => { if (!wrap.contains(e.target)) close(); };
+  const onScroll = e => { if (!list.contains(e.target)) close(); };
+  const open = () => { if (!list.hidden) return; act=sel.selectedIndex; list.hidden=false; btn.setAttribute('aria-expanded','true'); paint(); place();
+    document.addEventListener('pointerdown', onDoc, true); window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', close); };
+  function close(){ if (list.hidden) return; list.hidden=true; btn.setAttribute('aria-expanded','false'); btn.removeAttribute('aria-activedescendant');
+    document.removeEventListener('pointerdown', onDoc, true); window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', close); }
+  const choose = i => { const changed = i!==sel.selectedIndex; sel.selectedIndex=i; render(); close(); btn.focus(); if (changed) sel.dispatchEvent(new Event('change',{bubbles:true})); };
+  btn.addEventListener('click', ()=> list.hidden ? open() : close());
+  list.addEventListener('pointermove', e=>{ const li=e.target.closest('li[data-i]'); if (li && +li.dataset.i!==act){ act=+li.dataset.i; $$('li',list).forEach(x=>x.classList.toggle('act', +x.dataset.i===act)); } });
+  list.addEventListener('click', e=>{ const li=e.target.closest('li[data-i]'); if (li) choose(+li.dataset.i); });
+  btn.addEventListener('keydown', e=>{
+    const n=sel.options.length, isOpen=!list.hidden;
+    if (['ArrowDown','ArrowUp','Home','End'].includes(e.key)){ e.preventDefault(); if(!isOpen){ open(); return; }
+      act = e.key==='Home'?0 : e.key==='End'?n-1 : e.key==='ArrowDown'?Math.min(n-1,act+1) : Math.max(0,act-1); paint(); return; }
+    if (e.key==='Enter'||e.key===' '){ e.preventDefault(); if(isOpen && act>=0) choose(act); else open(); return; }
+    if (e.key==='Escape' && isOpen){ e.preventDefault(); close(); return; }
+    if (e.key==='Tab'){ close(); return; }
+    if (e.key.length===1 && /\S/.test(e.key)){ typed+=e.key.toLowerCase(); clearTimeout(typedT); typedT=setTimeout(()=>typed='',600);
+      const i=opts().findIndex(o=>optParts(o).v.toLowerCase().startsWith(typed)); if (i>=0){ if(isOpen){ act=i; paint(); } else choose(i); } }
+  });
+  sel.addEventListener('change', render);
+  render();
+}
+
+/* ===================== Retrieval demo (mirrors internal/index) ===================== */
+const DEMO_PASSAGES = [{"id": "handbook:architecture/overview.md#1", "title": "Architecture overview", "heading": "Architecture overview", "text": "commerce-api is a modular monolith written in Go.", "location": "architecture/overview.md"}, {"id": "handbook:architecture/overview.md#2", "title": "Architecture overview", "heading": "Architecture overview › Modules", "text": "- `catalog` owns products and prices.\n- `orders` owns carts, checkout, and order state.\n- `payments` talks to the payment provider and owns captures and refunds.\n\nModules call each other through Go interfaces in `internal/<module>/api`; they never\nread another module's tables.", "location": "architecture/overview.md"}, {"id": "handbook:architecture/overview.md#3", "title": "Architecture overview", "heading": "Architecture overview › Events", "text": "State changes publish events to the outbox table. A relay delivers them to the\nmessage bus at least once, so consumers must be idempotent.", "location": "architecture/overview.md"}, {"id": "handbook:auth/token-rotation.md#1", "title": "Token rotation", "heading": "Token rotation", "text": "Access tokens expire after 15 minutes and refresh tokens after 30 days.", "location": "auth/token-rotation.md"}, {"id": "handbook:auth/token-rotation.md#2", "title": "Token rotation", "heading": "Token rotation › Rotating refresh tokens", "text": "Every refresh issues a new refresh token and revokes the previous one. If a revoked\nrefresh token is used again, revoke the whole token family and force a new login:\nthis usually means the token leaked.", "location": "auth/token-rotation.md"}, {"id": "handbook:auth/token-rotation.md#3", "title": "Token rotation", "heading": "Token rotation › Service credentials", "text": "Service-to-service credentials rotate every 90 days through the secrets manager.\nNever commit credentials or print them in logs or error messages.", "location": "auth/token-rotation.md"}, {"id": "handbook:payments/refunds.md#1", "title": "Refund policy", "heading": "Refund policy", "text": "Refunds return money to the original payment method. Customer service and the\n`refunds` API both use the rules below.", "location": "payments/refunds.md"}, {"id": "handbook:payments/refunds.md#2", "title": "Refund policy", "heading": "Refund policy › Refund window", "text": "Orders can be refunded in full within 30 days of delivery. Between 30 and 90 days\nonly store credit is offered, unless the item was faulty. After 90 days refunds\nneed approval from the payments lead.", "location": "payments/refunds.md"}, {"id": "handbook:payments/refunds.md#3", "title": "Refund policy", "heading": "Refund policy › Partial refunds", "text": "A partial refund never exceeds the captured amount minus earlier refunds. Shipping\ncosts are refunded only when the whole order is returned.", "location": "payments/refunds.md"}, {"id": "handbook:payments/refunds.md#4", "title": "Refund policy", "heading": "Refund policy › Provider limits", "text": "The payment provider rejects more than 10 partial refunds per capture. Batch small\nadjustments into one refund when you can.", "location": "payments/refunds.md"}, {"id": "handbook:runbooks/deploy.html#1", "title": "Deploying commerce-api", "heading": "Deploying commerce-api", "text": "Deploys go out from the main branch through the release pipeline.", "location": "runbooks/deploy.html"}, {"id": "handbook:runbooks/deploy.html#2", "title": "Deploying commerce-api", "heading": "Deploying commerce-api › Before you deploy", "text": "- Check that database migrations are backwards compatible.\n- Announce the deploy in the team channel.", "location": "runbooks/deploy.html"}, {"id": "handbook:runbooks/deploy.html#3", "title": "Deploying commerce-api", "heading": "Deploying commerce-api › Rolling back", "text": "Use the pipeline’s rollback action. It redeploys the previous image within five minutes. Migrations are never rolled back automatically.\n\nEnvironment | Approval\nstaging | none\nproduction | one reviewer", "location": "runbooks/deploy.html"}];
+const STOP = new Set(["a", "an", "and", "are", "as", "at", "be", "but", "by", "can", "do", "does", "for", "from", "has", "have", "how", "i", "if", "in", "into", "is", "it", "its", "me", "my", "no", "not", "of", "on", "or", "our", "so", "than", "that", "the", "their", "them", "then", "there", "these", "they", "this", "to", "us", "was", "we", "were", "what", "when", "where", "which", "who", "why", "will", "with", "you", "your", "should", "would", "could", "about", "after", "before", "also", "any", "all", "been", "being", "more", "most", "other", "some", "such", "only", "own", "same", "too", "very", "just"]);
+function stemWord(w){
+  let n=w.length;
+  if (n>4 && w.endsWith('ies')) w=w.slice(0,-3)+'y';
+  else if (n>3 && w.endsWith('s') && !w.endsWith('ss') && !w.endsWith('us') && !w.endsWith('is')) w=w.slice(0,-1);
+  n=w.length;
+  if (n>5 && w.endsWith('ing')) w=w.slice(0,-3);
+  else if (n>4 && w.endsWith('ed')) w=w.slice(0,-2);
+  if (w.length>3 && w.endsWith('e')) w=w.slice(0,-1);
+  return w;
+}
+function demoTokens(text){ return text.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(w=>[...w].length>=2 && !STOP.has(w)).map(stemWord); }
+function bm25(query){
+  const terms=[...new Set(demoTokens(query))];
+  const docs=DEMO_PASSAGES.map(p=>{ const toks=demoTokens(p.title+'\n'+p.heading+'\n'+p.text); const tf={}; toks.forEach(x=>tf[x]=(tf[x]||0)+1); return {p,tf,len:toks.length}; });
+  const df={}; docs.forEach(d=>Object.keys(d.tf).forEach(x=>df[x]=(df[x]||0)+1));
+  const avg=docs.reduce((a,d)=>a+d.len,0)/docs.length, N=docs.length, k1=1.2, b=0.75;
+  const scored=docs.map(d=>{ let s=0; const m=[]; terms.forEach(x=>{ const f=d.tf[x]||0; if(!f) return; m.push(x); const idf=Math.log(1+(N-df[x]+0.5)/(df[x]+0.5)); s+=idf*f*(k1+1)/(f+k1*(1-b+b*d.len/avg)); }); return {p:d.p,s,m}; }).filter(x=>x.s>0);
+  scored.sort((a,c)=> c.s-a.s || (a.p.id<c.p.id?-1:1));
+  return {terms, hits:scored.slice(0,5)};
+}
+function mountSearchDemo(root){
+  const q=$('#sd-q',root), out=$('#sd-out',root), terms=$('#sd-terms',root);
+  const run=()=>{ const {terms:tt,hits}=bm25(q.value);
+    terms.innerHTML = tt.length ? 'Query terms after normalization: '+tt.map(x=>`<code>${esc(x)}</code>`).join(' ') : 'No searchable terms (stop words are ignored).';
+    out.innerHTML = hits.length ? hits.map((h,i)=>`<li><div class="sd-h"><span class="sd-rank">${i+1}</span><b>${esc(h.p.heading||h.p.title)}</b><span class="sd-loc">${esc(h.p.location)}</span></div><div class="sd-why"><span class="dim ok">keyword</span> score ${h.s.toFixed(4)} · matched ${h.m.map(x=>`<code>${esc(x)}</code>`).join(' ')} · <span class="sd-id">${esc(h.p.id)}</span></div><p>${esc(h.p.text.length>260?h.p.text.slice(0,260)+' …':h.p.text)}</p></li>`).join('') : '<li class="sd-none">No passage shares a word with this query. Embeddings would match by meaning.</li>';
+  };
+  q.addEventListener('input', run);
+  $$('[data-q]',root).forEach(b=>b.addEventListener('click',()=>{ q.value=b.dataset.q; run(); }));
+  run();
 }
 
 /* ===================== Front matter linter ===================== */
@@ -1621,11 +2606,11 @@ function mountGlob(root){
 /* ===================== Disappear diagnoser ===================== */
 function mountDiagnose(root){
   const c = $('#diag-controls', root), out = $('#diag-out', root);
-  c.innerHTML = `<div class="field"><label for="dg-item">Item</label><select id="dg-item">${REGISTRY.map(i=>`<option value="${i.id}">${i.id}</option>`).join('')}</select></div>
+  c.innerHTML = `<div class="field"><label for="dg-item">Item</label><select id="dg-item">${REGISTRY.map(i=>`<option value="${i.id}" data-kind="${i.kind}">${i.id}</option>`).join('')}</select></div>
     <div class="field"><label for="dg-project">--project</label><select id="dg-project"><option value="commerce-api">commerce-api (config default)</option><option value="billing-api">billing-api</option><option value="unrelated">unrelated</option></select></div>
     <div class="field"><label for="dg-agent">--agent</label><select id="dg-agent"><option value="">(omitted)</option><option value="codex">codex</option><option value="claude">claude</option><option value="Codex">Codex (wrong case)</option></select></div>
     <div class="field"><label for="dg-file">--file</label><select id="dg-file"><option value="">(none)</option><option value="src/auth/service.go">src/auth/service.go</option><option value="src/catalog/service.go">src/catalog/service.go</option><option value="src/auth/service.py">src/auth/service.py</option></select></div>`;
-  $('#dg-item', c).value = 'security/authentication';
+  $('#dg-item', c).value = 'security/authentication'; $$('select', c).forEach(enhanceSelect);
   const run = () => {
     const id = $('#dg-item', c).value, project = $('#dg-project', c).value, agent = $('#dg-agent', c).value || undefined, file = $('#dg-file', c).value;
     const res = resolve({project, agent, files: file ? [file] : []});
@@ -1777,7 +2762,7 @@ function initTilt(root){
     el.addEventListener('pointerleave', ()=>{ el.style.transform = b; });
   });
 }
-const PCOL = {start:'--mint',format:'--grape',resolution:'--ink',cli:'--pink',troubleshooting:'--tang',architecture:'--sun',verification:'--mint'};
+const PCOL = {start:'--mint',format:'--grape',resolution:'--ink',retrieval:'--tang',agents:'--pink',cli:'--grape',troubleshooting:'--sun',architecture:'--mint',verification:'--ink'};
 
 /* ===================== Router ===================== */
 const main = $('#main'), toc = $('#toc'), shell = $('#shell');
@@ -1798,9 +2783,9 @@ function show(page, anchor){
 }
 function renderHome(){
   main.appendChild($('#tpl-home').content.cloneNode(true));
-  $('#home-install', main).innerHTML = codeBlock(`# From a Nexora checkout (Go 1.23+)\ngo build -o bin/nexora ./cmd/nexora\n./bin/nexora validate --config examples/local/nexora.yaml\n./bin/nexora resolve --config examples/local/nexora.yaml --agent codex --file src/auth/service.go\n\n# In your own project\nnexora init --project my-api        # creates nexora.yaml + knowledge/rules/project.md\nnexora resolve --file src/auth/service.go --json`, 'sh');
+  $('#home-install', main).innerHTML = codeBlock(`# From a Nexora checkout (Go 1.23+)\ngo build -o bin/nexora ./cmd/nexora\n./bin/nexora resolve --config examples/local/nexora.yaml --agent codex --file src/auth/service.go\n\n# Index the example handbook and ask for a task\n./bin/nexora index --config examples/team-docs/nexora.yaml\n./bin/nexora resolve --config examples/team-docs/nexora.yaml --agent codex \\\n  --file src/payments/refund.go --task "add partial refunds"\n\n# In your own project\nnexora init --project my-api        # creates nexora.yaml + knowledge/rules/project.md\nnexora sync --agent claude          # CLAUDE.md block + .claude/skills/`, 'sh');
   mountPlayground($('#pg-mount', main));
-  $('#home-docs', main).innerHTML = ['start','format','resolution','cli','troubleshooting','architecture','verification'].map(k=>{ const p=PAGES[k]; return `<a class="card tilt" style="--pc:var(${PCOL[k]})" href="#${k}"><span class="badge">${p.num||'✦'}</span><h3>${esc(p.title)}</h3><p>${esc(p.lede)}</p><span class="foot">docs/${esc(p.file)}</span></a>`; }).join('');
+  $('#home-docs', main).innerHTML = ['start','format','resolution','retrieval','agents','cli','troubleshooting','architecture','verification'].map(k=>{ const p=PAGES[k]; return `<a class="card tilt" style="--pc:var(${PCOL[k]})" href="#${k}"><span class="badge">${p.num||'✦'}</span><h3>${esc(p.title)}</h3><p>${esc(p.lede)}</p><span class="foot">docs/${esc(p.file)}</span></a>`; }).join('');
   initHero3D();
 }
 function renderDoc(page){
@@ -1820,6 +2805,10 @@ function renderDoc(page){
     const table = h && (() => { let n=h.nextElementSibling; while(n && !n.classList.contains('tbl')) n=n.nextElementSibling; return n; })();
     if (table){ const w = $('#tpl-diagnose').content.cloneNode(true); table.after(w); mountDiagnose($('.diag-w', md)); }
   }
+  if (page==='retrieval'){
+    const h = $$('h2', md).find(x=>/How passages are ranked/.test(x.textContent));
+    if (h){ const w = $('#tpl-searchdemo').content.cloneNode(true); h.before(w); mountSearchDemo($('.sd-w', md)); }
+  }
   if (page==='resolution'){
     const c = document.createElement('div'); c.className='callout'; c.innerHTML = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg><p>Want to see this with real items? The <a href="#playground">resolution playground</a> runs these rules over the example registry and shows every dimension per item.</p>`;
     md.prepend(c);
@@ -1838,7 +2827,7 @@ function renderDoc(page){
 }
 window.addEventListener('hashchange', ()=>{ const h=(location.hash||'#home').slice(1); const page = ORDER.includes(h) ? h : (findHeadingPage(h)||'home'); show(page, ORDER.includes(h)?null:h); });
 // anchor clicks inside the same doc page shouldn't re-render
-document.addEventListener('click', e=>{ const a = e.target.closest('a[href^="#"]'); if (!a) return; const id = a.getAttribute('href').slice(1); const cur = pageFromHash(); if (!ORDER.includes(id) && findHeadingPage(id)===cur){ e.preventDefault(); history.replaceState(null,'','#'+id); document.getElementById(id)?.scrollIntoView({block:'start'}); } });
+document.addEventListener('click', e=>{ const a = e.target.closest('a[href^="#"]'); if (!a) return; const id = a.getAttribute('href').slice(1); const cur = pageFromHash(); if (!ORDER.includes(id) && (findHeadingPage(id)===cur || (cur==='home' && !findHeadingPage(id) && document.getElementById(id)))){ e.preventDefault(); history.replaceState(null,'','#'+id); document.getElementById(id)?.scrollIntoView({block:'start'}); closeMenu(); } });
 
 /* ===================== Copy + toast ===================== */
 let toastT; function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,1600); }

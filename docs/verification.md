@@ -61,3 +61,44 @@ The first release remains local and single-user. Native agent integration,
 full Agent Skills imports, databases, semantic retrieval, and remote authorization
 remain deferred as specified in the proposal. License selection and publication
 are separate work.
+
+## Documentation retrieval and agent delivery
+
+Verified on 2026-10-25 for the `document-retrieval-and-agent-delivery` change,
+with Go 1.24.7 on linux/amd64 building the module at its `go 1.23.0` floor,
+PostgreSQL 16.15, and pgvector 0.6.0.
+
+| Check | Result |
+| --- | --- |
+| `gofmt -l .` | No unformatted files |
+| `go vet ./...` | Passed |
+| `go test ./...` with `NEXORA_TEST_DATABASE_URL` set | All packages passed, including the pgvector store test against a real database |
+| `GOOS=linux/darwin/windows … CGO_ENABLED=0 go build ./cmd/nexora` | ELF amd64, Mach-O arm64, and PE32+ amd64 executables built |
+| `openspec validate document-retrieval-and-agent-delivery --strict --no-interactive` | Valid |
+| `openspec validate local-knowledge-registry --strict --no-interactive` | Valid |
+
+Coverage added by this change:
+
+| Behavior | Verification source |
+| --- | --- |
+| Source types, Confluence fields, index and chunk settings | [Source configuration tests](../internal/config/sources_test.go) |
+| Docs discovery, HTML and Confluence storage conversion, chunking | [Passage tests](../internal/passage/passage_test.go) |
+| Confluence pagination, basic and bearer auth, errors | [Confluence tests](../internal/confluence/confluence_test.go) |
+| Ollama and OpenAI-compatible embeddings | [Embedding tests](../internal/embed/embed_test.go) |
+| Local and pgvector stores, project filtering, model checks | [Index tests](../internal/index/index_test.go) |
+| Rank fusion, explanations, determinism, model mismatch | [Retrieval tests](../internal/retrieval/retrieval_test.go) |
+| MCP handshake, tools, errors, fresh data per call | [MCP tests](../internal/mcp/server_test.go) |
+| Managed block, skills, manifest conflicts, stale files | [Sync tests](../internal/nativesync/nativesync_test.go) |
+| Team docs example, Confluence indexing, MCP and sync binaries | [Retrieval integration tests](../tests/retrieval_test.go) |
+
+The keyless workflow (`validate`, `index`, `search`, `resolve --task`, `sync`,
+and an MCP `initialize`) was run with the team docs example inside a network
+namespace with no network access (`unshare -rn`) and passed.
+
+Embedding providers and Confluence were exercised against local HTTP test servers
+that follow their documented request and response formats, not against a live
+Confluence instance, Ollama, or the OpenAI API. Retrieval quality was checked on
+the bundled example only; measure it on your own documentation before relying on
+ranking. The MCP server was tested with JSON-RPC exchanges over stdio; check your
+agent's MCP client configuration with your own setup.
+

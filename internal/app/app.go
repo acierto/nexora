@@ -1,0 +1,353 @@
+// Package app coordinates configuration, knowledge, the documentation index,
+// and retrieval for the CLI and the MCP server. Every call reloads from disk,
+// so results never come from a stale snapshot.
+package app
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"slices"
+	"sort"
+	"strings"
+
+	"github.com/acierto/nexora/internal/config"
+	"github.com/acierto/nexora/internal/confluence"
+	"github.com/acierto/nexora/internal/embed"
+	"github.com/acierto/nexora/internal/index"
+	"github.com/acierto/nexora/internal/knowledge"
+	"github.com/acierto/nexora/internal/markdown"
+	"github.com/acierto/nexora/internal/passage"
+	"github.com/acierto/nexora/internal/registry"
+	"github.com/acierto/nexora/internal/resolver"
+	"github.com/acierto/nexora/internal/retrieval"
+)
+
+type App struct {
+	ConfigPath string
+	Getenv     func(string) string
+	HTTP       *http.Client
+	// OpenStore overrides store construction in tests.
+	OpenStore func(config.Config) (index.Store, error)
+}
+
+// Loaded is a validated configuration plus its knowledge snapshot.
+type Loaded struct {
+	Config config.Config
+	Items  []knowledge.Item
+	byID   *registry.Registry
+}
+
+func (a App) Load(ctx context.Context) (Loaded, error) {
+	cfg, err := config.Load(a.ConfigPath)
+	if err != nil {
+		return Loaded{}, err
+	}
+	items := []knowledge.Item{}
+	for _, source := range cfg.KnowledgeSources() {
+		loaded, err := markdown.Load(ctx, source)
+		if err != nil {
+			return Loaded{}, err
+		}
+		items = append(items, loaded...)
+	}
+	snapshot, err := registry.New(items)
+	if err != nil {
+		return Loaded{}, err
+	}
+	return Loaded{Config: cfg, Items: snapshot.List(), byID: snapshot}, nil
+}
+
+// Project returns the explicit project or the configured default.
+func Project(cfg config.Config, project string, explicit bool) string {
+	if explicit {
+		return project
+	}
+	return cfg.Project
+}
+
+type ContextRequest struct {
+	Project         string
+	ProjectExplicit bool
+	Agent           string
+	Files           []string
+	Task            string
+	Limit           int
+}
+
+// ContextResult is the deterministic resolution plus retrieved passages.
+type ContextResult struct {
+	resolver.Result
+	Passages []retrieval.Hit `json:"passages"`
+}
+
+func (a App) Context(ctx context.Context, req ContextRequest) (ContextResult, error) {
+	loaded, err := a.Load(ctx)
+	if err != nil {
+		return ContextResult{}, err
+	}
+	project := Project(loaded.Config, req.Project, req.ProjectExplicit)
+	result, err := resolver.Resolve(loaded.Items, resolver.Request{Project: project, Agent: req.Agent, Files: req.Files})
+	if err != nil {
+		return ContextResult{}, err
+	}
+	out := ContextResult{Result: result, Passages: []retrieval.Hit{}}
+	if strings.TrimSpace(req.Task) == "" || len(loaded.Config.DocumentSources()) == 0 {
+		return out, nil
+	}
+	out.Passages, err = a.search(ctx, loaded.Config, req.Task, project, req.Limit)
+	return out, err
+}
+
+type SearchRequest struct {
+	Query           string
+	Project         string
+	ProjectExplicit bool
+	Limit           int
+}
+
+func (a App) Search(ctx context.Context, req SearchRequest) ([]retrieval.Hit, error) {
+	cfg, err := config.Load(a.ConfigPath)
+	if err != nil {
+		return nil, err
+	}
+	if len(cfg.DocumentSources()) == 0 {
+		return nil, fmt.Errorf("no docs or confluence sources are configured; add one to %s and run nexora index", a.ConfigPath)
+	}
+	return a.search(ctx, cfg, req.Query, Project(cfg, req.Project, req.ProjectExplicit), req.Limit)
+}
+
+func (a App) search(ctx context.Context, cfg config.Config, text, project string, limit int) ([]retrieval.Hit, error) {
+	store, err := a.store(cfg)
+	if err != nil {
+		return nil, err
+	}
+	defer store.Close()
+	embedder, err := embed.New(cfg.Index.Embeddings, a.getenv, a.HTTP)
+	if err != nil {
+		return nil, err
+	}
+	hits, err := retrieval.Search(ctx, store, embedder, retrieval.Request{Text: text, Project: project, Limit: limit})
+	if errors.Is(err, index.ErrNoIndex) {
+		return nil, fmt.Errorf("%w (configured documentation sources have not been indexed)", index.ErrNoIndex)
+	}
+	return hits, err
+}
+
+func (a App) store(cfg config.Config) (index.Store, error) {
+	if a.OpenStore != nil {
+		return a.OpenStore(cfg)
+	}
+	return index.Open(cfg, a.getenv)
+}
+
+func (a App) getenv(name string) string {
+	if a.Getenv == nil {
+		return ""
+	}
+	return a.Getenv(name)
+}
+
+// SourceReport summarizes indexing of one source.
+type SourceReport struct {
+	ID        string `json:"id"`
+	Type      string `json:"type"`
+	Documents int    `json:"documents"`
+	Passages  int    `json:"passages"`
+	Embedded  int    `json:"embedded"`
+}
+
+type IndexReport struct {
+	Store   string         `json:"store"`
+	Model   string         `json:"model"`
+	Sources []SourceReport `json:"sources"`
+}
+
+// Index rebuilds passages for every documentation source, or only one. A
+// failure leaves the stored index unchanged.
+func (a App) Index(ctx context.Context, only string) (IndexReport, error) {
+	cfg, err := config.Load(a.ConfigPath)
+	if err != nil {
+		return IndexReport{}, err
+	}
+	sources := cfg.DocumentSources()
+	if only != "" {
+		idx := slices.IndexFunc(cfg.Sources, func(s config.Source) bool { return s.ID == only })
+		if idx < 0 {
+			return IndexReport{}, fmt.Errorf("unknown source %q", only)
+		}
+		if cfg.Sources[idx].Type == config.SourceKnowledge {
+			return IndexReport{}, fmt.Errorf("source %s holds knowledge items, which are resolved deterministically and not indexed", only)
+		}
+		sources = []config.Source{cfg.Sources[idx]}
+	}
+	if len(sources) == 0 {
+		return IndexReport{}, fmt.Errorf("nothing to index: no docs or confluence sources are configured")
+	}
+	embedder, err := embed.New(cfg.Index.Embeddings, a.getenv, a.HTTP)
+	if err != nil {
+		return IndexReport{}, err
+	}
+	report := IndexReport{Store: cfg.Index.Store, Sources: []SourceReport{}}
+	batch := map[string][]passage.Passage{}
+	meta := index.Meta{}
+	if embedder != nil {
+		meta.Model = embedder.Model()
+		report.Model = meta.Model
+	}
+	opt := passage.Options{MaxChars: cfg.Index.Chunk.MaxChars, OverlapChars: cfg.Index.Chunk.OverlapChars}
+	for _, source := range sources {
+		docs, err := a.documents(ctx, source)
+		if err != nil {
+			return IndexReport{}, err
+		}
+		list := []passage.Passage{}
+		seen := map[string]bool{}
+		for _, doc := range docs {
+			for _, p := range passage.Chunk(doc, source.ID, source.Type, source.Projects, opt) {
+				if seen[p.ID] {
+					return IndexReport{}, fmt.Errorf("source %s: duplicate passage id %s", source.ID, p.ID)
+				}
+				seen[p.ID] = true
+				list = append(list, p)
+			}
+		}
+		sr := SourceReport{ID: source.ID, Type: source.Type, Documents: len(docs), Passages: len(list)}
+		if embedder != nil && len(list) > 0 {
+			texts := make([]string, len(list))
+			for i, p := range list {
+				texts[i] = p.SearchText()
+			}
+			vectors, err := embedder.Embed(ctx, texts)
+			if err != nil {
+				return IndexReport{}, fmt.Errorf("source %s: %w", source.ID, err)
+			}
+			for i := range list {
+				list[i].Embedding = vectors[i]
+			}
+			meta.Dimensions = len(vectors[0])
+			sr.Embedded = len(list)
+		}
+		batch[source.ID] = list
+		report.Sources = append(report.Sources, sr)
+	}
+	store, err := a.store(cfg)
+	if err != nil {
+		return IndexReport{}, err
+	}
+	defer store.Close()
+	if err := store.Replace(ctx, batch, meta, only == ""); err != nil {
+		return IndexReport{}, err
+	}
+	return report, nil
+}
+
+func (a App) documents(ctx context.Context, source config.Source) ([]passage.Document, error) {
+	if source.Type == config.SourceDocs {
+		return passage.LoadDocuments(ctx, source)
+	}
+	token := a.getenv(source.TokenEnv)
+	if strings.TrimSpace(token) == "" {
+		return nil, fmt.Errorf("source %s: environment variable %s is not set", source.ID, source.TokenEnv)
+	}
+	client := confluence.Client{BaseURL: source.URL, Token: token, HTTP: a.HTTP}
+	if source.UserEnv != "" {
+		client.User = a.getenv(source.UserEnv)
+		if strings.TrimSpace(client.User) == "" {
+			return nil, fmt.Errorf("source %s: environment variable %s is not set", source.ID, source.UserEnv)
+		}
+	}
+	docs := []passage.Document{}
+	for _, space := range source.Spaces {
+		pages, err := client.Pages(ctx, space)
+		if err != nil {
+			return nil, fmt.Errorf("source %s: %w", source.ID, err)
+		}
+		for _, page := range pages {
+			docs = append(docs, page.Document())
+		}
+	}
+	sort.Slice(docs, func(i, j int) bool { return docs[i].ID < docs[j].ID })
+	return docs, nil
+}
+
+// Status reports passage counts per indexed source.
+func (a App) Status(ctx context.Context) (map[string]int, index.Meta, error) {
+	cfg, err := config.Load(a.ConfigPath)
+	if err != nil {
+		return nil, index.Meta{}, err
+	}
+	store, err := a.store(cfg)
+	if err != nil {
+		return nil, index.Meta{}, err
+	}
+	defer store.Close()
+	meta, err := store.Meta(ctx)
+	if err != nil {
+		return nil, index.Meta{}, err
+	}
+	stats, err := store.Stats(ctx)
+	return stats, meta, err
+}
+
+// Found is either a knowledge item or a passage.
+type Found struct {
+	Kind    string           `json:"kind"`
+	Item    *knowledge.Item  `json:"item,omitempty"`
+	Passage *passage.Passage `json:"passage,omitempty"`
+}
+
+func (a App) Get(ctx context.Context, id string) (Found, error) {
+	loaded, err := a.Load(ctx)
+	if err != nil {
+		return Found{}, err
+	}
+	if item, ok := loaded.byID.Get(id); ok {
+		return Found{Kind: "knowledge", Item: &item}, nil
+	}
+	if len(loaded.Config.DocumentSources()) > 0 {
+		store, err := a.store(loaded.Config)
+		if err != nil {
+			return Found{}, err
+		}
+		defer store.Close()
+		p, ok, err := store.Get(ctx, id)
+		if err != nil && !errors.Is(err, index.ErrNoIndex) {
+			return Found{}, err
+		}
+		if ok {
+			return Found{Kind: "passage", Passage: &p}, nil
+		}
+	}
+	return Found{}, fmt.Errorf("no knowledge item or passage with id %q", id)
+}
+
+// Skills lists active skills applicable to the project and agent. Path
+// restrictions are kept on the items for the caller to show.
+func (a App) Skills(ctx context.Context, project string, explicit bool, agent string) ([]knowledge.Item, error) {
+	loaded, err := a.Load(ctx)
+	if err != nil {
+		return nil, err
+	}
+	project = Project(loaded.Config, project, explicit)
+	out := []knowledge.Item{}
+	for _, item := range loaded.Items {
+		if item.Kind == knowledge.Skill && Applies(item, project, agent) {
+			out = append(out, item)
+		}
+	}
+	return out, nil
+}
+
+// Applies checks status, project, and agent with the resolver's semantics,
+// ignoring path restrictions.
+func Applies(item knowledge.Item, project, agent string) bool {
+	if item.Status != knowledge.Active {
+		return false
+	}
+	match := func(allowed []string, value string) bool {
+		return len(allowed) == 0 || value != "" && slices.Contains(allowed, value)
+	}
+	return match(item.AppliesTo.Projects, project) && match(item.AppliesTo.Agents, agent)
+}

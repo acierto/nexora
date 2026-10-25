@@ -229,7 +229,7 @@ func shell(t *testing.T, dir, script string) string {
 }
 
 func TestDocumentedRecipes(t *testing.T) {
-	for _, file := range []string{"docs/cli.md", "docs/troubleshooting.md", "examples/local/README.md", "examples/shared-knowledge/README.md"} {
+	for _, file := range []string{"docs/cli.md", "docs/troubleshooting.md", "examples/local/README.md", "examples/shared-knowledge/README.md", "examples/team-docs/README.md"} {
 		t.Run(file, func(t *testing.T) {
 			data, err := os.ReadFile(filepath.Join(repository, filepath.FromSlash(file)))
 			if err != nil {

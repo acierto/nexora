@@ -18,6 +18,15 @@ these failures; unknown commands/flags return 2.
 | Run init a second time | Init refuses existing targets | Edit existing configuration and rules; do not delete user knowledge just to reinitialize |
 | Set `version: 1.0` | YAML numeric value where a string is required | Quote it: `version: "1.0"` |
 | Use `required: true` on a skill | Only rules can be mandatory | Remove `required`; skills are applicable optional procedures |
+| `no documentation index found; run nexora index` | Docs or confluence sources are configured but not indexed yet | Run `nexora index` |
+| `index was built with embeddings "X" but the configuration uses "Y"` | The embedding provider or model changed | Run `nexora index` without `--source` to rebuild every source |
+| `environment variable CONFLUENCE_TOKEN is not set` | Credentials are read from the variables named in `token_env`/`user_env` | Export the variable in the shell or MCP client that runs Nexora |
+| Confluence `HTTP 401` or `HTTP 403` for a space | Wrong user/token pair, or the token cannot read that space | Cloud: set `user_env` to your email and use an API token. Data Center: omit `user_env` and use a personal access token |
+| `embeddings (...): HTTP 404: model not found` | The model is not available at the provider URL | Pull the model (`ollama pull nomic-embed-text`) or fix `model`/`url` |
+| pgvector `extension "vector" is not available` | The PostgreSQL server lacks pgvector | Install pgvector on the server, or have an administrator run `CREATE EXTENSION vector` |
+| A search finds nothing useful | Keyword search needs shared words with the text | Rephrase with the document's terms, or configure embeddings and reindex |
+| `sync stopped; nothing was written` | A generated file or the managed block was edited by hand, or an existing skill file has the same name | Move your edits into the knowledge files, delete or rename the conflicting file, then sync again |
+| `found <!-- nexora:begin --> without <!-- nexora:end -->` | The managed block markers were damaged | Restore both markers or remove the partial block, then sync again |
 
 These cases are reproduced in configuration, Markdown, initialization, and CLI
 tests. For permission failures, ensure the current user can read every source
@@ -53,11 +62,12 @@ to match. Duplicate IDs cannot be used as overrides. See [resolution](resolution
 
 ## Current boundaries
 
-Nexora does not connect to agents, import arbitrary Agent Skills libraries,
-execute procedures, sync native instructions, or serve MCP/HTTP. It does not
-perform semantic search, truncate to a token budget, or provide remote
-authorization. Supply selected text to your agent manually through its supported
-workflow. Retrieved text does not outrank trusted instructions.
+Nexora serves knowledge over a local stdio MCP server and writes native
+instruction files, but it cannot make an agent call a tool or follow a rule. It
+does not import arbitrary Agent Skills libraries, execute procedures, truncate to
+a token budget, serve MCP over HTTP, or provide remote authorization. Indexed
+Confluence content is readable by anyone who can read the index file or database.
+Retrieved text does not outrank trusted instructions.
 
 Source files are trusted local data. Filters help select relevant items, not
 hide secrets from someone with filesystem access. Concurrent malicious changes

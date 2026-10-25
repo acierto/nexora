@@ -12,6 +12,8 @@ GUIDES = {
     "start": "getting-started.md",
     "format": "knowledge-format.md",
     "resolution": "resolution.md",
+    "retrieval": "retrieval.md",
+    "agents": "agents.md",
     "cli": "cli.md",
     "troubleshooting": "troubleshooting.md",
     "architecture": "architecture.md",
@@ -38,10 +40,10 @@ def main():
         if original != updated:
             print("Embedded guides are stale; run python3 scripts/sync_docs.py", file=sys.stderr)
             return 1
-        print("All seven embedded guides match their Markdown sources.")
+        print(f"All {len(GUIDES)} embedded guides match their Markdown sources.")
     else:
         site.write_text(updated, encoding="utf-8")
-        print("Updated all seven embedded guides in docs/index.html.")
+        print(f"Updated all {len(GUIDES)} embedded guides in docs/index.html.")
     return 0
 
 

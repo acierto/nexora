@@ -1,0 +1,10 @@
+schema_version: 1
+project: commerce-api
+sources:
+  - id: rules
+    path: ./knowledge
+  - id: handbook
+    type: docs
+    path: ./handbook
+# The index defaults to .nexora/index.json next to this file, keyword search,
+# and no embeddings. See docs/retrieval.md for Ollama, OpenAI, and pgvector.

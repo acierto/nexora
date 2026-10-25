@@ -2,25 +2,79 @@
 
 [Read online](https://acierto.github.io/nexora/#format) · [Documentation home](https://acierto.github.io/nexora/)
 
-Configuration is explicit: read commands default to `./nexora.yaml`; `--config`
-selects another file. Relative source paths resolve against that file, not the
-working directory. Sources can point to shared local directories outside a
-project. Roots must be readable, distinct, and non-overlapping. Source root paths
-are canonicalized, but symlink entries inside source trees are rejected.
+Nexora reads one configuration file, `nexora.yaml`, and two kinds of content:
+**knowledge items** (rules, skills, references, and decisions written as Markdown
+with front matter, selected deterministically) and **documentation** (ordinary
+docs folders and Confluence spaces, indexed into passages and retrieved for a
+task). This page covers the configuration and the knowledge format. Retrieval is
+described in [Docs and Confluence](retrieval.md).
+
+## Configuration
+
+Configuration is explicit: commands default to `./nexora.yaml`, and `--config`
+selects another file. Relative paths resolve against that file, not the working
+directory. Sources can point to shared local directories outside a project.
 
 ```yaml
 schema_version: 1
 project: commerce-api
 sources:
-  - id: local
+  - id: local                  # knowledge source (type defaults to knowledge)
     path: ./knowledge
+  - id: handbook
+    type: docs                 # Markdown, text, and HTML; no front matter needed
+    path: ./handbook
+    projects: [commerce-api]   # optional
+  - id: wiki
+    type: confluence
+    url: https://your-company.atlassian.net/wiki
+    spaces: [PAY, ARCH]
+    user_env: CONFLUENCE_USER
+    token_env: CONFLUENCE_TOKEN
+index:                         # optional; these are the defaults plus an embedding provider
+  store: local
+  path: .nexora/index.json
+  embeddings:
+    provider: ollama
+    model: nomic-embed-text
+  chunk:
+    max_chars: 1200
+    overlap_chars: 150
 ```
 
-`project`, source `id`, and source `path` must be nonempty. Source IDs must be
-unique. Unknown fields, duplicate keys, extra YAML documents, explicit nulls,
-and values with incorrect types fail validation. Optional fields should be
-omitted rather than set to null. Configuration does not expand environment
-variables or `~` and does not discover parent configurations.
+Only `schema_version`, `project`, and one source are required. The smallest
+valid file, which `nexora init` writes, has a single knowledge source.
+
+| Field | Applies to | Meaning / default |
+| --- | --- | --- |
+| `schema_version` | file | Required; must be `1` |
+| `project` | file | Required project ID used when `--project` is omitted |
+| `sources[].id` | all sources | Required, unique; appears in provenance and passage IDs |
+| `sources[].type` | all sources | `knowledge` (default), `docs`, or `confluence` |
+| `sources[].path` | knowledge, docs | Required directory; readable, canonical, not overlapping another root |
+| `sources[].projects` | docs, confluence | Only return this source's passages for these projects; omitted means every project |
+| `sources[].url` | confluence | Required base URL, for example `https://x.atlassian.net/wiki` |
+| `sources[].spaces` | confluence | Required list of unique space keys |
+| `sources[].token_env` | confluence | Required name of the environment variable holding the API token |
+| `sources[].user_env` | confluence | Name of the variable holding the user (Cloud email); enables basic auth, otherwise bearer |
+| `index.store` | index | `local` (default) or `pgvector` |
+| `index.path` | local store | Index file, default `.nexora/index.json` |
+| `index.dsn_env` / `index.table` | pgvector store | Variable holding the connection string; table, default `nexora_passages` |
+| `index.embeddings.*` | index | `provider` (`none`, `ollama`, `openai`), `model`, `url`, `api_key_env`, `dimensions` |
+| `index.chunk.*` | index | `max_chars` (200-20000, default 1200), `overlap_chars` (default 150) |
+
+Unknown fields, duplicate keys, extra YAML documents, explicit nulls, and values
+with incorrect types fail validation, at every level. Optional fields should be
+omitted rather than set to null. Fields that belong to another source type are
+rejected: a knowledge source cannot set `url` or `projects`, and a confluence
+source cannot set `path`. Configuration never contains secrets and does not
+expand environment variables or `~`; fields ending in `_env` name a variable that
+is read only when Nexora needs it. Parent directories are not searched.
+
+Source root paths are canonicalized, but symlink entries inside source trees are
+rejected.
+
+## Path patterns
 
 File applicability uses repository-relative, case-sensitive paths with `/`
 separators. `*` matches zero or more characters within one segment, `?` matches
@@ -135,7 +189,8 @@ changes the digest. Load times and filesystem modification times are not version
 Duplicate IDs fail with both locations; source order does not override knowledge.
 
 Use dedicated source directories for metadata-bearing knowledge. Keep ordinary
-README files outside those directories. A typical source contains `rules/`,
+README files outside those directories, or put ordinary documentation in a
+separate `type: docs` source, which needs no front matter. A typical source contains `rules/`,
 `skills/`, `references/`, and `decisions/`, but directories do not infer item kinds.
 
 Example of invalid metadata (must fail validation):
@@ -150,3 +205,23 @@ required: true
 ---
 This document is invalid even though its body is present.
 ```
+
+## Documentation sources
+
+Files in a `docs` source need no Nexora metadata. Nexora reads `.md`,
+`.markdown`, `.txt`, `.html`, and `.htm` files in stable order, requires UTF-8,
+rejects symlink entries, and skips leading YAML front matter without parsing it,
+so existing docs (including Jekyll or Docusaurus pages) work as they are. HTML
+and Confluence pages are converted to text that keeps headings, lists, tables,
+and code blocks; nothing is rendered or executed.
+
+`nexora index` splits each document into passages at headings and paragraphs.
+A passage records its source, document, heading trail (for example
+`Refund policy › Partial refunds`), location, and the SHA-256 digest of the
+document. Passage IDs have the form `<source>:<document>#<n>`, such as
+`handbook:payments/refunds.md#3` or `wiki:page-42#1`.
+
+Documentation never becomes a knowledge item. It has no `kind`, `required`, or
+`applies_to`, and it cannot be selected as a required rule. Put instructions an
+agent must follow in knowledge sources, and reference material in docs. See
+[Docs and Confluence](retrieval.md) for indexing, search, embeddings, and pgvector.

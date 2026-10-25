@@ -7,6 +7,7 @@ resolution playground. Start with [Getting started online](https://acierto.githu
 
 Prefer reading on GitHub? Open the [quickstart](getting-started.md),
 [knowledge format](knowledge-format.md), [resolution guide](resolution.md),
+[docs and Confluence](retrieval.md), [connect agents](agents.md),
 [CLI reference](cli.md), or [troubleshooting](troubleshooting.md).
 
 ## Publishing and previewing
@@ -16,7 +17,7 @@ Nexora Docs HTML is stored as `docs/index.html`; `.nojekyll` keeps it a plain
 static site. Push changes to `main` to publish an update. Deployment status is
 visible in the repository's **Actions** tab and **Settings → Pages**.
 
-The HTML includes copies of the seven Markdown guides. After changing them, run
+The HTML includes copies of the nine Markdown guides. After changing them, run
 this from the repository root before committing:
 
 ```sh

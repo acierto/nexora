@@ -81,9 +81,13 @@ work without a database, cloud account, or embedding API key.
 - Measure retrieval quality, context size, latency, and integration correctness
   before making performance or compatibility claims.
 
-## Initial architecture status
+## Architecture status
 
-At initialization the repository contained no implementation. The architecture
-and milestone plan proposed in the initialization conversation are recommendations,
-not implemented contracts. Review the current repository before assuming commands,
-configuration schemas, or public APIs exist.
+Implemented: the local knowledge registry (OpenSpec change
+`local-knowledge-registry`) and documentation retrieval with agent delivery
+(`document-retrieval-and-agent-delivery`): docs and Confluence sources, a local or
+pgvector passage index, optional embeddings, `search`, `resolve --task`, the stdio
+MCP server, and native sync. See docs/architecture.md. Plugins, knowledge packs,
+remote serving, authorization, overrides, and context budgets are not implemented.
+Review the current repository before assuming other commands, configuration
+schemas, or public APIs exist.

@@ -21,11 +21,23 @@ evidence records matching patterns and normalized file names in stable order.
 Duplicate request files do not duplicate knowledge or evidence.
 
 Optional matches are applicability matches, not semantic recommendations. There
-is no search query, token budget, truncation, or inferred conflict resolution.
-Inspect both rules if their content conflicts and edit your knowledge explicitly.
+is no token budget, truncation, or inferred conflict resolution. Inspect both
+rules if their content conflicts and edit your knowledge explicitly.
+
+## Passages from documentation
+
+With `--task`, resolution also searches indexed documentation and adds a sixth
+array, `passages`. It is always present in JSON and empty without a task.
+Passages come from `docs` and `confluence` sources, are ranked by keyword search
+and optional embeddings, and carry their own explanations (see
+[Docs and Confluence](retrieval.md)). They are reference material, never rules:
+the five knowledge groups are computed first and are identical with or without
+`--task`. A passage cannot add, remove, reorder, or demote a required rule.
+Passages from a source with `projects` appear only for those projects.
 
 This is a single-user local registry. Project and agent filters are not
 authorization. Anyone with access to source files can read them. Selected text
 remains retrieved knowledge; it does not outrank the trusted instructions of the
 agent receiving it. `--agent codex` or `--agent claude` only supplies a matching
-value; it does not connect to either agent.
+value; it does not connect to either agent. To deliver results to an agent, see
+[Connect agents](agents.md).
