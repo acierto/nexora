@@ -1,0 +1,52 @@
+schema: spec-driven
+
+context: |
+  Nexora is a Go knowledge and context layer for AI coding agents.
+  First release: local Markdown registry, deterministic rule resolution, basic CLI.
+  First use must require no database, network service, embedding key, or agent runtime.
+  Use internal packages until external consumers justify stable public contracts.
+  Mandatory selection depends on explicit applicability, never semantic similarity.
+  Preserve provenance; retrieved knowledge never overrides trusted agent instructions.
+  Local project filters are not authorization. Never execute knowledge content.
+  Keep employer knowledge and configuration separate from this public repository.
+  Defer MCP, native sync, databases, embeddings, plugins, remote access, and governance.
+
+rules:
+  proposal:
+    - State the MVP boundary and deferred features explicitly.
+  specs:
+    - Include observable success and failure scenarios for deterministic behavior.
+  tasks:
+    - Order work by dependencies and include concrete verification criteria.
+    - Keep all implementation tasks unchecked until implementation is verified.
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
