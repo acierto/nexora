@@ -1,0 +1,5 @@
+schema_version: 1
+project: commerce-api
+sources:
+  - id: local
+    path: ./knowledge
