@@ -159,3 +159,13 @@ guidance does not implement a connector or user authorization. PostgreSQL tests
 remain conditional on `NEXORA_TEST_DATABASE_URL`; that variable was not set for
 this local run. The CI workflow exercises the database-backed tests separately.
 Cross-built Linux and macOS amd64 binaries were not executed locally.
+
+Publication checks also passed: [CI](https://github.com/acierto/nexora/actions/runs/40310772466)
+ran with its PostgreSQL/pgvector service, and the
+[release workflow](https://github.com/acierto/nexora/actions/runs/40310917920)
+published [v0.3.0](https://github.com/acierto/nexora/releases/tag/v0.3.0)
+from commit `7178e2c`. All four archives and checksums are present. The downloaded
+macOS arm64 archive matched its published SHA-256 checksum; its binary reported
+`nexora v0.3.0` and validated the 25-item existing-docs example.
+[Pages deployment](https://github.com/acierto/nexora/actions/runs/40310771414)
+succeeded, and the live site matched the updated `docs/index.html` byte for byte.

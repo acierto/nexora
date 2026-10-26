@@ -13,4 +13,4 @@
 ## 3. Release verification
 
 - [x] 3.1 Run gofmt, all tests, go vet, documentation sync/link checks, OpenSpec validation, and release builds; record results in docs/verification.md.
-- [ ] 3.2 Commit and publish v0.3.0 through the release workflow; verify successful workflow, published archives/checksums, and a downloaded binary's version.
+- [x] 3.2 Commit and publish v0.3.0 through the release workflow; verify successful workflow, published archives/checksums, and a downloaded binary's version.
