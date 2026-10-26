@@ -70,8 +70,8 @@ work without a database, cloud account, or embedding API key.
 - Knowledge packs should be declarative and initially shareable through Git.
 - Avoid Kubernetes, Redis, message brokers, marketplaces, and complex orchestration
   without demonstrated requirements.
-- Decide the license before public release; Apache-2.0 and MIT are candidates,
-  not an already settled choice.
+- Nexora is licensed under MIT. Keep the root LICENSE and published licensing
+  statements consistent; include the license in release archives.
 
 ## Verification
 

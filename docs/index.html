@@ -1236,7 +1236,10 @@ python3 -m http.server 8765 --directory dist &
 NEXORA_DOWNLOAD_BASE=http://127.0.0.1:8765 NEXORA_INSTALL_DIR=/tmp/nexora-bin sh scripts/install.sh
 ```
 
-License selection is still pending; choose one before the first public release.
+## License
+
+Nexora is open source under the [MIT License](https://github.com/acierto/nexora/blob/main/LICENSE).
+Release archives include the license alongside the binary and README.
 </script>
 <script type="text/markdown" id="md-format"># Write knowledge
 
@@ -2393,8 +2396,9 @@ runtime participates in CLI execution.
 
 The first release remains local and single-user. Native agent integration,
 full Agent Skills imports, databases, semantic retrieval, and remote authorization
-remain deferred as specified in the proposal. License selection and publication
-are separate work.
+remain deferred as specified in the proposal. At the time of this verification,
+license selection and publication were separate work. Nexora has since adopted
+the [MIT License](https://github.com/acierto/nexora/blob/main/LICENSE).
 
 ## Documentation retrieval and agent delivery
 
@@ -2669,6 +2673,7 @@ succeeded, and the live site matched the updated `docs/index.html` byte for byte
 
 <footer class="foot">
   <span>Nexora · early development · planned next: remote server with permission-aware access, more connectors, plugins and knowledge packs</span>
+  <span><a href="https://github.com/acierto/nexora/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a></span>
   <span>Docs rendered from <a href="https://github.com/acierto/nexora/tree/main/docs" target="_blank" rel="noopener">acierto/nexora/docs</a></span>
 </footer>
 </template>

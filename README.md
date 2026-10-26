@@ -97,5 +97,8 @@ Nexora is in early development. Working today: knowledge selection, docs and
 Confluence indexing with optional embeddings and pgvector, existing pgvector
 tables as sources, the MCP server, and native sync for Claude Code and Codex. Planned: plugins and shareable knowledge
 packs, a remote server with permission-aware access, more connectors (Notion,
-Google Docs), overrides, and context budgets. License selection is pending before
-the first public release.
+Google Docs), overrides, and context budgets.
+
+## License
+
+Nexora is open source under the [MIT License](LICENSE).

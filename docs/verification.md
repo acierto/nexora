@@ -59,8 +59,9 @@ runtime participates in CLI execution.
 
 The first release remains local and single-user. Native agent integration,
 full Agent Skills imports, databases, semantic retrieval, and remote authorization
-remain deferred as specified in the proposal. License selection and publication
-are separate work.
+remain deferred as specified in the proposal. At the time of this verification,
+license selection and publication were separate work. Nexora has since adopted
+the [MIT License](https://github.com/acierto/nexora/blob/main/LICENSE).
 
 ## Documentation retrieval and agent delivery
 

@@ -150,4 +150,7 @@ python3 -m http.server 8765 --directory dist &
 NEXORA_DOWNLOAD_BASE=http://127.0.0.1:8765 NEXORA_INSTALL_DIR=/tmp/nexora-bin sh scripts/install.sh
 ```
 
-License selection is still pending; choose one before the first public release.
+## License
+
+Nexora is open source under the [MIT License](https://github.com/acierto/nexora/blob/main/LICENSE).
+Release archives include the license alongside the binary and README.

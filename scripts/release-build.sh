@@ -3,7 +3,7 @@
 #
 #   scripts/release-build.sh v0.1.0
 #
-# Produces nexora_<os>_<arch>.tar.gz (binary, README.md) for each target and
+# Produces nexora_<os>_<arch>.tar.gz (binary, README.md, LICENSE) for each target and
 # checksums.txt with SHA-256 sums. Archive names carry no version so that
 # https://github.com/acierto/nexora/releases/latest/download/<name> always
 # points at the newest release. Binaries are static (CGO_ENABLED=0).
@@ -29,7 +29,8 @@ for target in $targets; do
 		-ldflags "-s -w -X github.com/acierto/nexora/internal/cli.Version=$version" \
 		-o "$work/nexora" ./cmd/nexora
 	cp README.md "$work/README.md"
-	tar -C "$work" -czf "$dist/$name.tar.gz" nexora README.md
+	cp LICENSE "$work/LICENSE"
+	tar -C "$work" -czf "$dist/$name.tar.gz" nexora README.md LICENSE
 	rm -rf "$work"
 done
 
