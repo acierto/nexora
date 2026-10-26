@@ -7,20 +7,35 @@ One knowledge layer. Every AI agent.
 [Quickstart](https://acierto.github.io/nexora/#start) ·
 [Interactive playground](https://acierto.github.io/nexora/#playground)
 
-Your team's know-how is scattered across agent files (`CLAUDE.md`, `AGENTS.md`,
-Cursor rules), skill folders, internal docs, and Confluence. Nexora gives every
-coding agent one place to get it from:
+Nexora turns the docs and Confluence pages your team already maintains into
+context for coding agents. It indexes them once. When Claude Code, Codex, or any
+MCP client starts a task, Nexora returns your rules for those files and the
+passages that matter, with sources. Nobody rewrites that knowledge into
+`CLAUDE.md`, `AGENTS.md`, or Cursor rules again.
 
-- **Your rules and skills**, written once in Markdown, reach Claude Code, Codex,
-  and other agents. Each task gets exactly the rules that apply to its project,
-  agent, and files.
-- **Your docs and Confluence pages** are indexed, so the agent gets the passages
-  that match what it is doing, with a link to the source.
-- **Your agents connect directly** through an MCP server, or through generated
-  `AGENTS.md`/`CLAUDE.md` sections and `SKILL.md` files.
+## How it works
 
-Every result says why it was selected and where it came from. Nexora is one
-executable: no Docker, database, cloud account, or API key needed to start.
+```text
+Index time   Confluence spaces ┐
+             docs/ folders     ┴─ nexora index ─▶ passages: BM25 + optional embeddings
+                                                  (local file or PostgreSQL + pgvector)
+
+Task time    agent ─ get_context(task, files) ─▶ Nexora ─▶ required rules  from knowledge/, matched by project, agent, file
+             (MCP)                                        + top passages   from the index, keyword + vector, rank-fused
+                                                          each with its source and the reason it was picked
+```
+
+- **Rules are never ranked away.** Required rules are selected from metadata;
+  search only adds passages next to them.
+- **Every item is traceable** to its file or page, version or digest, and the
+  reason it matched.
+- **Starts offline.** Keyword search needs no API key; add embeddings (Ollama or
+  OpenAI-compatible) and pgvector when you want them.
+- **Also native.** `nexora sync` writes always-on rules into `AGENTS.md` or
+  `CLAUDE.md` and generates `SKILL.md` files, without touching your own text.
+
+Nexora is one executable: no Docker, database, cloud account, or API key needed
+to start.
 
 ## Install
 
