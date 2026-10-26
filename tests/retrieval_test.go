@@ -99,7 +99,7 @@ func TestTeamDocsExample(t *testing.T) {
 			Passages  int    `json:"passages"`
 		} `json:"sources"`
 	}
-	if err := json.Unmarshal([]byte(out), &report); err != nil || report.Store != "local" || report.Model != "" || len(report.Sources) != 1 || report.Sources[0].Documents != 4 || report.Sources[0].Passages != 13 {
+	if err := json.Unmarshal([]byte(out), &report); err != nil || report.Store != "local" || report.Model != "" || len(report.Sources) != 1 || report.Sources[0].Documents != 12 || report.Sources[0].Passages != 37 {
 		t.Fatalf("index report: %s %v", out, err)
 	}
 	if _, err := os.Stat(filepath.Join(dir, ".nexora", "index.json")); err != nil {
@@ -127,6 +127,54 @@ func TestTeamDocsExample(t *testing.T) {
 	hits = search("--query", "revoked refresh token reused", "--limit", "1")
 	if len(hits) != 1 || hits[0].Passage.Location != "auth/token-rotation.md" || hits[0].Passage.Heading != "Token rotation › Rotating refresh tokens" {
 		t.Fatalf("token search: %+v", hits)
+	}
+
+	// Each query has an expected source and section, not merely any nonempty hit.
+	for _, tc := range []struct{ query, location, heading string }{
+		{"ambiguous authorization", "orders/checkout.md", "Checkout recovery › Ambiguous authorization"},
+		{"reservation drift investigation", "inventory/reconciliation.md", "Inventory reconciliation › Reservation drift investigation"},
+		{"signature mismatch diagnosis", "webhooks/delivery.md", "Webhook delivery operations › Signature mismatch diagnosis"},
+		{"expand contract backfill", "database/migrations.md", "Schema evolution › Expand contract backfill"},
+		{"relay backlog triage", "operations/outbox.md", "Outbox relay operations › Relay backlog triage"},
+		{"erasure legal holds", "security/data-deletion.md", "Customer data deletion › Erasure and legal holds"},
+		{"equal timestamp regression", "api/pagination.md", "Order listing API › Equal timestamp regression"},
+		{"safe diagnostic export", "support/incident-triage.md", "Customer support incident triage › Safe diagnostic export"},
+	} {
+		t.Run(tc.query, func(t *testing.T) {
+			hits := search("--query", tc.query, "--limit", "1")
+			if len(hits) != 1 || hits[0].Passage.SourceID != "handbook" || hits[0].Passage.Location != tc.location || hits[0].Passage.Heading != tc.heading {
+				t.Fatalf("query %q: %+v", tc.query, hits)
+			}
+		})
+	}
+	if hits := search("--query", "nonexistentquasarword", "--limit", "3"); len(hits) != 0 {
+		t.Fatalf("unmatched query returned passages: %+v", hits)
+	}
+
+	for _, tc := range []struct {
+		file, task string
+		rules      []string
+		skills     []string
+		references []string
+	}{
+		{"src/webhooks/payment.go", "signature mismatch diagnosis", []string{"security/webhook-verification", "observability/logging"}, nil, nil},
+		{"migrations/20260101_add_order_version.sql", "expand contract backfill", []string{"database/expand-contract", "observability/logging"}, nil, nil},
+		{"src/inventory/reserve.go", "reservation drift investigation", []string{"observability/logging"}, []string{"skills/diagnose-inventory"}, nil},
+		{"src/support/export.go", "safe diagnostic export", []string{"observability/logging"}, nil, []string{"references/support-redaction"}},
+	} {
+		t.Run(tc.file, func(t *testing.T) {
+			args := []string{"--config", filepath.Join(dir, "nexora.yaml"), "--file", tc.file}
+			withoutTask := resolve(t, args...)
+			withTask := resolve(t, append(args, "--task", tc.task, "--limit", "1")...)
+			expectIDs(t, withTask.RequiredRules, tc.rules...)
+			expectIDs(t, withTask.OptionalRules)
+			expectIDs(t, withTask.Skills, tc.skills...)
+			expectIDs(t, withTask.References, tc.references...)
+			expectIDs(t, withTask.Decisions)
+			if !reflect.DeepEqual(withoutTask, withTask) {
+				t.Fatal("task retrieval changed deterministic knowledge selections")
+			}
+		})
 	}
 
 	args := []string{"resolve", "--json", "--agent", "codex", "--file", "src/payments/refund.go"}

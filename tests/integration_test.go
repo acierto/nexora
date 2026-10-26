@@ -113,7 +113,7 @@ func TestLocalExample(t *testing.T) {
 		Valid bool `json:"valid"`
 		Count int  `json:"item_count"`
 	}
-	if e := json.Unmarshal([]byte(out), &check); e != nil || !check.Valid || check.Count != 9 {
+	if e := json.Unmarshal([]byte(out), &check); e != nil || !check.Valid || check.Count != 25 {
 		t.Fatal(out, e)
 	}
 	for _, agent := range []string{"codex", "claude"} {
@@ -141,6 +141,72 @@ func TestLocalExample(t *testing.T) {
 	expectIDs(t, result.Decisions)
 	result = resolve(t, "--config", config, "--agent", "codex", "--file", "src/auth/service.go", "--file", "./src/auth/service.go", "--file", "src/catalog/service.go")
 	expectIDs(t, result.RequiredRules, "security/authentication", "go/conventions", "agents/codex")
+}
+
+// These cases exercise the checked-in knowledge as a usable domain corpus,
+// including overlapping scopes, non-Go paths, provenance, and isolated projects.
+func TestPracticalLocalScenarios(t *testing.T) {
+	config := "examples/local/nexora.yaml"
+	cases := []struct {
+		name, file                           string
+		rules, skills, references, decisions []string
+	}{
+		{"HTTP boundary", "src/http/orders.go",
+			[]string{"security/tenant-isolation", "api/http-contracts", "go/conventions"},
+			[]string{"skills/add-endpoint", "skills/test-http-endpoint"},
+			[]string{"references/http-pagination"}, []string{"decisions/local-knowledge"}},
+		{"checkout", "src/orders/checkout.go",
+			[]string{"security/tenant-isolation", "orders/state-transitions", "go/conventions"},
+			[]string{"skills/add-endpoint", "skills/implement-checkout"},
+			[]string{"references/order-lifecycle"},
+			[]string{"decisions/local-knowledge", "decisions/money-minor-units", "decisions/transactional-outbox"}},
+		{"inventory", "src/inventory/reserve.go",
+			[]string{"security/tenant-isolation", "inventory/reservations", "go/conventions"},
+			[]string{"skills/add-endpoint", "skills/implement-checkout"},
+			[]string{"references/inventory-model"}, []string{"decisions/local-knowledge"}},
+		{"migration", "migrations/20260101_add_order_version.sql",
+			[]string{"database/expand-contract", "go/conventions"},
+			[]string{"skills/add-migration"}, nil, []string{"decisions/local-knowledge"}},
+		{"webhook", "src/webhooks/payment.go",
+			[]string{"security/webhook-verification", "go/conventions"},
+			[]string{"skills/add-endpoint", "skills/replay-webhook"},
+			[]string{"references/webhook-events"}, []string{"decisions/local-knowledge"}},
+		{"payment amount", "src/payments/capture.go",
+			[]string{"go/conventions"}, []string{"skills/add-endpoint"}, nil,
+			[]string{"decisions/local-knowledge", "decisions/money-minor-units"}},
+		{"non-matching extension", "src/orders/notes.md",
+			[]string{"go/conventions"}, nil, nil, []string{"decisions/local-knowledge"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			args := []string{"--config", config, "--file", tc.file}
+			got := resolve(t, args...)
+			expectIDs(t, got.RequiredRules, tc.rules...)
+			expectIDs(t, got.OptionalRules, "go/naming")
+			expectIDs(t, got.Skills, tc.skills...)
+			expectIDs(t, got.References, tc.references...)
+			expectIDs(t, got.Decisions, tc.decisions...)
+			if again := resolve(t, append(args, "--file", "./"+tc.file)...); !reflect.DeepEqual(got, again) {
+				t.Fatal("duplicate normalized file changed selections or explanations")
+			}
+			for _, group := range [][]resolver.Selection{got.RequiredRules, got.Skills, got.References, got.Decisions} {
+				for _, selected := range group {
+					if selected.Item.Source.ID != "local" || selected.Item.Source.Path == "" || selected.Item.Version == "" {
+						t.Fatalf("missing provenance: %+v", selected.Item)
+					}
+				}
+			}
+			isolated := resolve(t, append(args, "--project", "billing-api")...)
+			expectIDs(t, isolated.RequiredRules, "go/conventions")
+			expectIDs(t, isolated.OptionalRules)
+			expectIDs(t, isolated.Skills)
+			expectIDs(t, isolated.References)
+			expectIDs(t, isolated.Decisions)
+		})
+	}
+	combined := resolve(t, "--config", config, "--file", "src/orders/checkout.go", "--file", "src/inventory/reserve.go")
+	expectIDs(t, combined.RequiredRules, "security/tenant-isolation", "inventory/reservations", "orders/state-transitions", "go/conventions")
+	expectIDs(t, combined.Skills, "skills/add-endpoint", "skills/implement-checkout")
 }
 
 func TestSharedExamples(t *testing.T) {

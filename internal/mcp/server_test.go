@@ -83,7 +83,11 @@ func TestProtocol(t *testing.T) {
 		t.Fatalf("missing item: %v", missing)
 	}
 	skills := got[5]["result"].(map[string]any)["structuredContent"].(map[string]any)["skills"].([]any)
-	if len(skills) != 1 || skills[0].(map[string]any)["id"] != "skills/add-endpoint" {
+	skillIDs := []string{}
+	for _, skill := range skills {
+		skillIDs = append(skillIDs, skill.(map[string]any)["id"].(string))
+	}
+	if strings.Join(skillIDs, ",") != "skills/add-endpoint,skills/add-migration,skills/implement-checkout,skills/replay-webhook,skills/test-http-endpoint" {
 		t.Fatalf("skills: %v", skills)
 	}
 	for idx, code := range map[int]float64{6: -32602, 7: -32601, 8: -32700} {
