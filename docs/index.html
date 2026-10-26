@@ -646,7 +646,8 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
 @media (max-width:1180px){ .shell{grid-template-columns:var(--side) minmax(0,1fr) 0} .toc{display:none} main{padding:28px 28px 80px} .docs-grid{grid-template-columns:repeat(2,minmax(0,1fr))} .kinds{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @media (max-width:1000px){ .hero-copy{grid-template-columns:1fr} .hero-stage{height:520px} }
 @media (max-width:860px){
-  .shell,.shell.wide{display:block}
+  /* Let the fixed drawer share the root stacking context with its scrim. */
+  .shell,.shell.wide{display:block;z-index:auto}
   main{padding:22px 0 72px}
   .menubtn{display:inline-flex}
   .top nav{display:none}
@@ -654,8 +655,9 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
   .searchbtn span.t,.searchbtn kbd{display:none}
   .brand small{display:none}
   .side{position:fixed;left:0;top:calc(var(--top) + env(safe-area-inset-top,0px));width:min(300px,86vw);height:calc(100vh - var(--top) - env(safe-area-inset-top,0px));background:var(--bg-2);border-right:1.5px solid var(--line-2);padding:22px 18px 40px max(28px,env(safe-area-inset-left,0px));z-index:35;transform:translateX(-105%);transition:transform .22s ease;box-shadow:var(--shadow)}
+  .side{height:calc(100dvh - var(--top) - env(safe-area-inset-top,0px));padding-bottom:max(40px,env(safe-area-inset-bottom,0px));overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
   .side.open{transform:none}
-  .scrim{position:fixed;inset:0;z-index:34;background:rgb(20 12 50 / .35)}
+  .scrim{position:fixed;inset:calc(var(--top) + env(safe-area-inset-top,0px)) 0 0;z-index:34;background:rgb(20 12 50 / .35)}
   .stickers{grid-template-columns:1fr 1fr}
   .docs-grid,.kinds,.exit{grid-template-columns:1fr}
   .pg .controls{grid-template-columns:1fr}
@@ -678,7 +680,7 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
 
 <div class="bgfx" aria-hidden="true"></div>
 <header class="top">
-  <button class="iconbtn menubtn" id="menubtn" aria-label="Open navigation" aria-expanded="false">
+  <button class="iconbtn menubtn" id="menubtn" aria-controls="side" aria-label="Open navigation" aria-expanded="false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
   <a class="brand" href="#home" aria-label="Nexora home">
@@ -3578,9 +3580,12 @@ function wireCopy(root){ $$('[data-copy]', root).forEach(b=>{ if (b.dataset.wire
 
 /* ===================== Mobile menu ===================== */
 const side = $('#side'), menubtn = $('#menubtn'); let scrim = null;
-function openMenu(){ side.classList.add('open'); menubtn.setAttribute('aria-expanded','true'); scrim=document.createElement('div'); scrim.className='scrim'; scrim.addEventListener('click', closeMenu); document.body.appendChild(scrim); }
-function closeMenu(){ side.classList.remove('open'); menubtn.setAttribute('aria-expanded','false'); scrim?.remove(); scrim=null; }
+function openMenu(){ if (scrim) return; menubtn.setAttribute('aria-label','Close navigation'); side.classList.add('open'); menubtn.setAttribute('aria-expanded','true'); scrim=document.createElement('div'); scrim.className='scrim'; scrim.addEventListener('click', closeMenu); document.body.appendChild(scrim); }
+function closeMenu(){ menubtn.setAttribute('aria-label','Open navigation'); side.classList.remove('open'); menubtn.setAttribute('aria-expanded','false'); scrim?.remove(); scrim=null; }
 menubtn.addEventListener('click', ()=> side.classList.contains('open') ? closeMenu() : openMenu());
+side.addEventListener('click', e=>{ if (e.target.closest('a')) closeMenu(); });
+document.addEventListener('keydown', e=>{ if (e.key==='Escape' && scrim){ closeMenu(); menubtn.focus(); } });
+matchMedia('(max-width:860px)').addEventListener('change', e=>{ if (!e.matches) closeMenu(); });
 
 /* ===================== Search ===================== */
 let index = null;
