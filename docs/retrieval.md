@@ -215,54 +215,106 @@ are the same as the local store.
 ## Use vectors you already have
 
 If your team already embeds its documentation into PostgreSQL with pgvector, for
-example for a docs search or chatbot, point Nexora at that table instead of
-embedding everything again. Add a `pgvector` source:
+example for a docs search or a chatbot, Nexora can search that table directly.
+Nothing is embedded twice, and agents get those results through `get_context`
+like any other passage.
 
-```yaml
-sources:
-  - id: team-docs
-    type: pgvector
-    dsn_env: TEAM_DOCS_DATABASE_URL  # connection string, read from the environment
-    table: docs.chunks               # table or schema.table
-    columns:
-      id: chunk_id                   # required: unique row key
-      text: content                  # required: the passage text
-      vector: embedding              # required: the pgvector column
-      title: page_title              # optional
-      location: url                  # optional: link shown with each hit
-      document: page_id              # optional: groups rows into documents
-    distance: cosine                 # cosine (default), l2, or inner_product
-    embeddings:                      # the model that produced the stored vectors
-      provider: openai
-      model: text-embedding-3-small
-      api_key_env: OPENAI_API_KEY
-    projects: [commerce-api]         # optional
+```text
+nexora index   your table ── SELECT id, text, title, url ──▶ Nexora's keyword index
+                             (vectors stay in your table; no rows are embedded)
+
+each task      task text ── embed once, with your table's model ──▶ query vector
+               your table ── nearest rows by vector ─────────────┐
+               keyword index ── BM25 matches ────────────────────┼─▶ rank fusion ─▶ passages
+               other sources (docs, Confluence) ─────────────────┘
 ```
 
-How it works:
+### Set it up
 
-- **`nexora index`** reads the `id`, `text`, `title`, `location`, and `document`
-  columns into Nexora's own index for keyword search. It never calls the embedding
-  provider for these rows and never writes to the table.
-- **At query time** Nexora embeds only the task text with the configured model
-  and asks the table for the nearest rows, using its own vectors (and its HNSW or
-  IVFFlat index, if it has one). Those rows are ranked together with keyword hits
-  and with your other sources by reciprocal rank fusion. A hit found this way has
-  a reason like `{"method": "semantic", "source": "team-docs", "rank": 1}`.
-- **The model must match.** Queries have to be embedded by the same model that
-  produced the table's vectors, otherwise the similarities are meaningless. A
-  different vector size fails with a clear error; a different model of the same
-  size cannot be detected, so name the model exactly. Sources that share a model
-  share one query embedding.
+1. **Find the table and its columns.** You need a unique row key, the passage
+   text, and the vector column; a title, a link, and a document ID are useful
+   too. In `psql`, `\d docs.chunks` lists the columns, and this shows the vector
+   size:
 
-Each row is one passage; Nexora does not re-chunk the table, so passage IDs are
-`<source id>:<row id>`. Vector search always sees the current table. The keyword
-copy is refreshed by `nexora index`, so run it again after large changes. The
-database user needs only `SELECT` on the table.
+   ```shell
+   psql "$TEAM_DOCS_DATABASE_URL" -c "SELECT vector_dims(embedding) FROM docs.chunks LIMIT 1"
+   ```
 
-You can combine a `pgvector` source with `docs` and `confluence` sources. To give
-those sources vector search too, set `index.embeddings` to the same model as the
-table, so all your documentation is searched by meaning the same way.
+2. **Find out which model made the vectors.** Ask the team that runs the
+   pipeline, or look in its code for the embedding call. Queries must be embedded
+   by the same model; a different model gives meaningless similarities. Nexora
+   calls the model through Ollama or any OpenAI-compatible `/embeddings`
+   endpoint.
+
+3. **Add a `pgvector` source** to `nexora.yaml`:
+
+   ```yaml
+   sources:
+     - id: team-docs
+       type: pgvector
+       dsn_env: TEAM_DOCS_DATABASE_URL  # connection string, read from the environment
+       table: docs.chunks               # table or schema.table
+       columns:
+         id: chunk_id                   # required: unique row key
+         text: content                  # required: the passage text
+         vector: embedding              # required: the pgvector column
+         title: page_title              # optional
+         location: url                  # optional: link shown with each hit
+         document: page_id              # optional: groups rows into documents
+       distance: cosine                 # cosine (default), l2, or inner_product
+       embeddings:                      # the model that produced the stored vectors
+         provider: openai               # openai means any OpenAI-compatible endpoint
+         model: text-embedding-3-small
+         url: https://api.openai.com/v1 # default for openai; set it for other endpoints
+         api_key_env: OPENAI_API_KEY
+       projects: [commerce-api]         # optional
+   ```
+
+   Use the `distance` the table's vector index was built with: `cosine` for
+   `vector_cosine_ops`, `l2` for `vector_l2_ops`, `inner_product` for
+   `vector_ip_ops`. Cosine is the most common.
+
+4. **Set the variables and index.** The database user needs only `SELECT` on
+   the table:
+
+   ```shell
+   export TEAM_DOCS_DATABASE_URL="postgres://reader:secret@db.internal:5432/docs?sslmode=require"
+   export OPENAI_API_KEY=...
+   nexora index
+   ```
+
+   The report shows `team-docs (pgvector): N documents, M passages, vectors
+   searched in place`.
+
+5. **Check a search.** Ask something phrased differently from the docs:
+
+   ```shell
+   nexora search --json --query "how do I undo a release"
+   ```
+
+   Hits found by the table's vectors have a reason like
+   `{"method": "semantic", "source": "team-docs", "rank": 1}`. Hits found by both
+   the vectors and keywords have two reasons and rank highest.
+
+6. **Pass the variables to your agent.** The MCP server runs `search` the same
+   way, so the agent's MCP configuration needs `TEAM_DOCS_DATABASE_URL` and the
+   API key in its environment (see [Connect agents](agents.md)).
+
+### What to know
+
+- Each row is one passage; Nexora does not re-chunk the table, so passage IDs are
+  `<source id>:<row id>`. Rows without text are skipped; rows without a vector are
+  found by keywords only.
+- Vector search always reads the live table. The keyword copy is as fresh as the
+  last `nexora index`, so run it again after large changes.
+- A model with a different vector size fails with an error that says so. A
+  different model with the same size cannot be detected, so name the exact model.
+- Several `pgvector` sources can share a model; the query is embedded once.
+- Combine a `pgvector` source with `docs` and `confluence` sources freely. To give
+  those sources vector search too, set `index.embeddings` to the same model as the
+  table, so all documentation is searched by meaning the same way.
+- Nexora only runs `SELECT` statements. Table and column names are checked and
+  quoted; `projects` is an applicability filter, not authorization.
 
 ## Configuration reference
 

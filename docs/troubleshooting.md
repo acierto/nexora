@@ -24,6 +24,10 @@ these failures; unknown commands/flags return 2.
 | Confluence `HTTP 401` or `HTTP 403` for a space | Wrong user/token pair, or the token cannot read that space | Cloud: set `user_env` to your email and use an API token. Data Center: omit `user_env` and use a personal access token |
 | `embeddings (...): HTTP 404: model not found` | The model is not available at the provider URL | Pull the model (`ollama pull nomic-embed-text`) or fix `model`/`url` |
 | pgvector `extension "vector" is not available` | The PostgreSQL server lacks pgvector | Install pgvector on the server, or have an administrator run `CREATE EXTENSION vector` |
+| `source team-docs: environment variable TEAM_DOCS_DATABASE_URL is not set` | A `pgvector` source reads its connection string from `dsn_env` | Export it in the shell, and in the MCP client environment for agents |
+| `source team-docs (docs.chunks): ... column "content" does not exist` | `columns` names a column the table does not have | Check names with `\d docs.chunks` in psql; names are case-sensitive |
+| `the query embedding has 768 dimensions but the stored vectors do not` | `embeddings` names a different model than the one that built the table | Use the exact model, and URL, that produced the vectors |
+| `duplicate row id ...; columns.id must be unique` | The `id` column repeats values | Map `columns.id` to the table's primary key |
 | A search finds nothing useful | Keyword search needs shared words with the text | Rephrase with the document's terms, or configure embeddings and reindex |
 | `sync stopped; nothing was written` | A generated file or the managed block was edited by hand, or an existing skill file has the same name | Move your edits into the knowledge files, delete or rename the conflicting file, then sync again |
 | `found <!-- nexora:begin --> without <!-- nexora:end -->` | The managed block markers were damaged | Restore both markers or remove the partial block, then sync again |
