@@ -25,6 +25,9 @@ work without a database, cloud account, or embedding API key.
 - Record important implemented architecture decisions in repository documentation.
 - Check the installed Go toolchain before selecting a module Go version; do not
   assume that an installed version is the latest supported release.
+- Commit as the repository owner, Bogdan Nechyporenko
+  <bogdannechiporenko@gmail.com>. Do not add Co-Authored-By, session, or other
+  agent attribution trailers to commits or pull requests.
 
 ## Knowledge and resolution
 
