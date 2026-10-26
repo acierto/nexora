@@ -744,14 +744,16 @@ no Docker, database, or language runtime is needed to run it.
 
 ## macOS and Linux
 
-Prebuilt binaries are published for every release:
+Prebuilt binaries are published for every release. These links always download
+the [latest release](https://github.com/acierto/nexora/releases/latest):
 
 | System | Archive |
 | --- | --- |
-| macOS, Apple Silicon (M1 and later) | `nexora_darwin_arm64.tar.gz` |
-| macOS, Intel | `nexora_darwin_amd64.tar.gz` |
-| Linux, x86-64 | `nexora_linux_amd64.tar.gz` |
-| Linux, arm64 (Graviton, Raspberry Pi 4/5 with a 64-bit OS) | `nexora_linux_arm64.tar.gz` |
+| macOS, Apple Silicon (M1 and later) | [`nexora_darwin_arm64.tar.gz`](https://github.com/acierto/nexora/releases/latest/download/nexora_darwin_arm64.tar.gz) |
+| macOS, Intel | [`nexora_darwin_amd64.tar.gz`](https://github.com/acierto/nexora/releases/latest/download/nexora_darwin_amd64.tar.gz) |
+| Linux, x86-64 | [`nexora_linux_amd64.tar.gz`](https://github.com/acierto/nexora/releases/latest/download/nexora_linux_amd64.tar.gz) |
+| Linux, arm64 (Graviton, Raspberry Pi 4/5 with a 64-bit OS) | [`nexora_linux_arm64.tar.gz`](https://github.com/acierto/nexora/releases/latest/download/nexora_linux_arm64.tar.gz) |
+| SHA-256 checksums for all archives | [`checksums.txt`](https://github.com/acierto/nexora/releases/latest/download/checksums.txt) |
 
 The Linux binaries are statically linked, so they run on any distribution with
 one of these architectures (Ubuntu, Debian, Fedora, Alpine, Arch, and others).
@@ -776,7 +778,7 @@ curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install
 
 ### Manual download
 
-1. Download your archive and `checksums.txt` from the
+1. Download your archive and `checksums.txt` from the table above or the
    [releases page](https://github.com/acierto/nexora/releases/latest).
 2. Check the archive: `shasum -a 256 -c checksums.txt --ignore-missing` on macOS,
    or `sha256sum -c checksums.txt --ignore-missing` on Linux.
