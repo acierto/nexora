@@ -11,6 +11,10 @@ on:
       version:
         description: "Version tag to create and publish, for example v0.1.0"
         required: true
+      replace:
+        description: "Delete an existing release and tag with this version first"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -36,5 +40,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          if [ "${{ inputs.replace }}" = "true" ] && gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release delete "$VERSION" --cleanup-tag --yes
+          fi
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then verify=--verify-tag; else verify="--target $GITHUB_SHA"; fi
           gh release create "$VERSION" dist/*.tar.gz dist/checksums.txt --title "Nexora $VERSION" --generate-notes $verify
