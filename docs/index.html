@@ -154,13 +154,24 @@ main{min-width:0;padding:30px 40px 100px}
 .md code,.article code{font-size:.86em;background:color-mix(in srgb,var(--pc) 11%,var(--bg-2));color:color-mix(in oklab,var(--pc) 55%,var(--fg));padding:2px 6px;border-radius:6px;word-break:break-word;font-weight:500}
 .md strong{font-weight:700}
 .md .tbl{overflow-x:auto;margin:0 0 26px;border:1.5px solid var(--line-2);border-radius:16px;background:var(--bg-2);box-shadow:0 4px 0 var(--line-2)}
-.md table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:520px}
+.md table{border-collapse:collapse;width:100%;font-size:14.5px}
 .md th,.md td{text-align:left;vertical-align:top;padding:11px 15px;border-bottom:1px solid var(--line)}
 .md th{font:700 11px/1.3 var(--display);letter-spacing:.08em;text-transform:uppercase;color:color-mix(in oklab,var(--pc) 60%,var(--fg));background:color-mix(in srgb,var(--pc) 10%,var(--bg-2))}
 .md tbody tr{transition:background .12s}
 .md tbody tr:hover{background:color-mix(in srgb,var(--pc) 5%,var(--bg-2))}
 .md tr:last-child td{border-bottom:0}
-.md td code{white-space:nowrap}
+.md td code{white-space:normal;word-break:normal;overflow-wrap:anywhere}
+.md td{overflow-wrap:break-word}
+.md td code.nw{white-space:nowrap}
+@media (max-width:640px){
+  .md .tbl table,.md .tbl tbody,.md .tbl tr,.md .tbl td{display:block;width:100%}
+  .md .tbl thead{display:none}
+  .md .tbl tr{padding:12px 15px;border-bottom:1px solid var(--line)}
+  .md .tbl tr:last-child{border-bottom:0}
+  .md .tbl td{padding:3px 0;border:0}
+  .md .tbl td::before{content:attr(data-label);display:block;font:700 10.5px/1.4 var(--display);letter-spacing:.08em;text-transform:uppercase;color:color-mix(in oklab,var(--pc) 60%,var(--fg));margin-top:6px}
+  .md .tbl td:first-child::before{margin-top:0}
+}
 
 /* ---------- code ---------- */
 .codeblock{position:relative;margin:0 0 22px;border-radius:16px;background:var(--code-bg);color:var(--code-fg);overflow:hidden;box-shadow:0 5px 0 color-mix(in oklab,var(--code-bg) 70%,#000),0 22px 40px -22px rgb(30 20 80 / .6)}
@@ -171,7 +182,7 @@ main{min-width:0;padding:30px 40px 100px}
 .codeblock .dots i:nth-child(3){background:#7cbfa4}
 .codeblock .bar .copy{margin-left:auto;font:600 12px var(--sans);text-transform:none;letter-spacing:0;color:var(--code-fg);padding:4px 10px;border-radius:8px;background:rgb(255 255 255 / .08)}
 .codeblock .bar .copy:hover{background:rgb(255 255 255 / .16)}
-.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;font-size:13.5px;line-height:1.6;tab-size:2}
+.codeblock pre{margin:0;padding:16px 18px;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13.5px;line-height:1.6;tab-size:2}
 .codeblock pre code,.article .codeblock code{background:none;color:inherit;padding:0;font-size:inherit;font-weight:400}
 .tk-c{color:var(--c-com);font-style:italic}
 .tk-s{color:var(--c-str)}
@@ -336,7 +347,10 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
 .pg .cmd .ps{color:var(--c-str);font-weight:700}
 .pg .cmd .copy{margin-left:auto;font:600 12px var(--sans);color:var(--code-fg);padding:4px 10px;border-radius:8px;background:rgb(255 255 255 / .1)}
 .pg .gridwrap{overflow-x:auto}
-.mg{border-collapse:collapse;width:100%;font-size:13.5px;min-width:700px}
+.mg{border-collapse:collapse;width:100%;font-size:13.5px}
+.mg .id{overflow-wrap:anywhere}
+@media (max-width:1240px){ .pg .mg th, .pg .mg td{padding-left:7px!important;padding-right:7px!important} .pg .mg th{letter-spacing:.04em}}
+@media (max-width:760px){ .pg .mg th:nth-child(2), .pg .mg td:nth-child(2), .pg .mg th:nth-child(7), .pg .mg td:nth-child(7){display:none} .pg .mg th{font-size:8.5px;letter-spacing:0;white-space:normal} .pg .mg th, .pg .mg td{padding-left:3px!important;padding-right:3px!important} .pg .mg .dim{min-width:22px;height:22px;padding:0 4px;font-size:10px} .pg .mg .res{font-size:10px;padding:4px 5px} .pg .mg .id{font-size:11.5px} .pg .mg .nm{font-size:10.5px} .pg .mg tr.detail td{display:table-cell}}
 .mg th{font:700 10.5px/1 var(--display);letter-spacing:.09em;text-transform:uppercase;color:var(--fg-3);text-align:left;padding:13px 12px;border-bottom:1.5px solid var(--line);white-space:nowrap}
 .mg th.c,.mg td.c{text-align:center}
 .mg td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;transition:background .15s}
@@ -362,7 +376,7 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
 .detail .reasons{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font-size:13px}
 .detail .reasons li{display:flex;gap:8px;align-items:flex-start}
 .detail .reasons li .dim{flex:none}
-.detail pre,.pg .json pre{margin:0;font-size:12px;line-height:1.55;padding:14px;background:var(--code-bg);color:var(--code-fg);border-radius:12px;overflow-x:auto}
+.detail pre,.pg .json pre{margin:0;font-size:12px;line-height:1.55;padding:14px;background:var(--code-bg);color:var(--code-fg);border-radius:12px;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
 .detail pre code{background:none;color:inherit;padding:0}
 .pg .out{border-top:1.5px solid var(--line)}
 .pg .tabs{display:flex;gap:6px;padding:12px 20px 0}
@@ -590,7 +604,7 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
 .ex-h small{margin-left:auto;font:500 11px var(--mono);letter-spacing:0;text-transform:none}
 .dot-a,.dot-b{width:8px;height:8px;border-radius:50%;background:#7cbfa4}
 .dot-b{background:#d97a8c}
-.ex-col pre{margin:0;padding:14px 16px;overflow:auto;font-size:12.5px;line-height:1.55}
+.ex-col pre{margin:0;padding:14px 16px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12.5px;line-height:1.55}
 .facts3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}
 .facts3 div{padding:14px 16px;border-radius:16px;background:var(--bg-2);border:1.5px solid var(--line);font-size:14px;color:var(--fg-2)}
 .facts3 b{display:block;color:var(--fg);font:700 14.5px/1.3 var(--display);letter-spacing:-.01em;margin-bottom:4px}
@@ -3092,6 +3106,7 @@ function renderDoc(page){
   const p = PAGES[page]; const src = document.getElementById(p.md).textContent;
   const art = document.createElement('article'); art.className='article'; art.style.setProperty('--pc', `var(${PCOL[page]})`);
   art.innerHTML = `<header class="dochead"><div class="dh-text"><span class="eyebrow">${esc(p.eyebrow)}</span><h1>${esc(p.title)}</h1><p class="lede">${esc(p.lede)}</p><a class="srclink" href="${GH}docs/${p.file}" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3h7v7M21 3l-9 9M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg> docs/${esc(p.file)} on GitHub</a></div><div class="bignum" aria-hidden="true">${p.num||'✦'}</div><span class="blob b1"></span><span class="blob b2"></span></header><div class="md">${renderMd(src)}</div>`;
+  art.querySelectorAll('.md table').forEach(tb=>{const hs=[...tb.querySelectorAll('th')].map(th=>th.textContent.trim()); tb.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>td.dataset.label=hs[i]||''));}); art.querySelectorAll('.md td code').forEach(c=>{if(c.textContent.length<=28)c.classList.add('nw');});
   const md = $('.md', art);
   // widgets
   if (page==='format'){
