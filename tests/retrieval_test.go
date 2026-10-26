@@ -254,3 +254,109 @@ func TestMCPAndSyncExecutables(t *testing.T) {
 		t.Fatal(code, out)
 	}
 }
+
+// TestExistingVectorTable uses a table embedded by another pipeline: Nexora
+// copies only its text for keyword search and embeds only the query.
+func TestExistingVectorTable(t *testing.T) {
+	dsn := os.Getenv("NEXORA_TEST_DATABASE_URL")
+	if dsn == "" {
+		t.Skip("NEXORA_TEST_DATABASE_URL not set")
+	}
+	var embedded atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req struct {
+			Model string   `json:"model"`
+			Input []string `json:"input"`
+		}
+		json.NewDecoder(r.Body).Decode(&req)
+		if r.URL.Path != "/v1/embeddings" || r.Header.Get("Authorization") != "Bearer key-1" || req.Model != "team-embedder" {
+			http.Error(w, "bad request", http.StatusBadRequest)
+			return
+		}
+		data := []any{}
+		for i, text := range req.Input {
+			embedded.Add(1)
+			v := []float32{0, 0, 1}
+			if strings.Contains(text, "undo") {
+				v = []float32{1, 0, 0}
+			}
+			data = append(data, map[string]any{"index": i, "embedding": v})
+		}
+		json.NewEncoder(w).Encode(map[string]any{"data": data})
+	}))
+	defer server.Close()
+
+	psql := func(sqlText string) {
+		t.Helper()
+		cmd := exec.Command("psql", "-v", "ON_ERROR_STOP=1", "-q", dsn, "-c", sqlText)
+		if b, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("psql: %v %s", err, b)
+		}
+	}
+	if _, err := exec.LookPath("psql"); err != nil {
+		t.Skip("psql not installed")
+	}
+	psql(`CREATE EXTENSION IF NOT EXISTS vector; DROP SCHEMA IF EXISTS team_docs CASCADE; CREATE SCHEMA team_docs;
+		CREATE TABLE team_docs.chunks (id text PRIMARY KEY, content text, title text, url text, embedding vector(3));
+		INSERT INTO team_docs.chunks VALUES
+		('deploy-1', 'Use the pipeline rollback action to redeploy the previous image.', 'Rolling back', 'https://docs.example/deploy#rollback', '[1,0,0]'),
+		('refund-1', 'Refunds go back to the original payment method.', 'Refund policy', 'https://docs.example/refunds', '[0,0,1]');`)
+
+	dir := t.TempDir()
+	os.MkdirAll(filepath.Join(dir, "knowledge"), 0o755)
+	config := `schema_version: 1
+project: commerce-api
+sources:
+  - id: local
+    path: ./knowledge
+  - id: team
+    type: pgvector
+    dsn_env: TEAM_DOCS_DSN
+    table: team_docs.chunks
+    columns: {id: id, text: content, vector: embedding, title: title, location: url}
+    embeddings:
+      provider: openai
+      model: team-embedder
+      url: ` + server.URL + `/v1
+      api_key_env: TEAM_EMBED_KEY
+`
+	os.WriteFile(filepath.Join(dir, "nexora.yaml"), []byte(config), 0o644)
+	env := []string{"TEAM_DOCS_DSN=" + dsn, "TEAM_EMBED_KEY=key-1"}
+
+	if code, _, errOut := commandEnv(t, dir, []string{"TEAM_EMBED_KEY=key-1"}, "", "index"); code != 1 || !strings.Contains(errOut, "TEAM_DOCS_DSN") {
+		t.Fatalf("missing dsn: %d %s", code, errOut)
+	}
+	code, out, errOut := commandEnv(t, dir, env, "", "index")
+	if code != 0 || !strings.Contains(out, "team (pgvector): 2 documents, 2 passages, vectors searched in place") {
+		t.Fatal(code, out, errOut)
+	}
+	if embedded.Load() != 0 {
+		t.Fatalf("indexing re-embedded %d stored passages", embedded.Load())
+	}
+	code, out, errOut = commandEnv(t, dir, env, "", "search", "--json", "--query", "how do I undo a release")
+	if code != 0 {
+		t.Fatal(code, out, errOut)
+	}
+	var r struct {
+		Hits []struct {
+			hit
+			Reasons []struct {
+				Method string `json:"method"`
+				Source string `json:"source"`
+				Rank   int    `json:"rank"`
+			} `json:"reasons"`
+		} `json:"hits"`
+	}
+	json.Unmarshal([]byte(out), &r)
+	if len(r.Hits) == 0 || r.Hits[0].Passage.ID != "team:deploy-1" || r.Hits[0].Passage.Location != "https://docs.example/deploy#rollback" ||
+		r.Hits[0].Reasons[0].Method != "semantic" || r.Hits[0].Reasons[0].Source != "team" {
+		t.Fatalf("semantic hit from the existing table: %s", out)
+	}
+	if embedded.Load() != 1 {
+		t.Fatalf("expected one query embedding, got %d", embedded.Load())
+	}
+	code, out, errOut = commandEnv(t, dir, env, "", "resolve", "--file", "src/deploy.go", "--task", "refund payment method")
+	if code != 0 || !strings.Contains(out, "Refund policy") {
+		t.Fatalf("resolve --task: %d %s %s", code, out, errOut)
+	}
+}

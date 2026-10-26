@@ -41,8 +41,15 @@ retrieval -> index, embed;  index -> passage;  confluence -> passage
   implementations: a local JSON file (default, written atomically, BM25 at query
   time) and PostgreSQL with pgvector. The pgvector store uses `github.com/lib/pq`,
   a pure-Go driver with no transitive dependencies; it is the only dependency added.
-- `retrieval` merges keyword and semantic candidates with reciprocal rank fusion
-  in Go, so both stores rank and explain hits identically. The index records the
+- `index.VectorTable` reads an existing pgvector table (a `pgvector` source)
+  without writing to it: `Rows` copies text into the store for keyword search and
+  `Nearest` runs the semantic query in place. Rows are not re-chunked or
+  re-embedded, so passage IDs map to row keys and only the query is embedded, with
+  the model the source declares. Identifiers are validated in `config` and quoted
+  with `pq.QuoteIdentifier`.
+- `retrieval` merges keyword and semantic candidates, including one semantic list
+  per pgvector source, with reciprocal rank fusion in Go, so every store ranks and
+  explains hits identically. The index records the
   embedding model, and mismatches fail instead of silently degrading.
 - `app` coordinates loading for the CLI and MCP server and reloads everything on
   each call, keeping the no-stale-snapshot behavior of the first milestone.

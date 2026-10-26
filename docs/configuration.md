@@ -41,13 +41,18 @@ valid file, which `nexora init` writes, has a single knowledge source.
 | `schema_version` | file | Required; must be `1` |
 | `project` | file | Required project ID used when `--project` is omitted |
 | `sources[].id` | all sources | Required, unique; appears in provenance and passage IDs |
-| `sources[].type` | all sources | `knowledge` (default), `docs`, or `confluence` |
+| `sources[].type` | all sources | `knowledge` (default), `docs`, `confluence`, or `pgvector` (an existing embedded table) |
 | `sources[].path` | knowledge, docs | Required directory; readable, canonical, not overlapping another root |
-| `sources[].projects` | docs, confluence | Only return this source's passages for these projects; omitted means every project |
+| `sources[].projects` | docs, confluence, pgvector | Only return this source's passages for these projects; omitted means every project |
 | `sources[].url` | confluence | Required base URL, for example `https://x.atlassian.net/wiki` |
 | `sources[].spaces` | confluence | Required list of unique space keys |
 | `sources[].token_env` | confluence | Required name of the environment variable holding the API token |
 | `sources[].user_env` | confluence | Name of the variable holding the user (Cloud email); enables basic auth, otherwise bearer |
+| `sources[].dsn_env` | pgvector | Required name of the variable holding the PostgreSQL connection string |
+| `sources[].table` | pgvector | Required `table` or `schema.table` |
+| `sources[].columns.*` | pgvector | `id`, `text`, `vector` required; `title`, `location`, `document` optional |
+| `sources[].distance` | pgvector | `cosine` (default), `l2`, or `inner_product`; match how the vectors were made |
+| `sources[].embeddings.*` | pgvector | Required; the provider and model that produced the stored vectors, same fields as `index.embeddings` |
 | `index.store` | index | `local` (default) or `pgvector` |
 | `index.path` | local store | Index file, default `.nexora/index.json` |
 | `index.dsn_env` / `index.table` | pgvector store | Variable holding the connection string; table, default `nexora_passages` |
@@ -76,6 +81,8 @@ needs them:
 | `sources[].user_env` | `nexora index` | `CONFLUENCE_USER` |
 | `index.embeddings.api_key_env` | `index`, `search`, `resolve --task`, MCP | `OPENAI_API_KEY` |
 | `index.dsn_env` | `index`, `search`, `resolve --task`, MCP | `NEXORA_DATABASE_URL` |
+| `sources[].dsn_env` (pgvector) | `index`, `search`, `resolve --task`, MCP | `TEAM_DOCS_DATABASE_URL` |
+| `sources[].embeddings.api_key_env` | `search`, `resolve --task`, MCP | `OPENAI_API_KEY` |
 
 When Nexora runs as an MCP server, these variables must be set in the agent's MCP
 server environment, not only in your shell.

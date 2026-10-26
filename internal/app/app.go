@@ -30,6 +30,8 @@ type App struct {
 	HTTP       *http.Client
 	// OpenStore overrides store construction in tests.
 	OpenStore func(config.Config) (index.Store, error)
+	// OpenTable overrides opening pgvector source tables in tests.
+	OpenTable func(config.Source) (index.VectorTable, error)
 }
 
 // Loaded is a validated configuration plus its knowledge snapshot.
@@ -113,7 +115,7 @@ func (a App) Search(ctx context.Context, req SearchRequest) ([]retrieval.Hit, er
 		return nil, err
 	}
 	if len(cfg.DocumentSources()) == 0 {
-		return nil, fmt.Errorf("no docs or confluence sources are configured; add one to %s and run nexora index", a.ConfigPath)
+		return nil, fmt.Errorf("no docs, confluence, or pgvector sources are configured; add one to %s and run nexora index", a.ConfigPath)
 	}
 	return a.search(ctx, cfg, req.Query, Project(cfg, req.Project, req.ProjectExplicit), req.Limit)
 }
@@ -128,7 +130,20 @@ func (a App) search(ctx context.Context, cfg config.Config, text, project string
 	if err != nil {
 		return nil, err
 	}
-	hits, err := retrieval.Search(ctx, store, embedder, retrieval.Request{Text: text, Project: project, Limit: limit})
+	req := retrieval.Request{Text: text, Project: project, Limit: limit}
+	for _, source := range cfg.VectorSources() {
+		table, err := a.table(source)
+		if err != nil {
+			return nil, err
+		}
+		defer table.Close()
+		queryEmbedder, err := embed.New(*source.Embeddings, a.getenv, a.HTTP)
+		if err != nil {
+			return nil, fmt.Errorf("source %s: %w", source.ID, err)
+		}
+		req.Vectors = append(req.Vectors, retrieval.VectorSource{ID: source.ID, Table: table, Embedder: queryEmbedder})
+	}
+	hits, err := retrieval.Search(ctx, store, embedder, req)
 	if errors.Is(err, index.ErrNoIndex) {
 		return nil, fmt.Errorf("%w (configured documentation sources have not been indexed)", index.ErrNoIndex)
 	}
@@ -140,6 +155,13 @@ func (a App) store(cfg config.Config) (index.Store, error) {
 		return a.OpenStore(cfg)
 	}
 	return index.Open(cfg, a.getenv)
+}
+
+func (a App) table(source config.Source) (index.VectorTable, error) {
+	if a.OpenTable != nil {
+		return a.OpenTable(source)
+	}
+	return index.OpenVectorTable(source, a.getenv)
 }
 
 func (a App) getenv(name string) string {
@@ -156,6 +178,9 @@ type SourceReport struct {
 	Documents int    `json:"documents"`
 	Passages  int    `json:"passages"`
 	Embedded  int    `json:"embedded"`
+	// Vectors is "in place" for pgvector sources, whose own vectors are
+	// searched at query time instead of being copied.
+	Vectors string `json:"vectors,omitempty"`
 }
 
 type IndexReport struct {
@@ -183,7 +208,7 @@ func (a App) Index(ctx context.Context, only string) (IndexReport, error) {
 		sources = []config.Source{cfg.Sources[idx]}
 	}
 	if len(sources) == 0 {
-		return IndexReport{}, fmt.Errorf("nothing to index: no docs or confluence sources are configured")
+		return IndexReport{}, fmt.Errorf("nothing to index: no docs, confluence, or pgvector sources are configured")
 	}
 	embedder, err := embed.New(cfg.Index.Embeddings, a.getenv, a.HTTP)
 	if err != nil {
@@ -198,6 +223,15 @@ func (a App) Index(ctx context.Context, only string) (IndexReport, error) {
 	}
 	opt := passage.Options{MaxChars: cfg.Index.Chunk.MaxChars, OverlapChars: cfg.Index.Chunk.OverlapChars}
 	for _, source := range sources {
+		if source.Type == config.SourcePgvector {
+			list, err := a.rows(ctx, source)
+			if err != nil {
+				return IndexReport{}, err
+			}
+			batch[source.ID] = list
+			report.Sources = append(report.Sources, SourceReport{ID: source.ID, Type: source.Type, Documents: documentCount(list), Passages: len(list), Vectors: "in place"})
+			continue
+		}
 		docs, err := a.documents(ctx, source)
 		if err != nil {
 			return IndexReport{}, err
@@ -241,6 +275,36 @@ func (a App) Index(ctx context.Context, only string) (IndexReport, error) {
 		return IndexReport{}, err
 	}
 	return report, nil
+}
+
+// rows copies the text of a pgvector source for keyword search. Its vectors stay
+// in the table and are never re-embedded.
+func (a App) rows(ctx context.Context, source config.Source) ([]passage.Passage, error) {
+	table, err := a.table(source)
+	if err != nil {
+		return nil, err
+	}
+	defer table.Close()
+	list, err := table.Rows(ctx)
+	if err != nil {
+		return nil, err
+	}
+	seen := map[string]bool{}
+	for _, p := range list {
+		if seen[p.ID] {
+			return nil, fmt.Errorf("source %s: duplicate row id %s; columns.id must be unique", source.ID, strings.TrimPrefix(p.ID, source.ID+":"))
+		}
+		seen[p.ID] = true
+	}
+	return list, nil
+}
+
+func documentCount(list []passage.Passage) int {
+	docs := map[string]bool{}
+	for _, p := range list {
+		docs[p.DocumentID] = true
+	}
+	return len(docs)
 }
 
 func (a App) documents(ctx context.Context, source config.Source) ([]passage.Document, error) {

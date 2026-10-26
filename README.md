@@ -19,6 +19,7 @@ passages that matter, with sources. Nobody rewrites that knowledge into
 Index time   Confluence spaces ┐
              docs/ folders     ┴─ nexora index ─▶ passages: BM25 + optional embeddings
                                                   (local file or PostgreSQL + pgvector)
+             existing pgvector table ─────────▶ text copied for BM25; vectors stay in place
 
 Task time    agent ─ get_context(task, files) ─▶ Nexora ─▶ required rules  from knowledge/, matched by project, agent, file
              (MCP)                                        + top passages   from the index, keyword + vector, rank-fused
@@ -31,6 +32,8 @@ Task time    agent ─ get_context(task, files) ─▶ Nexora ─▶ required ru
   reason it matched.
 - **Starts offline.** Keyword search needs no API key; add embeddings (Ollama or
   OpenAI-compatible) and pgvector when you want them.
+- **Reuses what you embedded.** Point Nexora at an existing pgvector table and it
+  searches those vectors in place, embedding only the query.
 - **Also native.** `nexora sync` writes always-on rules into `AGENTS.md` or
   `CLAUDE.md` and generates `SKILL.md` files, without touching your own text.
 
@@ -71,7 +74,7 @@ expected output.
 - [Install](docs/install.md): prebuilt binaries, the install script, Windows and other systems.
 - [Quickstart](docs/quickstart.md): from zero to a connected agent.
 - [Write knowledge](docs/knowledge-format.md): rules, skills, references, and decisions.
-- [Docs and Confluence](docs/retrieval.md): index documentation, embeddings, pgvector.
+- [Docs and Confluence](docs/retrieval.md): index documentation, reuse existing vector tables, embeddings, pgvector.
 - [Connect agents](docs/agents.md): MCP setup for Claude Code and Codex, and native sync.
 - [Examples](examples/README.md): sample projects you can run.
 
@@ -90,8 +93,8 @@ expected output.
 ## Status
 
 Nexora is in early development. Working today: knowledge selection, docs and
-Confluence indexing with optional embeddings and pgvector, the MCP server, and
-native sync for Claude Code and Codex. Planned: plugins and shareable knowledge
+Confluence indexing with optional embeddings and pgvector, existing pgvector
+tables as sources, the MCP server, and native sync for Claude Code and Codex. Planned: plugins and shareable knowledge
 packs, a remote server with permission-aware access, more connectors (Notion,
 Google Docs), overrides, and context budgets. License selection is pending before
 the first public release.

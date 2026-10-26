@@ -40,10 +40,16 @@ func TestFuse(t *testing.T) {
 	}
 }
 
-type fakeEmbedder struct{ model string }
+type fakeEmbedder struct {
+	model string
+	calls *int
+}
 
 func (f fakeEmbedder) Model() string { return f.model }
 func (f fakeEmbedder) Embed(ctx context.Context, texts []string) ([][]float32, error) {
+	if f.calls != nil {
+		*f.calls++
+	}
 	out := make([][]float32, len(texts))
 	for i := range texts {
 		out[i] = []float32{1, 0}
@@ -58,14 +64,64 @@ func TestSearchModelChecks(t *testing.T) {
 	if err := store.Replace(ctx, map[string][]passage.Passage{"s": {p}}, index.Meta{Model: "ollama:m", Dimensions: 2}, true); err != nil {
 		t.Fatal(err)
 	}
-	hits, err := Search(ctx, store, fakeEmbedder{"ollama:m"}, Request{Text: "refund", Project: "x", Limit: 3})
+	hits, err := Search(ctx, store, fakeEmbedder{model: "ollama:m"}, Request{Text: "refund", Project: "x", Limit: 3})
 	if err != nil || len(hits) != 1 || len(hits[0].Reasons) != 2 {
 		t.Fatalf("hybrid search: %+v %v", hits, err)
 	}
-	if _, err := Search(ctx, store, fakeEmbedder{"openai:other"}, Request{Text: "refund"}); err == nil || !strings.Contains(err.Error(), "run nexora index") {
+	if _, err := Search(ctx, store, fakeEmbedder{model: "openai:other"}, Request{Text: "refund"}); err == nil || !strings.Contains(err.Error(), "run nexora index") {
 		t.Fatalf("model mismatch not reported: %v", err)
 	}
 	if _, err := Search(ctx, store, nil, Request{Text: "refund"}); err == nil {
 		t.Fatal("index with embeddings searched without an embedder")
+	}
+}
+
+type fakeTable struct {
+	rows   []index.Candidate
+	vector []float32
+}
+
+func (f *fakeTable) Rows(ctx context.Context) ([]passage.Passage, error) { return nil, nil }
+func (f *fakeTable) Close() error                                        { return nil }
+func (f *fakeTable) Nearest(ctx context.Context, vector []float32, n int) ([]index.Candidate, error) {
+	f.vector = vector
+	return f.rows, nil
+}
+
+func TestSearchVectorSources(t *testing.T) {
+	ctx := context.Background()
+	store := &index.Local{File: filepath.Join(t.TempDir(), "index.json")}
+	rows := []passage.Passage{
+		{ID: "crystal:1", SourceID: "crystal", Text: "Use the pipeline rollback action", Projects: []string{}},
+		{ID: "crystal:2", SourceID: "crystal", Text: "Production deployment checklist", Projects: []string{}},
+	}
+	if err := store.Replace(ctx, map[string][]passage.Passage{"crystal": rows}, index.Meta{}, true); err != nil {
+		t.Fatal(err)
+	}
+	table := &fakeTable{rows: []index.Candidate{{Passage: rows[0], Score: 0.91}, {Passage: rows[1], Score: 0.4}}}
+	scoped := &fakeTable{rows: []index.Candidate{{Passage: passage.Passage{ID: "billing:9", SourceID: "billing", Text: "undo a release", Projects: []string{"billing-api"}}, Score: 0.99}}}
+	calls := 0
+	shared := fakeEmbedder{model: "openai:m", calls: &calls}
+	hits, err := Search(ctx, store, nil, Request{Text: "undo a release", Project: "commerce-api", Limit: 5, Vectors: []VectorSource{
+		{ID: "crystal", Table: table, Embedder: shared},
+		{ID: "billing", Table: scoped, Embedder: shared},
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if calls != 1 || len(table.vector) != 2 {
+		t.Fatalf("query embedded %d times for one model", calls)
+	}
+	if len(hits) != 2 || hits[0].Passage.ID != "crystal:1" {
+		t.Fatalf("hits: %+v", hits)
+	}
+	r := hits[0].Reasons
+	if len(r) != 1 || r[0].Method != "semantic" || r[0].Source != "crystal" || r[0].Rank != 1 || r[0].Score != 0.91 {
+		t.Fatalf("reasons: %+v", r)
+	}
+	// Keyword and the table's own vectors fuse: a passage found by both rises.
+	hits, err = Search(ctx, store, nil, Request{Text: "production deployment", Project: "commerce-api", Limit: 5, Vectors: []VectorSource{{ID: "crystal", Table: table, Embedder: shared}}})
+	if err != nil || hits[0].Passage.ID != "crystal:2" || len(hits[0].Reasons) != 2 {
+		t.Fatalf("fused: %+v %v", hits, err)
 	}
 }

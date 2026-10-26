@@ -266,7 +266,7 @@ func tools() []map[string]any {
 		{
 			"name":        "search_knowledge",
 			"title":       "Search documentation",
-			"description": "Search indexed internal documentation and Confluence pages. Returns passages with source links and match explanations.",
+			"description": "Search internal documentation, Confluence pages, and existing vector tables. Returns passages with source links and match explanations.",
 			"inputSchema": schema(map[string]any{"query": str("Search text."), "project": project, "limit": limit}, "query"),
 			"annotations": readOnly,
 		},

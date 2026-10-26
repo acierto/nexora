@@ -102,6 +102,25 @@ the bundled example only; measure it on your own documentation before relying on
 ranking. The MCP server was tested with JSON-RPC exchanges over stdio; check your
 agent's MCP client configuration with your own setup.
 
+## Existing vector tables
+
+Verified on 2026-10-26 with Go 1.23 against PostgreSQL 16 with pgvector.
+
+| Check | Result |
+| --- | --- |
+| `go test ./...` with `NEXORA_TEST_DATABASE_URL` set | All packages passed |
+| `openspec validate existing-vector-sources --strict --no-interactive` | Valid |
+
+| Behavior | Verification source |
+| --- | --- |
+| `pgvector` source fields, identifier validation, required embeddings | [Source configuration tests](../internal/config/sources_test.go) |
+| Reading a table Nexora did not create: schema, quoted names, NULL columns, rows without text or vectors, cosine and L2, dimension mismatch, missing columns | [Index tests](../internal/index/index_test.go) (`TestExternalTable`) |
+| One semantic list per source, shared query embedding per model, project filter, fusion with keyword hits | [Retrieval tests](../internal/retrieval/retrieval_test.go) |
+| `index` copies text without embedding rows; `search` and `resolve --task` embed only the query and return table hits with their source | [Retrieval integration tests](../tests/retrieval_test.go) (`TestExistingVectorTable`) |
+
+The embedding provider was a local OpenAI-compatible test server. Ranking quality
+on a real team table was not measured here.
+
 ## Distribution
 
 Verified on 2026-10-26. `scripts/release-build.sh` produced static archives for

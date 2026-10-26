@@ -1020,13 +1020,18 @@ valid file, which `nexora init` writes, has a single knowledge source.
 | `schema_version` | file | Required; must be `1` |
 | `project` | file | Required project ID used when `--project` is omitted |
 | `sources[].id` | all sources | Required, unique; appears in provenance and passage IDs |
-| `sources[].type` | all sources | `knowledge` (default), `docs`, or `confluence` |
+| `sources[].type` | all sources | `knowledge` (default), `docs`, `confluence`, or `pgvector` (an existing embedded table) |
 | `sources[].path` | knowledge, docs | Required directory; readable, canonical, not overlapping another root |
-| `sources[].projects` | docs, confluence | Only return this source's passages for these projects; omitted means every project |
+| `sources[].projects` | docs, confluence, pgvector | Only return this source's passages for these projects; omitted means every project |
 | `sources[].url` | confluence | Required base URL, for example `https://x.atlassian.net/wiki` |
 | `sources[].spaces` | confluence | Required list of unique space keys |
 | `sources[].token_env` | confluence | Required name of the environment variable holding the API token |
 | `sources[].user_env` | confluence | Name of the variable holding the user (Cloud email); enables basic auth, otherwise bearer |
+| `sources[].dsn_env` | pgvector | Required name of the variable holding the PostgreSQL connection string |
+| `sources[].table` | pgvector | Required `table` or `schema.table` |
+| `sources[].columns.*` | pgvector | `id`, `text`, `vector` required; `title`, `location`, `document` optional |
+| `sources[].distance` | pgvector | `cosine` (default), `l2`, or `inner_product`; match how the vectors were made |
+| `sources[].embeddings.*` | pgvector | Required; the provider and model that produced the stored vectors, same fields as `index.embeddings` |
 | `index.store` | index | `local` (default) or `pgvector` |
 | `index.path` | local store | Index file, default `.nexora/index.json` |
 | `index.dsn_env` / `index.table` | pgvector store | Variable holding the connection string; table, default `nexora_passages` |
@@ -1055,6 +1060,8 @@ needs them:
 | `sources[].user_env` | `nexora index` | `CONFLUENCE_USER` |
 | `index.embeddings.api_key_env` | `index`, `search`, `resolve --task`, MCP | `OPENAI_API_KEY` |
 | `index.dsn_env` | `index`, `search`, `resolve --task`, MCP | `NEXORA_DATABASE_URL` |
+| `sources[].dsn_env` (pgvector) | `index`, `search`, `resolve --task`, MCP | `TEAM_DOCS_DATABASE_URL` |
+| `sources[].embeddings.api_key_env` | `search`, `resolve --task`, MCP | `OPENAI_API_KEY` |
 
 When Nexora runs as an MCP server, these variables must be set in the agent's MCP
 server environment, not only in your shell.
@@ -1451,7 +1458,9 @@ project, agent, and file metadata; retrieval cannot add, remove, or reorder them
 ## Add documentation sources
 
 Sources have a `type`. The default, `knowledge`, holds front-matter knowledge as
-before. Add `docs` for local documentation folders and `confluence` for spaces:
+before. Add `docs` for local documentation folders and `confluence` for spaces.
+If your docs are already embedded in a pgvector table, see
+[Use vectors you already have](#use-vectors-you-already-have).
 
 ```yaml
 schema_version: 1
@@ -1493,7 +1502,7 @@ Indexing is an explicit step. It is the only time Nexora reads documentation or
 calls Confluence:
 
 ```shell
-nexora index                 # every docs and confluence source
+nexora index                 # every docs, confluence, and pgvector source
 nexora index --source wiki   # rebuild one source, keep the others
 nexora index --json          # report as JSON
 ```
@@ -1648,6 +1657,58 @@ transaction. Keyword candidates come from PostgreSQL full-text search and
 semantic candidates from pgvector's cosine distance; the fusion and explanations
 are the same as the local store.
 
+## Use vectors you already have
+
+If your team already embeds its documentation into PostgreSQL with pgvector, for
+example for a docs search or chatbot, point Nexora at that table instead of
+embedding everything again. Add a `pgvector` source:
+
+```yaml
+sources:
+  - id: team-docs
+    type: pgvector
+    dsn_env: TEAM_DOCS_DATABASE_URL  # connection string, read from the environment
+    table: docs.chunks               # table or schema.table
+    columns:
+      id: chunk_id                   # required: unique row key
+      text: content                  # required: the passage text
+      vector: embedding              # required: the pgvector column
+      title: page_title              # optional
+      location: url                  # optional: link shown with each hit
+      document: page_id              # optional: groups rows into documents
+    distance: cosine                 # cosine (default), l2, or inner_product
+    embeddings:                      # the model that produced the stored vectors
+      provider: openai
+      model: text-embedding-3-small
+      api_key_env: OPENAI_API_KEY
+    projects: [commerce-api]         # optional
+```
+
+How it works:
+
+- **`nexora index`** reads the `id`, `text`, `title`, `location`, and `document`
+  columns into Nexora's own index for keyword search. It never calls the embedding
+  provider for these rows and never writes to the table.
+- **At query time** Nexora embeds only the task text with the configured model
+  and asks the table for the nearest rows, using its own vectors (and its HNSW or
+  IVFFlat index, if it has one). Those rows are ranked together with keyword hits
+  and with your other sources by reciprocal rank fusion. A hit found this way has
+  a reason like `{"method": "semantic", "source": "team-docs", "rank": 1}`.
+- **The model must match.** Queries have to be embedded by the same model that
+  produced the table's vectors, otherwise the similarities are meaningless. A
+  different vector size fails with a clear error; a different model of the same
+  size cannot be detected, so name the model exactly. Sources that share a model
+  share one query embedding.
+
+Each row is one passage; Nexora does not re-chunk the table, so passage IDs are
+`<source id>:<row id>`. Vector search always sees the current table. The keyword
+copy is refreshed by `nexora index`, so run it again after large changes. The
+database user needs only `SELECT` on the table.
+
+You can combine a `pgvector` source with `docs` and `confluence` sources. To give
+those sources vector search too, set `index.embeddings` to the same model as the
+table, so all your documentation is searched by meaning the same way.
+
 ## Configuration reference
 
 All source and index fields, with defaults, are listed in the
@@ -1791,7 +1852,7 @@ Commands use flags after the command name; positional arguments are rejected.
 | `validate` | `--config PATH`, `--json` | Loads every source; reports validity and item count |
 | `list` | `--config PATH`, `--json` | Lists active, draft, and archived items in ID order |
 | `resolve` | `--config PATH`, `--json`, `--project ID`, `--agent ID`, repeatable `--file PATH`, `--task TEXT`, `--limit N` | Returns active applicable knowledge; with `--task`, also documentation passages |
-| `index` | `--config PATH`, `--json`, `--source ID` | Indexes every docs and confluence source, or one |
+| `index` | `--config PATH`, `--json`, `--source ID` | Indexes every docs, confluence, and pgvector source, or one |
 | `search` | `--config PATH`, `--json`, `--query TEXT` (required), `--project ID`, `--limit N` | Returns documentation passages with explanations |
 | `mcp` | `--config PATH` | Serves knowledge over MCP on stdin/stdout until EOF |
 | `sync` | `--config PATH`, `--json`, `--agent codex\|claude` (required), `--project ID`, `--dir PATH`, `--check` | Writes the managed block and generated skills; `--check` writes nothing |
@@ -2020,8 +2081,15 @@ retrieval -> index, embed;  index -> passage;  confluence -> passage
   implementations: a local JSON file (default, written atomically, BM25 at query
   time) and PostgreSQL with pgvector. The pgvector store uses `github.com/lib/pq`,
   a pure-Go driver with no transitive dependencies; it is the only dependency added.
-- `retrieval` merges keyword and semantic candidates with reciprocal rank fusion
-  in Go, so both stores rank and explain hits identically. The index records the
+- `index.VectorTable` reads an existing pgvector table (a `pgvector` source)
+  without writing to it: `Rows` copies text into the store for keyword search and
+  `Nearest` runs the semantic query in place. Rows are not re-chunked or
+  re-embedded, so passage IDs map to row keys and only the query is embedded, with
+  the model the source declares. Identifiers are validated in `config` and quoted
+  with `pq.QuoteIdentifier`.
+- `retrieval` merges keyword and semantic candidates, including one semantic list
+  per pgvector source, with reciprocal rank fusion in Go, so every store ranks and
+  explains hits identically. The index records the
   embedding model, and mismatches fail instead of silently degrading.
 - `app` coordinates loading for the CLI and MCP server and reloads everything on
   each call, keeping the no-stale-snapshot behavior of the first milestone.
@@ -2142,6 +2210,25 @@ the bundled example only; measure it on your own documentation before relying on
 ranking. The MCP server was tested with JSON-RPC exchanges over stdio; check your
 agent's MCP client configuration with your own setup.
 
+## Existing vector tables
+
+Verified on 2026-10-26 with Go 1.23 against PostgreSQL 16 with pgvector.
+
+| Check | Result |
+| --- | --- |
+| `go test ./...` with `NEXORA_TEST_DATABASE_URL` set | All packages passed |
+| `openspec validate existing-vector-sources --strict --no-interactive` | Valid |
+
+| Behavior | Verification source |
+| --- | --- |
+| `pgvector` source fields, identifier validation, required embeddings | [Source configuration tests](../internal/config/sources_test.go) |
+| Reading a table Nexora did not create: schema, quoted names, NULL columns, rows without text or vectors, cosine and L2, dimension mismatch, missing columns | [Index tests](../internal/index/index_test.go) (`TestExternalTable`) |
+| One semantic list per source, shared query embedding per model, project filter, fusion with keyword hits | [Retrieval tests](../internal/retrieval/retrieval_test.go) |
+| `index` copies text without embedding rows; `search` and `resolve --task` embed only the query and return table hits with their source | [Retrieval integration tests](../tests/retrieval_test.go) (`TestExistingVectorTable`) |
+
+The embedding provider was a local OpenAI-compatible test server. Ranking quality
+on a real team table was not measured here.
+
 ## Distribution
 
 Verified on 2026-10-26. `scripts/release-build.sh` produced static archives for
@@ -2179,7 +2266,7 @@ pushed tag is their first real test. macOS binaries are not signed or notarized.
     <div class="lane">
       <div class="lane-h"><span class="ph">1</span><b>Index time</b><code>nexora index</code></div>
       <div class="lane-row">
-        <div class="fx src"><span class="fx-k">Sources</span><ul><li>Confluence spaces, through the REST API</li><li><code>docs/</code> folders: Markdown, HTML, text</li></ul><p class="fx-note">Rules and skills in <code>knowledge/</code> are not indexed. They are read directly at task time.</p></div>
+        <div class="fx src"><span class="fx-k">Sources</span><ul><li>Confluence spaces, through the REST API</li><li><code>docs/</code> folders: Markdown, HTML, text</li><li>Tables you already embedded in pgvector: text copied for keywords, <a href="#use-vectors-you-already-have">vectors searched in place</a></li></ul><p class="fx-note">Rules and skills in <code>knowledge/</code> are not indexed. They are read directly at task time.</p></div>
         <div class="pipe" aria-hidden="true"><i></i></div>
         <div class="fx"><span class="fx-k">Chunk</span><p>Split pages at headings into passages. Each keeps its page link, heading trail, and digest.</p></div>
         <div class="pipe" aria-hidden="true"><i></i></div>
@@ -2579,7 +2666,7 @@ const PAGES = {
   install:{num:'01',title:'Install',md:'md-install',file:'install.md',eyebrow:'Use Nexora · 01',lede:'One command on macOS and Linux. Build from source for Windows and everything else.'},
   start:{num:'02',title:'Quickstart',md:'md-start',file:'quickstart.md',eyebrow:'Use Nexora · 02',lede:'Five steps from an empty project to an agent that gets your rules and the right doc passages for every task.'},
   format:{num:'03',title:'Write knowledge',md:'md-format',file:'knowledge-format.md',eyebrow:'Use Nexora · 03',lede:'Rules, skills, references, and decisions: the header fields, scoping by project, agent, and file, and a complete example of every kind.'},
-  retrieval:{num:'04',title:'Docs and Confluence',md:'md-retrieval',file:'retrieval.md',eyebrow:'Use Nexora · 04',lede:'Index internal documentation and Confluence spaces, search them, and get passages next to your rules, with optional embeddings and pgvector.'},
+  retrieval:{num:'04',title:'Docs and Confluence',md:'md-retrieval',file:'retrieval.md',eyebrow:'Use Nexora · 04',lede:'Index internal documentation and Confluence spaces, reuse tables you already embedded, search them, and get passages next to your rules, with optional embeddings and pgvector.'},
   agents:{num:'05',title:'Connect agents',md:'md-agents',file:'agents.md',eyebrow:'Use Nexora · 05',lede:'Serve knowledge to Claude Code, Codex, and other MCP clients, and sync always-on rules into AGENTS.md, CLAUDE.md, and SKILL.md files.'},
   configuration:{title:'Configuration',md:'md-configuration',file:'configuration.md',eyebrow:'Reference',lede:'Every nexora.yaml field, the environment variables Nexora reads, and the files it writes.'},
   cli:{title:'CLI reference',md:'md-cli',file:'cli.md',eyebrow:'Reference',lede:'Every command and flag, recipes, the JSON envelopes, exit codes, and shell scripting.'},

@@ -13,7 +13,9 @@ project, agent, and file metadata; retrieval cannot add, remove, or reorder them
 ## Add documentation sources
 
 Sources have a `type`. The default, `knowledge`, holds front-matter knowledge as
-before. Add `docs` for local documentation folders and `confluence` for spaces:
+before. Add `docs` for local documentation folders and `confluence` for spaces.
+If your docs are already embedded in a pgvector table, see
+[Use vectors you already have](#use-vectors-you-already-have).
 
 ```yaml
 schema_version: 1
@@ -55,7 +57,7 @@ Indexing is an explicit step. It is the only time Nexora reads documentation or
 calls Confluence:
 
 ```shell
-nexora index                 # every docs and confluence source
+nexora index                 # every docs, confluence, and pgvector source
 nexora index --source wiki   # rebuild one source, keep the others
 nexora index --json          # report as JSON
 ```
@@ -209,6 +211,58 @@ A full `nexora index` recreates both tables; `--source` replaces one source in a
 transaction. Keyword candidates come from PostgreSQL full-text search and
 semantic candidates from pgvector's cosine distance; the fusion and explanations
 are the same as the local store.
+
+## Use vectors you already have
+
+If your team already embeds its documentation into PostgreSQL with pgvector, for
+example for a docs search or chatbot, point Nexora at that table instead of
+embedding everything again. Add a `pgvector` source:
+
+```yaml
+sources:
+  - id: team-docs
+    type: pgvector
+    dsn_env: TEAM_DOCS_DATABASE_URL  # connection string, read from the environment
+    table: docs.chunks               # table or schema.table
+    columns:
+      id: chunk_id                   # required: unique row key
+      text: content                  # required: the passage text
+      vector: embedding              # required: the pgvector column
+      title: page_title              # optional
+      location: url                  # optional: link shown with each hit
+      document: page_id              # optional: groups rows into documents
+    distance: cosine                 # cosine (default), l2, or inner_product
+    embeddings:                      # the model that produced the stored vectors
+      provider: openai
+      model: text-embedding-3-small
+      api_key_env: OPENAI_API_KEY
+    projects: [commerce-api]         # optional
+```
+
+How it works:
+
+- **`nexora index`** reads the `id`, `text`, `title`, `location`, and `document`
+  columns into Nexora's own index for keyword search. It never calls the embedding
+  provider for these rows and never writes to the table.
+- **At query time** Nexora embeds only the task text with the configured model
+  and asks the table for the nearest rows, using its own vectors (and its HNSW or
+  IVFFlat index, if it has one). Those rows are ranked together with keyword hits
+  and with your other sources by reciprocal rank fusion. A hit found this way has
+  a reason like `{"method": "semantic", "source": "team-docs", "rank": 1}`.
+- **The model must match.** Queries have to be embedded by the same model that
+  produced the table's vectors, otherwise the similarities are meaningless. A
+  different vector size fails with a clear error; a different model of the same
+  size cannot be detected, so name the model exactly. Sources that share a model
+  share one query embedding.
+
+Each row is one passage; Nexora does not re-chunk the table, so passage IDs are
+`<source id>:<row id>`. Vector search always sees the current table. The keyword
+copy is refreshed by `nexora index`, so run it again after large changes. The
+database user needs only `SELECT` on the table.
+
+You can combine a `pgvector` source with `docs` and `confluence` sources. To give
+those sources vector search too, set `index.embeddings` to the same model as the
+table, so all your documentation is searched by meaning the same way.
 
 ## Configuration reference
 

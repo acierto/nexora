@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 
 	"github.com/acierto/nexora/internal/embed"
 	"github.com/acierto/nexora/internal/index"
@@ -15,7 +16,9 @@ import (
 
 // Reason explains how one method found a hit.
 type Reason struct {
-	Method string   `json:"method"`
+	Method string `json:"method"`
+	// Source names the pgvector source whose own vectors found the hit.
+	Source string   `json:"source,omitempty"`
 	Rank   int      `json:"rank"`
 	Score  float64  `json:"score"`
 	Terms  []string `json:"terms"`
@@ -33,6 +36,16 @@ type Request struct {
 	Text    string
 	Project string
 	Limit   int
+	// Vectors are existing tables searched by meaning with their own vectors.
+	Vectors []VectorSource
+}
+
+// VectorSource is a pgvector source: its table and the embedder that produced
+// the stored vectors, used here only for the query.
+type VectorSource struct {
+	ID       string
+	Table    index.VectorTable
+	Embedder embed.Embedder
 }
 
 // rrfK is the reciprocal rank fusion constant from Cormack et al. (2009).
@@ -75,11 +88,42 @@ func Search(ctx context.Context, store index.Store, embedder embed.Embedder, req
 			return nil, err
 		}
 	}
-	return Fuse(map[string][]index.Candidate{"keyword": keyword, "semantic": semantic}, terms, req.Limit), nil
+	lists := map[string][]index.Candidate{"keyword": keyword, "semantic": semantic}
+	if req.Text != "" {
+		// Sources that share a model share one query embedding.
+		cache := map[string][]float32{}
+		if q.Vector != nil {
+			cache[embedder.Model()] = q.Vector
+		}
+		for _, src := range req.Vectors {
+			vector, ok := cache[src.Embedder.Model()]
+			if !ok {
+				vectors, err := src.Embedder.Embed(ctx, []string{req.Text})
+				if err != nil {
+					return nil, fmt.Errorf("source %s: %w", src.ID, err)
+				}
+				vector = vectors[0]
+				cache[src.Embedder.Model()] = vector
+			}
+			found, err := src.Table.Nearest(ctx, vector, pool)
+			if err != nil {
+				return nil, err
+			}
+			allowed := []index.Candidate{}
+			for _, c := range found {
+				if c.Passage.AllowedFor(req.Project) {
+					allowed = append(allowed, c)
+				}
+			}
+			lists["semantic/"+src.ID] = allowed
+		}
+	}
+	return Fuse(lists, terms, req.Limit), nil
 }
 
 // Fuse combines ranked candidate lists with reciprocal rank fusion. Ties break
-// by passage ID so results are reproducible.
+// by passage ID so results are reproducible. A list named "semantic/<source>"
+// is reported as method semantic with that source.
 func Fuse(lists map[string][]index.Candidate, terms []string, limit int) []Hit {
 	methods := make([]string, 0, len(lists))
 	for m := range lists {
@@ -95,7 +139,8 @@ func Fuse(lists map[string][]index.Candidate, terms []string, limit int) []Hit {
 				byID[c.Passage.ID] = h
 			}
 			h.Score += 1 / float64(rrfK+rank+1)
-			reason := Reason{Method: method, Rank: rank + 1, Score: round(c.Score), Terms: []string{}}
+			name, source, _ := strings.Cut(method, "/")
+			reason := Reason{Method: name, Source: source, Rank: rank + 1, Score: round(c.Score), Terms: []string{}}
 			if method == "keyword" {
 				reason.Terms = index.MatchedTerms(c.Passage, terms)
 			}

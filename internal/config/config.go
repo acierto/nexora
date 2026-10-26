@@ -14,11 +14,20 @@ import (
 )
 
 // Source types. Knowledge sources hold front-matter knowledge items; docs and
-// confluence sources hold documentation that is indexed into passages.
+// confluence sources hold documentation that is indexed into passages; pgvector
+// sources are existing tables of already embedded passages, searched in place.
 const (
 	SourceKnowledge  = "knowledge"
 	SourceDocs       = "docs"
 	SourceConfluence = "confluence"
+	SourcePgvector   = "pgvector"
+)
+
+// Distance functions for pgvector sources.
+const (
+	DistanceCosine       = "cosine"
+	DistanceL2           = "l2"
+	DistanceInnerProduct = "inner_product"
 )
 
 // Index stores and embedding providers.
@@ -40,7 +49,24 @@ type Source struct {
 	UserEnv  string   `yaml:"user_env"`
 	TokenEnv string   `yaml:"token_env"`
 	Projects []string `yaml:"projects"`
-	Root     string   `yaml:"-"`
+	// pgvector sources
+	DSNEnv     string      `yaml:"dsn_env"`
+	Table      string      `yaml:"table"`
+	Columns    Columns     `yaml:"columns"`
+	Distance   string      `yaml:"distance"`
+	Embeddings *Embeddings `yaml:"embeddings"`
+	Root       string      `yaml:"-"`
+}
+
+// Columns maps an existing table to passage fields. ID, Text, and Vector are
+// required; the others are optional.
+type Columns struct {
+	ID       string `yaml:"id"`
+	Text     string `yaml:"text"`
+	Vector   string `yaml:"vector"`
+	Title    string `yaml:"title"`
+	Location string `yaml:"location"`
+	Document string `yaml:"document"`
 }
 
 type Embeddings struct {
@@ -80,8 +106,9 @@ type Config struct {
 }
 
 var (
-	envName   = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
-	tableName = regexp.MustCompile(`^[a-z_][a-z0-9_]{0,50}$`)
+	envName       = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+	tableName     = regexp.MustCompile(`^[a-z_][a-z0-9_]{0,50}$`)
+	sqlIdentifier = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_$]{0,62}$`)
 )
 
 func Load(file string) (Config, error) {
@@ -107,16 +134,20 @@ func Load(file string) (Config, error) {
 // KnowledgeSources returns sources holding front-matter knowledge items.
 func (c Config) KnowledgeSources() []Source { return c.sourcesOf(SourceKnowledge) }
 
-// DocumentSources returns docs and confluence sources, in ID order.
+// DocumentSources returns docs, confluence, and pgvector sources, in ID order.
+// All of them are indexed for keyword search.
 func (c Config) DocumentSources() []Source {
 	out := []Source{}
 	for _, s := range c.Sources {
-		if s.Type == SourceDocs || s.Type == SourceConfluence {
+		if s.Type == SourceDocs || s.Type == SourceConfluence || s.Type == SourcePgvector {
 			out = append(out, s)
 		}
 	}
 	return out
 }
+
+// VectorSources returns pgvector sources, searched by meaning in place.
+func (c Config) VectorSources() []Source { return c.sourcesOf(SourcePgvector) }
 
 func (c Config) sourcesOf(kind string) []Source {
 	out := []Source{}
@@ -162,8 +193,13 @@ func (c *Config) validate(base string) error {
 				return err
 			}
 			continue
+		case SourcePgvector:
+			if err := validatePgvectorSource(source); err != nil {
+				return err
+			}
+			continue
 		default:
-			return fmt.Errorf("source %s: type must be knowledge, docs, or confluence", source.ID)
+			return fmt.Errorf("source %s: type must be knowledge, docs, confluence, or pgvector", source.ID)
 		}
 		root, err := canonicalDir(base, source.ID, source.Path)
 		if err != nil {
@@ -190,6 +226,9 @@ func validatePathSource(source *Source) error {
 	if source.URL != "" || len(source.Spaces) > 0 || source.UserEnv != "" || source.TokenEnv != "" {
 		return fmt.Errorf("source %s: url, spaces, user_env, and token_env are only valid for confluence sources", source.ID)
 	}
+	if err := noPgvectorFields(source); err != nil {
+		return err
+	}
 	if source.Type == SourceKnowledge && len(source.Projects) > 0 {
 		return fmt.Errorf("source %s: projects is only valid for docs and confluence sources; scope knowledge with applies_to", source.ID)
 	}
@@ -199,6 +238,9 @@ func validatePathSource(source *Source) error {
 func validateConfluence(source *Source) error {
 	if source.Path != "" {
 		return fmt.Errorf("source %s: confluence sources use url and spaces, not path", source.ID)
+	}
+	if err := noPgvectorFields(source); err != nil {
+		return err
 	}
 	parsed, err := url.Parse(source.URL)
 	if err != nil || (parsed.Scheme != "https" && parsed.Scheme != "http") || parsed.Host == "" {
@@ -225,6 +267,62 @@ func validateConfluence(source *Source) error {
 		return fmt.Errorf("source %s: user_env must be an environment variable name", source.ID)
 	}
 	return validateProjects(source)
+}
+
+func noPgvectorFields(source *Source) error {
+	if source.DSNEnv != "" || source.Table != "" || source.Columns != (Columns{}) || source.Distance != "" || source.Embeddings != nil {
+		return fmt.Errorf("source %s: dsn_env, table, columns, distance, and embeddings are only valid for pgvector sources", source.ID)
+	}
+	return nil
+}
+
+func validatePgvectorSource(source *Source) error {
+	prefix := "source " + source.ID
+	if source.Path != "" || source.URL != "" || len(source.Spaces) > 0 || source.UserEnv != "" || source.TokenEnv != "" {
+		return fmt.Errorf("%s: pgvector sources use dsn_env, table, and columns, not path, url, spaces, user_env, or token_env", prefix)
+	}
+	if !envName.MatchString(source.DSNEnv) {
+		return fmt.Errorf("%s: dsn_env must name the environment variable holding the PostgreSQL connection string", prefix)
+	}
+	parts := strings.Split(source.Table, ".")
+	if len(parts) > 2 || !all(parts, sqlIdentifier.MatchString) {
+		return fmt.Errorf("%s: table must be a table name or schema.table, using letters, digits, and underscores", prefix)
+	}
+	cols := source.Columns
+	for name, value := range map[string]string{"id": cols.ID, "text": cols.Text, "vector": cols.Vector} {
+		if value == "" {
+			return fmt.Errorf("%s: columns.%s is required", prefix, name)
+		}
+	}
+	for name, value := range map[string]string{"id": cols.ID, "text": cols.Text, "vector": cols.Vector, "title": cols.Title, "location": cols.Location, "document": cols.Document} {
+		if value != "" && !sqlIdentifier.MatchString(value) {
+			return fmt.Errorf("%s: columns.%s must be a column name using letters, digits, and underscores", prefix, name)
+		}
+	}
+	if source.Distance == "" {
+		source.Distance = DistanceCosine
+	}
+	switch source.Distance {
+	case DistanceCosine, DistanceL2, DistanceInnerProduct:
+	default:
+		return fmt.Errorf("%s: distance must be cosine, l2, or inner_product", prefix)
+	}
+	if source.Embeddings == nil || source.Embeddings.Provider == "" || source.Embeddings.Provider == ProviderNone {
+		return fmt.Errorf("%s: embeddings must name the provider and model that produced the stored vectors, so queries are embedded the same way", prefix)
+	}
+	if err := source.Embeddings.validate(prefix + ": embeddings"); err != nil {
+		return err
+	}
+	return validateProjects(source)
+}
+
+func all(values []string, ok func(string) bool) bool {
+	for _, v := range values {
+		if !ok(v) {
+			return false
+		}
+	}
+	return true
 }
 
 func validateProjects(source *Source) error {
@@ -301,41 +399,8 @@ func (i *Index) validate(base string) error {
 	default:
 		return fmt.Errorf("index.store must be local or pgvector")
 	}
-	e := &i.Embeddings
-	if e.Provider == "" {
-		e.Provider = ProviderNone
-	}
-	switch e.Provider {
-	case ProviderNone:
-		if e.Model != "" || e.URL != "" || e.APIKeyEnv != "" || e.Dimensions != 0 {
-			return fmt.Errorf("index.embeddings: set provider to ollama or openai before configuring model, url, api_key_env, or dimensions")
-		}
-	case ProviderOllama, ProviderOpenAI:
-		if strings.TrimSpace(e.Model) == "" {
-			return fmt.Errorf("index.embeddings.model must not be empty")
-		}
-		if e.URL == "" {
-			e.URL = "http://localhost:11434"
-			if e.Provider == ProviderOpenAI {
-				e.URL = "https://api.openai.com/v1"
-			}
-		}
-		parsed, err := url.Parse(e.URL)
-		if err != nil || (parsed.Scheme != "https" && parsed.Scheme != "http") || parsed.Host == "" {
-			return fmt.Errorf("index.embeddings.url must be an http or https URL")
-		}
-		e.URL = strings.TrimRight(e.URL, "/")
-		if e.Provider == ProviderOpenAI && !envName.MatchString(e.APIKeyEnv) {
-			return fmt.Errorf("index.embeddings.api_key_env must name the environment variable holding the API key")
-		}
-		if e.Provider == ProviderOllama && e.APIKeyEnv != "" {
-			return fmt.Errorf("index.embeddings.api_key_env is only valid for the openai provider")
-		}
-		if e.Dimensions < 0 || e.Dimensions > 16000 {
-			return fmt.Errorf("index.embeddings.dimensions must be between 1 and 16000 when set")
-		}
-	default:
-		return fmt.Errorf("index.embeddings.provider must be none, ollama, or openai")
+	if err := i.Embeddings.validate("index.embeddings"); err != nil {
+		return err
 	}
 	c := &i.Chunk
 	if c.MaxChars == 0 {
@@ -350,6 +415,47 @@ func (i *Index) validate(base string) error {
 	}
 	if c.OverlapChars < 0 || c.OverlapChars*2 > c.MaxChars {
 		return fmt.Errorf("index.chunk.overlap_chars must be between 0 and half of max_chars")
+	}
+	return nil
+}
+
+// validate checks a provider configuration and fills defaults. name prefixes
+// error messages.
+func (e *Embeddings) validate(name string) error {
+	if e.Provider == "" {
+		e.Provider = ProviderNone
+	}
+	switch e.Provider {
+	case ProviderNone:
+		if e.Model != "" || e.URL != "" || e.APIKeyEnv != "" || e.Dimensions != 0 {
+			return fmt.Errorf("%s: set provider to ollama or openai before configuring model, url, api_key_env, or dimensions", name)
+		}
+	case ProviderOllama, ProviderOpenAI:
+		if strings.TrimSpace(e.Model) == "" {
+			return fmt.Errorf("%s.model must not be empty", name)
+		}
+		if e.URL == "" {
+			e.URL = "http://localhost:11434"
+			if e.Provider == ProviderOpenAI {
+				e.URL = "https://api.openai.com/v1"
+			}
+		}
+		parsed, err := url.Parse(e.URL)
+		if err != nil || (parsed.Scheme != "https" && parsed.Scheme != "http") || parsed.Host == "" {
+			return fmt.Errorf("%s.url must be an http or https URL", name)
+		}
+		e.URL = strings.TrimRight(e.URL, "/")
+		if e.Provider == ProviderOpenAI && !envName.MatchString(e.APIKeyEnv) {
+			return fmt.Errorf("%s.api_key_env must name the environment variable holding the API key", name)
+		}
+		if e.Provider == ProviderOllama && e.APIKeyEnv != "" {
+			return fmt.Errorf("%s.api_key_env is only valid for the openai provider", name)
+		}
+		if e.Dimensions < 0 || e.Dimensions > 16000 {
+			return fmt.Errorf("%s.dimensions must be between 1 and 16000 when set", name)
+		}
+	default:
+		return fmt.Errorf("%s.provider must be none, ollama, or openai", name)
 	}
 	return nil
 }

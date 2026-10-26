@@ -2,6 +2,7 @@ package index
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/acierto/nexora/internal/config"
 	"github.com/acierto/nexora/internal/passage"
 )
 
@@ -147,5 +149,81 @@ func TestPgvectorStore(t *testing.T) {
 	p, ok, err := store.Get(ctx, "handbook:refunds.md#1")
 	if err != nil || !ok || p.Heading != "Refund window" || !reflect.DeepEqual(p.Projects, []string{}) {
 		t.Fatalf("get: %+v %v %v", p, ok, err)
+	}
+}
+
+// TestExternalTable reads a table Nexora did not create, as a team's existing
+// embedding pipeline would leave it: a schema, a uuid key, nullable columns,
+// and vectors of a fixed size.
+func TestExternalTable(t *testing.T) {
+	dsn := os.Getenv("NEXORA_TEST_DATABASE_URL")
+	if dsn == "" {
+		t.Skip("NEXORA_TEST_DATABASE_URL not set")
+	}
+	ctx := context.Background()
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	for _, s := range []string{
+		`CREATE EXTENSION IF NOT EXISTS vector`,
+		`DROP SCHEMA IF EXISTS nexora_ext CASCADE`,
+		`CREATE SCHEMA nexora_ext`,
+		`CREATE TABLE nexora_ext."Chunks" (chunk_id int PRIMARY KEY, body text, page_title text, url text, page_id text, emb vector(3))`,
+		`INSERT INTO nexora_ext."Chunks" VALUES
+			(1, 'Use the pipeline rollback action to redeploy the previous image.', 'Rolling back', 'https://docs.example/deploy#rollback', 'deploy', '[1,0,0]'),
+			(2, 'Announce every production deploy in the team channel.', 'Before you deploy', NULL, 'deploy', '[0.6,0.8,0]'),
+			(3, 'Refunds go back to the original payment method.', NULL, NULL, NULL, '[0,0,1]'),
+			(4, 'Draft without a vector yet.', 'Draft', NULL, NULL, NULL),
+			(5, '', 'Empty', NULL, NULL, '[0,1,0]')`,
+	} {
+		if _, err := db.ExecContext(ctx, s); err != nil {
+			t.Fatal(err)
+		}
+	}
+	source := config.Source{ID: "team", Table: "nexora_ext.Chunks", Distance: config.DistanceCosine, Projects: []string{"commerce-api"},
+		Columns: config.Columns{ID: "chunk_id", Text: "body", Vector: "emb", Title: "page_title", Location: "url", Document: "page_id"}}
+	table, err := OpenExternal(source, dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer table.Close()
+	rows, err := table.Rows(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 4 {
+		t.Fatalf("rows with text: %d", len(rows))
+	}
+	first := rows[0]
+	if first.ID != "team:1" || first.SourceType != config.SourcePgvector || first.Title != "Rolling back" || first.Heading != "Rolling back" ||
+		first.Location != "https://docs.example/deploy#rollback" || first.DocumentID != "deploy" || first.Digest == "" || !reflect.DeepEqual(first.Projects, []string{"commerce-api"}) {
+		t.Fatalf("row mapping: %+v", first)
+	}
+	if third := rows[2]; third.Title != "3" || third.Location != "3" || third.Heading != "" {
+		t.Fatalf("null columns: %+v", third)
+	}
+	near, err := table.Nearest(ctx, []float32{0.9, 0.1, 0}, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(near) != 2 || near[0].Passage.ID != "team:1" || near[1].Passage.ID != "team:2" || near[0].Score <= near[1].Score || near[0].Score > 1 {
+		t.Fatalf("nearest: %+v", near)
+	}
+	source.Distance = config.DistanceL2
+	l2, _ := OpenExternal(source, dsn)
+	defer l2.Close()
+	if near, err := l2.Nearest(ctx, []float32{0, 0, 1}, 1); err != nil || near[0].Passage.ID != "team:3" || near[0].Score != 0 {
+		t.Fatalf("l2: %+v %v", near, err)
+	}
+	if _, err := table.Nearest(ctx, []float32{1, 0}, 1); err == nil || !strings.Contains(err.Error(), "model that produced the table") {
+		t.Fatalf("dimension mismatch not explained: %v", err)
+	}
+	source.Columns.Text = "missing_column"
+	bad, _ := OpenExternal(source, dsn)
+	defer bad.Close()
+	if _, err := bad.Rows(ctx); err == nil || !strings.Contains(err.Error(), "source team (nexora_ext.Chunks)") {
+		t.Fatalf("missing column not attributed: %v", err)
 	}
 }

@@ -76,6 +76,20 @@ sources:
 		t.Fatalf("pgvector defaults: %+v", cfg.Index)
 	}
 
+	vectors := "  - id: crystal\n    type: pgvector\n    dsn_env: DOCS_DB\n    table: docs.chunks\n    projects: [commerce-api]\n    columns:\n      id: chunk_id\n      text: content\n      vector: embedding\n      title: page_title\n      location: url\n    embeddings:\n      provider: openai\n      model: text-embedding-3-small\n      api_key_env: OPENAI_API_KEY\n"
+	write(base + vectors)
+	cfg, err = Load(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	vs := cfg.VectorSources()
+	if len(vs) != 1 || vs[0].Distance != DistanceCosine || vs[0].Embeddings.URL != "https://api.openai.com/v1" || vs[0].Columns.Location != "url" || vs[0].Root != "" {
+		t.Fatalf("pgvector source: %+v", vs)
+	}
+	if len(cfg.DocumentSources()) != 3 || cfg.Index.Embeddings.Provider != ProviderNone {
+		t.Fatalf("pgvector source must be indexed for keywords without index embeddings: %+v", cfg.DocumentSources())
+	}
+
 	confluence := "  - id: c\n    type: confluence\n    url: https://x.example/wiki\n    spaces: [A]\n    token_env: TOKEN\n"
 	head := "schema_version: 1\nproject: p\nsources:\n"
 	for name, data := range map[string]string{
@@ -101,6 +115,17 @@ sources:
 		"chunk too small":          base + "index:\n  chunk:\n    max_chars: 50\n",
 		"overlap too large":        base + "index:\n  chunk:\n    max_chars: 400\n    overlap_chars: 300\n",
 		"unknown index field":      base + "index:\n  backend: x\n",
+		"vectors no dsn":           base + strings.Replace(vectors, "    dsn_env: DOCS_DB\n", "", 1),
+		"vectors bad table":        base + strings.Replace(vectors, "docs.chunks", "docs.chunks; drop table x", 1),
+		"vectors three-part table": base + strings.Replace(vectors, "docs.chunks", "a.b.c", 1),
+		"vectors missing text":     base + strings.Replace(vectors, "      text: content\n", "", 1),
+		"vectors bad column":       base + strings.Replace(vectors, "page_title", "title)", 1),
+		"vectors no embeddings":    base + vectors[:strings.Index(vectors, "    embeddings:")],
+		"vectors no model":         base + strings.Replace(vectors, "      model: text-embedding-3-small\n", "", 1),
+		"vectors bad distance":     base + vectors + "    distance: dot\n",
+		"vectors with path":        base + vectors + "    path: ./handbook\n",
+		"docs with table":          head + "  - id: d\n    type: docs\n    path: ./handbook\n    table: t\n",
+		"confluence with columns":  head + confluence + "    columns:\n      id: x\n",
 	} {
 		t.Run(name, func(t *testing.T) {
 			write(data)

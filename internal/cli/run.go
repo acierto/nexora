@@ -38,7 +38,7 @@ Commands:
   validate   Validate all configured knowledge
   list       List all knowledge, including inactive items
   resolve    Select knowledge by project, agent, and files (+ docs with --task)
-  index      Index docs and Confluence sources for retrieval
+  index      Index docs, Confluence, and pgvector sources for retrieval
   search     Search indexed documentation
   mcp        Serve knowledge to agents over MCP (stdio)
   sync       Write knowledge into AGENTS.md/CLAUDE.md and agent skill folders
@@ -129,7 +129,7 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 		flags.StringVar(&project, "project", "", "project ID (default: configuration project)")
 		flags.IntVar(&limit, "limit", 5, "maximum passages (1-50)")
 	case "index":
-		flags.StringVar(&source, "source", "", "index only this docs or confluence source")
+		flags.StringVar(&source, "source", "", "index only this docs, confluence, or pgvector source")
 	case "sync":
 		flags.StringVar(&agent, "agent", "", "codex or claude (required)")
 		flags.StringVar(&project, "project", "", "project ID (default: configuration project)")
@@ -251,6 +251,9 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 				fmt.Fprintf(&output, "  %s (%s): %d documents, %d passages", s.ID, s.Type, s.Documents, s.Passages)
 				if s.Embedded > 0 {
 					fmt.Fprintf(&output, ", %d embedded", s.Embedded)
+				}
+				if s.Vectors != "" {
+					fmt.Fprintf(&output, ", vectors searched %s", s.Vectors)
 				}
 				fmt.Fprintln(&output)
 			}

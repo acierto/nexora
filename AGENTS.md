@@ -90,7 +90,8 @@ Implemented: the local knowledge registry (OpenSpec change
 `local-knowledge-registry`) and documentation retrieval with agent delivery
 (`document-retrieval-and-agent-delivery`): docs and Confluence sources, a local or
 pgvector passage index, optional embeddings, `search`, `resolve --task`, the stdio
-MCP server, and native sync. See docs/architecture.md. Plugins, knowledge packs,
+MCP server, and native sync; and existing pgvector tables as sources
+(`existing-vector-sources`). See docs/architecture.md. Plugins, knowledge packs,
 remote serving, authorization, overrides, and context budgets are not implemented.
 Review the current repository before assuming other commands, configuration
 schemas, or public APIs exist.

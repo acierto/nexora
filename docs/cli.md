@@ -11,7 +11,7 @@ Commands use flags after the command name; positional arguments are rejected.
 | `validate` | `--config PATH`, `--json` | Loads every source; reports validity and item count |
 | `list` | `--config PATH`, `--json` | Lists active, draft, and archived items in ID order |
 | `resolve` | `--config PATH`, `--json`, `--project ID`, `--agent ID`, repeatable `--file PATH`, `--task TEXT`, `--limit N` | Returns active applicable knowledge; with `--task`, also documentation passages |
-| `index` | `--config PATH`, `--json`, `--source ID` | Indexes every docs and confluence source, or one |
+| `index` | `--config PATH`, `--json`, `--source ID` | Indexes every docs, confluence, and pgvector source, or one |
 | `search` | `--config PATH`, `--json`, `--query TEXT` (required), `--project ID`, `--limit N` | Returns documentation passages with explanations |
 | `mcp` | `--config PATH` | Serves knowledge over MCP on stdin/stdout until EOF |
 | `sync` | `--config PATH`, `--json`, `--agent codex\|claude` (required), `--project ID`, `--dir PATH`, `--check` | Writes the managed block and generated skills; `--check` writes nothing |
