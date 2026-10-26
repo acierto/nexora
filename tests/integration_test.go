@@ -247,8 +247,8 @@ func TestDocumentedRecipes(t *testing.T) {
 	}
 }
 
-func TestGettingStarted(t *testing.T) {
-	data, e := os.ReadFile(filepath.Join(repository, "docs", "getting-started.md"))
+func TestQuickstart(t *testing.T) {
+	data, e := os.ReadFile(filepath.Join(repository, "docs", "quickstart.md"))
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -258,16 +258,19 @@ func TestGettingStarted(t *testing.T) {
 		t.Fatal("quickstart blocks changed; update walkthrough coverage")
 	}
 	root := t.TempDir()
-	output := shell(t, root, blocks[1])
-	if !strings.Contains(output, "Valid: 1 knowledge item") {
+	output := shell(t, root, blocks[0])
+	if !strings.Contains(output, "Created nexora.yaml") {
 		t.Fatal(output)
 	}
 	if e := os.WriteFile(filepath.Join(root, "knowledge", "rules", "authentication.md"), []byte(samples[0]), 0644); e != nil {
 		t.Fatal(e)
 	}
+	shell(t, root, blocks[1])
 	output = shell(t, root, blocks[2])
-	if !strings.Contains(output, "Valid: 2 knowledge items") {
-		t.Fatal(output)
+	for _, want := range []string{"Valid: 2 knowledge items", "handbook (docs): 1 documents, 1 passages", "Required rules (2)\n  security/authentication", "  project/conventions", "Passages (1)\n  Token rotation — tokens.md"} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("quickstart output lacks %q:\n%s", want, output)
+		}
 	}
 	code, out, err := command(t, root, "resolve", "--file", "src/auth/service.go", "--json")
 	if code != 0 || err != "" {

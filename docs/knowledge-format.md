@@ -1,88 +1,17 @@
-# Knowledge format
+# Write knowledge
 
 [Read online](https://acierto.github.io/nexora/#format) · [Documentation home](https://acierto.github.io/nexora/)
 
-Nexora reads one configuration file, `nexora.yaml`, and two kinds of content:
-**knowledge items** (rules, skills, references, and decisions written as Markdown
-with front matter, selected deterministically) and **documentation** (ordinary
-docs folders and Confluence spaces, indexed into passages and retrieved for a
-task). This page covers the configuration and the knowledge format. Retrieval is
-described in [Docs and Confluence](retrieval.md).
+Knowledge items are the instructions and context you want agents to use:
+**rules** to follow, **skills** (step-by-step procedures), **references**
+(where things live), and **decisions** (why things are the way they are). Each one
+is a Markdown file with a short YAML header. Nexora selects them deterministically
+by project, agent, and file, so the same task always gets the same rules.
 
-## Configuration
-
-Configuration is explicit: commands default to `./nexora.yaml`, and `--config`
-selects another file. Relative paths resolve against that file, not the working
-directory. Sources can point to shared local directories outside a project.
-
-```yaml
-schema_version: 1
-project: commerce-api
-sources:
-  - id: local                  # knowledge source (type defaults to knowledge)
-    path: ./knowledge
-  - id: handbook
-    type: docs                 # Markdown, text, and HTML; no front matter needed
-    path: ./handbook
-    projects: [commerce-api]   # optional
-  - id: wiki
-    type: confluence
-    url: https://your-company.atlassian.net/wiki
-    spaces: [PAY, ARCH]
-    user_env: CONFLUENCE_USER
-    token_env: CONFLUENCE_TOKEN
-index:                         # optional; these are the defaults plus an embedding provider
-  store: local
-  path: .nexora/index.json
-  embeddings:
-    provider: ollama
-    model: nomic-embed-text
-  chunk:
-    max_chars: 1200
-    overlap_chars: 150
-```
-
-Only `schema_version`, `project`, and one source are required. The smallest
-valid file, which `nexora init` writes, has a single knowledge source.
-
-| Field | Applies to | Meaning / default |
-| --- | --- | --- |
-| `schema_version` | file | Required; must be `1` |
-| `project` | file | Required project ID used when `--project` is omitted |
-| `sources[].id` | all sources | Required, unique; appears in provenance and passage IDs |
-| `sources[].type` | all sources | `knowledge` (default), `docs`, or `confluence` |
-| `sources[].path` | knowledge, docs | Required directory; readable, canonical, not overlapping another root |
-| `sources[].projects` | docs, confluence | Only return this source's passages for these projects; omitted means every project |
-| `sources[].url` | confluence | Required base URL, for example `https://x.atlassian.net/wiki` |
-| `sources[].spaces` | confluence | Required list of unique space keys |
-| `sources[].token_env` | confluence | Required name of the environment variable holding the API token |
-| `sources[].user_env` | confluence | Name of the variable holding the user (Cloud email); enables basic auth, otherwise bearer |
-| `index.store` | index | `local` (default) or `pgvector` |
-| `index.path` | local store | Index file, default `.nexora/index.json` |
-| `index.dsn_env` / `index.table` | pgvector store | Variable holding the connection string; table, default `nexora_passages` |
-| `index.embeddings.*` | index | `provider` (`none`, `ollama`, `openai`), `model`, `url`, `api_key_env`, `dimensions` |
-| `index.chunk.*` | index | `max_chars` (200-20000, default 1200), `overlap_chars` (default 150) |
-
-Unknown fields, duplicate keys, extra YAML documents, explicit nulls, and values
-with incorrect types fail validation, at every level. Optional fields should be
-omitted rather than set to null. Fields that belong to another source type are
-rejected: a knowledge source cannot set `url` or `projects`, and a confluence
-source cannot set `path`. Configuration never contains secrets and does not
-expand environment variables or `~`; fields ending in `_env` name a variable that
-is read only when Nexora needs it. Parent directories are not searched.
-
-Source root paths are canonicalized, but symlink entries inside source trees are
-rejected.
-
-## Path patterns
-
-File applicability uses repository-relative, case-sensitive paths with `/`
-separators. `*` matches zero or more characters within one segment, `?` matches
-one character, and a whole `**` segment matches zero or more directories.
-`src/**/*.go` matches both `src/main.go` and `src/auth/service.go`.
-Brackets, braces, negation, embedded `**`, empty segments, `.`/`..` segments,
-absolute patterns, and backslashes in patterns are rejected. Request files may
-use Windows separators; absolute, drive-qualified, UNC, and traversal paths fail.
+Put knowledge files in a knowledge source folder (`./knowledge` after
+`nexora init`). Ordinary documentation that has no header belongs in a docs
+source instead; see [Docs and Confluence](retrieval.md). Every configuration
+field is listed in the [configuration reference](configuration.md).
 
 ## Markdown metadata
 
@@ -179,6 +108,16 @@ status: active
 ---
 Store knowledge as reviewable Markdown alongside the project.
 ```
+
+## Path patterns
+
+File applicability uses repository-relative, case-sensitive paths with `/`
+separators. `*` matches zero or more characters within one segment, `?` matches
+one character, and a whole `**` segment matches zero or more directories.
+`src/**/*.go` matches both `src/main.go` and `src/auth/service.go`.
+Brackets, braces, negation, embedded `**`, empty segments, `.`/`..` segments,
+absolute patterns, and backslashes in patterns are rejected. Request files may
+use Windows separators; absolute, drive-qualified, UNC, and traversal paths fail.
 
 ## Sources and versions
 

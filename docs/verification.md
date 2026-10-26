@@ -102,3 +102,13 @@ the bundled example only; measure it on your own documentation before relying on
 ranking. The MCP server was tested with JSON-RPC exchanges over stdio; check your
 agent's MCP client configuration with your own setup.
 
+## Distribution
+
+Verified on 2026-10-26. `scripts/release-build.sh` produced static archives for
+darwin/arm64, darwin/amd64, linux/amd64, and linux/arm64 with `checksums.txt`; the
+linux/amd64 binary reported its compiled-in version through `nexora version`.
+`scripts/install.sh` installed that build from a local HTTP mirror
+(`NEXORA_DOWNLOAD_BASE`), and refused an archive whose checksum did not match.
+The GitHub Actions workflows (`ci.yml`, `release.yml`) have not run yet; the first
+pushed tag is their first real test. macOS binaries are not signed or notarized.
+

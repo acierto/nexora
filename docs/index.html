@@ -107,10 +107,10 @@ h1,h2,h3,h4{font-family:var(--display);line-height:1.12;text-wrap:balance;margin
 .side a[aria-current] .n{background:var(--pc);color:#fff}
 .side a .ext{margin-left:auto;font-size:11px;color:var(--fg-3)}
 .side a[data-page="home"]{--pc:var(--ink)} .side a[data-page="playground"]{--pc:var(--pink)}
-.side a[data-page="start"]{--pc:var(--mint)} .side a[data-page="format"]{--pc:var(--grape)} .side a[data-page="resolution"]{--pc:var(--ink)}
+.side a[data-page="install"]{--pc:var(--ink)} .side a[data-page="start"]{--pc:var(--mint)} .side a[data-page="format"]{--pc:var(--grape)}
 .side a[data-page="retrieval"]{--pc:var(--tang)} .side a[data-page="agents"]{--pc:var(--pink)}
-.side a[data-page="cli"]{--pc:var(--grape)} .side a[data-page="troubleshooting"]{--pc:var(--sun)}
-.side a[data-page="architecture"]{--pc:var(--mint)} .side a[data-page="verification"]{--pc:var(--ink)}
+.side a[data-page="configuration"]{--pc:var(--sun)} .side a[data-page="cli"]{--pc:var(--grape)} .side a[data-page="resolution"]{--pc:var(--ink)} .side a[data-page="troubleshooting"]{--pc:var(--tang)}
+.side a[data-page="contributing"]{--pc:var(--mint)} .side a[data-page="architecture"]{--pc:var(--grape)} .side a[data-page="verification"]{--pc:var(--ink)}
 main{min-width:0;padding:30px 40px 100px}
 .toc{position:sticky;top:calc(var(--top) + env(safe-area-inset-top,0px));height:calc(100vh - var(--top) - env(safe-area-inset-top,0px));overflow-y:auto;padding:40px 0 40px 18px;font-size:13.5px}
 .toc .eyebrow{display:block;margin-bottom:12px}
@@ -297,7 +297,12 @@ main{min-width:0;padding:30px 40px 100px}
 .sec > h2{font-size:clamp(28px,3.4vw,40px);font-weight:800;letter-spacing:-.04em;margin-bottom:10px}
 .sec > h2 em{font-style:normal;background:linear-gradient(95deg,var(--grape),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
 .sec > .sub{color:var(--fg-2);max-width:62ch;margin:0 0 26px;font-size:17px}
-.docs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.docs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.docs-grid.use{grid-template-columns:repeat(3,minmax(0,1fr))}
+.docs-grid.use a:nth-child(2){grid-column:span 2}
+@media (max-width:860px){.docs-grid.use{grid-template-columns:1fr}.docs-grid.use a:nth-child(2){grid-column:auto}}
+.dg-h{font:700 13px var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3);margin:26px 0 14px}
+.dg-contrib{margin:26px 0 0;font-size:15px;color:var(--fg-2)}
 
 .card{--pc:var(--ink);display:flex;flex-direction:column;gap:8px;padding:20px 20px 18px;border:1.5px solid color-mix(in srgb,var(--pc) 30%,var(--line));border-radius:20px;background:var(--bg-2);color:var(--fg);min-width:0;box-shadow:0 5px 0 color-mix(in srgb,var(--pc) 40%,var(--line-2))}
 a.card:hover{text-decoration:none;box-shadow:0 10px 0 color-mix(in srgb,var(--pc) 40%,var(--line-2)),0 30px 40px -24px color-mix(in srgb,var(--pc) 70%,transparent)}
@@ -624,7 +629,7 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
   <nav aria-label="Primary">
     <a href="#home" data-nav="home">Overview</a>
     <a href="#playground" data-nav="playground">Playground</a>
-    <a href="#start" data-nav="docs">Docs</a>
+    <a href="#install" data-nav="docs">Docs</a>
   </nav>
   <button class="searchbtn" id="searchbtn" aria-label="Search the docs">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -644,19 +649,24 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
       <a href="#roadmap" data-anchor="roadmap" style="--pc:var(--grape)"><span class="dot"></span>Roadmap</a>
       <a href="#playground" data-page="playground"><span class="dot"></span>Resolution playground</a>
     </div>
-    <div class="grp"><span class="eyebrow">Guides</span>
-      <a href="#start" data-page="start"><span class="n">01</span>Getting started</a>
-      <a href="#format" data-page="format"><span class="n">02</span>Knowledge format</a>
-      <a href="#resolution" data-page="resolution"><span class="n">03</span>How resolution works</a>
+    <div class="grp"><span class="eyebrow">Use Nexora</span>
+      <a href="#install" data-page="install"><span class="n">01</span>Install</a>
+      <a href="#start" data-page="start"><span class="n">02</span>Quickstart</a>
+      <a href="#format" data-page="format"><span class="n">03</span>Write knowledge</a>
       <a href="#retrieval" data-page="retrieval"><span class="n">04</span>Docs and Confluence</a>
       <a href="#agents" data-page="agents"><span class="n">05</span>Connect agents</a>
-      <a href="#cli" data-page="cli"><span class="n">06</span>CLI guide</a>
-      <a href="#troubleshooting" data-page="troubleshooting"><span class="n">07</span>Troubleshooting</a>
     </div>
-    <div class="grp"><span class="eyebrow">Project</span>
+    <div class="grp"><span class="eyebrow">Reference</span>
+      <a href="#configuration" data-page="configuration"><span class="dot"></span>Configuration</a>
+      <a href="#cli" data-page="cli"><span class="dot"></span>CLI</a>
+      <a href="#resolution" data-page="resolution"><span class="dot"></span>How rules are matched</a>
+      <a href="#troubleshooting" data-page="troubleshooting"><span class="dot"></span>Troubleshooting</a>
+      <a href="https://github.com/acierto/nexora/tree/main/examples" target="_blank" rel="noopener">Examples <span class="ext">↗</span></a>
+    </div>
+    <div class="grp"><span class="eyebrow">Contribute</span>
+      <a href="#contributing" data-page="contributing"><span class="dot"></span>Contributing</a>
       <a href="#architecture" data-page="architecture"><span class="dot"></span>Architecture</a>
       <a href="#verification" data-page="verification"><span class="dot"></span>Verification record</a>
-      <a href="https://github.com/acierto/nexora/tree/main/examples" target="_blank" rel="noopener">Example catalog <span class="ext">↗</span></a>
       <a href="https://github.com/acierto/nexora" target="_blank" rel="noopener">Source on GitHub <span class="ext">↗</span></a>
     </div>
   </aside>
@@ -665,55 +675,142 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
 </div>
 
 <!-- ======================= DOC SOURCES (verbatim from docs/*.md) ======================= -->
-<script type="text/markdown" id="md-start"># Your first knowledge registry
+<script type="text/markdown" id="md-install"># Install
+
+[Read online](https://acierto.github.io/nexora/#install) · [Documentation home](https://acierto.github.io/nexora/)
+
+Nexora is a single executable called `nexora`. It has no runtime dependencies:
+no Docker, database, or language runtime is needed to run it.
+
+## macOS and Linux
+
+Prebuilt binaries are published for every release:
+
+| System | Archive |
+| --- | --- |
+| macOS, Apple Silicon (M1 and later) | `nexora_darwin_arm64.tar.gz` |
+| macOS, Intel | `nexora_darwin_amd64.tar.gz` |
+| Linux, x86-64 | `nexora_linux_amd64.tar.gz` |
+| Linux, arm64 (Graviton, Raspberry Pi 4/5 with a 64-bit OS) | `nexora_linux_arm64.tar.gz` |
+
+The Linux binaries are statically linked, so they run on any distribution with
+one of these architectures (Ubuntu, Debian, Fedora, Alpine, Arch, and others).
+
+### Install script
+
+```shell
+curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.sh | sh
+```
+
+The script picks the archive for your system, downloads it from the latest
+GitHub release, verifies its SHA-256 checksum, and installs `nexora` into
+`~/.local/bin`. It never uses `sudo`. If that directory is not on your `PATH`,
+the script prints the line to add to your shell profile.
+
+Options, set as environment variables before `sh`:
+
+```shell
+curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.sh | NEXORA_VERSION=v0.1.0 sh
+curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.sh | NEXORA_INSTALL_DIR=/usr/local/bin sh
+```
+
+### Manual download
+
+1. Download your archive and `checksums.txt` from the
+   [releases page](https://github.com/acierto/nexora/releases/latest).
+2. Check the archive: `shasum -a 256 -c checksums.txt --ignore-missing` on macOS,
+   or `sha256sum -c checksums.txt --ignore-missing` on Linux.
+3. Unpack it and move the binary onto your `PATH`:
+
+```shell
+tar -xzf nexora_darwin_arm64.tar.gz
+mkdir -p ~/.local/bin && mv nexora ~/.local/bin/
+```
+
+On macOS, a binary downloaded with a web browser is quarantined by Gatekeeper
+and refuses to start ("cannot be opened because the developer cannot be
+verified"). Remove the quarantine flag once:
+
+```shell
+xattr -d com.apple.quarantine ~/.local/bin/nexora
+```
+
+Downloads made with `curl`, including the install script, are not quarantined.
+
+## Check the installation
+
+```shell
+nexora version
+nexora help
+```
+
+`nexora version` prints the release, for example `nexora v0.1.0`.
+
+## Windows, other systems, and other architectures
+
+There are no prebuilt binaries for Windows, FreeBSD, or 32-bit systems yet.
+Nexora is plain Go with no C dependencies, so it builds anywhere Go runs:
+
+1. Install Go 1.23 or newer from [go.dev/dl](https://go.dev/dl/).
+2. Install Nexora:
+
+```shell
+go install github.com/acierto/nexora/cmd/nexora@latest
+```
+
+This puts `nexora` (`nexora.exe` on Windows) in Go's binary directory: run
+`go env GOPATH` and look in its `bin` folder, typically `~/go/bin` or
+`%USERPROFILE%\go\bin`. Add that folder to your `PATH`. On Windows: Settings →
+System → About → Advanced system settings → Environment Variables, then edit
+`Path` for your user. From a checkout of the repository, `go build -o nexora ./cmd/nexora`
+builds the binary in place instead.
+
+On Windows, run the commands in PowerShell or Command Prompt as shown in the
+guides, replacing `nexora` with `nexora.exe` if your shell does not add the
+extension. Configuration paths use `/` and work on Windows too. The Windows build
+is compiled and tested on Linux and macOS but not yet exercised on Windows itself;
+please report problems in the [issue tracker](https://github.com/acierto/nexora/issues).
+
+## Upgrade and uninstall
+
+Run the install script again to upgrade, or repeat the manual download. With Go,
+run the same `go install` command. To uninstall, delete the `nexora` binary.
+Nexora writes nothing outside your projects except where you configure it: the
+`.nexora/` folder next to `nexora.yaml` holds the local index and sync manifests.
+
+Next: [connect Nexora to your agent](quickstart.md).
+</script>
+<script type="text/markdown" id="md-start"># Quickstart
 
 [Read online](https://acierto.github.io/nexora/#start) · [Documentation home](https://acierto.github.io/nexora/)
 
-Nexora is a standalone command-line binary. No Docker, server, database, API key,
-or agent installation is needed. You need Go 1.23 or newer to build from source.
-An internet connection may be needed once to download the build dependency;
-the built executable works offline. No release binaries are published yet.
+In about ten minutes you will have a project rule and your team's docs available
+to Claude Code or Codex. When the agent works on a file, it gets the rules that
+apply to that file and the documentation passages that match its task, with links
+back to the source.
 
-From a Nexora checkout:
+You need Nexora installed ([Install](install.md)) and a project, for example a Git
+repository. Run every command from the project root.
 
-```sh
-go build -o bin/nexora ./cmd/nexora
-go install ./cmd/nexora
-```
-
-Use the executable in `bin/`, or add Go's install directory to PATH:
-`$(go env GOPATH)/bin`, unless you set GOBIN. On Windows, use `nexora.exe` and
-add that directory to PATH through your shell settings. The following walkthrough
-uses a POSIX shell and an installed `nexora`.
-
-## Initialize an existing project
-
-In an existing project directory (or a new temporary directory), run:
+## 1. Create the configuration
 
 ```sh
 nexora init --project commerce-api
-nexora validate
-nexora list
-nexora resolve
 ```
 
-Init prints the two created paths. Validation prints `Valid: 1 knowledge item`.
-List shows `project/conventions`; resolve shows `Required rules (1)` and that
-rule's content and provenance. The layout is:
+This creates two files and changes nothing else:
 
 ```text
-nexora.yaml
-knowledge/
-  rules/
-    project.md
+nexora.yaml                  # which project this is and where knowledge lives
+knowledge/rules/project.md   # an example rule for this project
 ```
 
-Running init again fails rather than overwriting your files. It also refuses
-symlinked destinations and leaves native agent instructions alone.
+Use your own project name instead of `commerce-api`.
 
-## Add a file-specific rule
+## 2. Write a rule
 
-Create `knowledge/rules/authentication.md` with this complete content:
+A rule is a Markdown file with a short header that says when it applies. Save this
+as `knowledge/rules/authentication.md`:
 
 ```markdown
 ---
@@ -729,76 +826,98 @@ applies_to:
 Never log credentials. Test expired and invalid credentials.
 ```
 
-Now run:
+This rule applies only to Go files under `src/auth/`. Rules without `paths` apply
+to every file. [Write knowledge](knowledge-format.md) explains every field and the
+other kinds: skills, references, and decisions.
+
+## 3. Add your docs
+
+Point Nexora at a folder of documentation you already have. Markdown, plain text,
+and HTML work as they are, with no special headers. This example creates a small
+folder and adds it to `nexora.yaml`:
+
+```sh
+mkdir -p docs/handbook
+printf '# Token rotation\n\nRefresh tokens rotate on every use. Reusing a revoked refresh token revokes the whole token family.\n' > docs/handbook/tokens.md
+cat >> nexora.yaml <<'EOF'
+  - id: handbook
+    type: docs
+    path: ./docs/handbook
+EOF
+```
+
+For a real project, use your own folder in `path`, such as `./docs`. To add
+Confluence spaces, see [Docs and Confluence](retrieval.md).
+
+## 4. Index and check
 
 ```sh
 nexora validate
-nexora resolve --file src/auth/service.go
-nexora resolve --file src/catalog/service.go
-nexora resolve --project another-project --file src/auth/service.go
-nexora resolve --file src/auth/service.go --json
-```
-
-Validation now reports 2 items. The authentication request selects
-`security/authentication` then `project/conventions`. The catalog request selects
-only `project/conventions`. The other-project request selects neither: both
-rules explicitly restrict the project. No source files need to exist for these
-requests; paths describe the files you plan to change.
-
-JSON exposes the same selection in `required_rules`, with full items and
-structured `reasons`; the other four groups are empty arrays. For example, path
-evidence includes `{"pattern":"src/auth/**/*.go","file":"src/auth/service.go"}`.
-
-## Add your team's docs
-
-Point a `docs` source at a documentation folder (or a `confluence` source at a
-space), index it, and describe your task:
-
-```yaml
-sources:
-  - id: local
-    path: ./knowledge
-  - id: handbook
-    type: docs
-    path: ./docs
-```
-
-```shell
 nexora index
 nexora resolve --file src/auth/service.go --task "rotate refresh tokens"
 ```
 
-The result keeps the same rules and adds a `passages` group with the matching
-documentation sections, their files, and the words that matched. Add `.nexora/`
-(the local index) to `.gitignore`. See [Docs and Confluence](retrieval.md) for
-Confluence, embeddings, and pgvector.
+You should see:
 
-## Connect your agent
+- `Valid: 2 knowledge items` and one documentation source;
+- `handbook (docs): 1 documents, 1 passages`;
+- under **Required rules**, `security/authentication` and then `project/conventions`,
+  each with the reason it was selected;
+- under **Passages**, `Token rotation` from `tokens.md`, with the matched words.
 
-Register the MCP server so the agent can ask for context itself, or write the
-always-on rules into its native file:
+The file does not have to exist: `--file` describes what you are about to change.
+Add `.nexora/index.json` to `.gitignore`; it is the local index.
+
+## 5. Connect your agent
+
+Give the agent access to Nexora through MCP. Use the absolute path of your
+`nexora.yaml`.
+
+Claude Code:
 
 ```shell
 claude mcp add nexora -- nexora mcp --config "$PWD/nexora.yaml"
-nexora sync --agent codex
 ```
 
-Nexora delivers text and does not raise its authority above the agent's trusted
-instructions. See [Connect agents](agents.md), [resolution](resolution.md), and
-the [practical examples](../examples/README.md) for more.
+Codex, in `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.nexora]
+command = "nexora"
+args = ["mcp", "--config", "/absolute/path/to/your/project/nexora.yaml"]
+```
+
+Optionally, also write the rules that always apply into the agent's own
+instruction file, so it sees them before calling any tool:
+
+```shell
+nexora sync --agent claude    # CLAUDE.md and .claude/skills/
+nexora sync --agent codex     # AGENTS.md and .agents/skills/
+```
+
+## What you get
+
+Ask the agent to work on authentication, for example "add refresh token rotation
+to src/auth/service.go". It can call the `get_context` tool and receive:
+
+- the required rules for that file (`security/authentication`, `project/conventions`);
+- skills, references, and decisions that apply;
+- documentation passages about token rotation, with their file or page link.
+
+When you edit a rule or a doc, the next call sees the change; run `nexora index`
+again after changing documentation. Nothing leaves your machine unless you
+configure Confluence or an embedding service.
+
+## Next steps
+
+- [Write knowledge](knowledge-format.md): rules, skills, references, and decisions.
+- [Docs and Confluence](retrieval.md): Confluence spaces, embeddings, and pgvector.
+- [Connect agents](agents.md): MCP tools and native sync in detail.
+- [Examples](../examples/README.md): complete sample projects you can run.
 </script>
-<script type="text/markdown" id="md-format"># Knowledge format
+<script type="text/markdown" id="md-configuration"># Configuration
 
-[Read online](https://acierto.github.io/nexora/#format) · [Documentation home](https://acierto.github.io/nexora/)
-
-Nexora reads one configuration file, `nexora.yaml`, and two kinds of content:
-**knowledge items** (rules, skills, references, and decisions written as Markdown
-with front matter, selected deterministically) and **documentation** (ordinary
-docs folders and Confluence spaces, indexed into passages and retrieved for a
-task). This page covers the configuration and the knowledge format. Retrieval is
-described in [Docs and Confluence](retrieval.md).
-
-## Configuration
+[Read online](https://acierto.github.io/nexora/#configuration) · [Documentation home](https://acierto.github.io/nexora/)
 
 Configuration is explicit: commands default to `./nexora.yaml`, and `--config`
 selects another file. Relative paths resolve against that file, not the working
@@ -863,15 +982,197 @@ is read only when Nexora needs it. Parent directories are not searched.
 Source root paths are canonicalized, but symlink entries inside source trees are
 rejected.
 
-## Path patterns
+## Environment variables
 
-File applicability uses repository-relative, case-sensitive paths with `/`
-separators. `*` matches zero or more characters within one segment, `?` matches
-one character, and a whole `**` segment matches zero or more directories.
-`src/**/*.go` matches both `src/main.go` and `src/auth/service.go`.
-Brackets, braces, negation, embedded `**`, empty segments, `.`/`..` segments,
-absolute patterns, and backslashes in patterns are rejected. Request files may
-use Windows separators; absolute, drive-qualified, UNC, and traversal paths fail.
+Nexora reads only the variables you name in the configuration, and only when it
+needs them:
+
+| Field | Read by | Example |
+| --- | --- | --- |
+| `sources[].token_env` | `nexora index` | `CONFLUENCE_TOKEN` |
+| `sources[].user_env` | `nexora index` | `CONFLUENCE_USER` |
+| `index.embeddings.api_key_env` | `index`, `search`, `resolve --task`, MCP | `OPENAI_API_KEY` |
+| `index.dsn_env` | `index`, `search`, `resolve --task`, MCP | `NEXORA_DATABASE_URL` |
+
+When Nexora runs as an MCP server, these variables must be set in the agent's MCP
+server environment, not only in your shell.
+
+## Files Nexora writes
+
+| Path | Written by | Commit it? |
+| --- | --- | --- |
+| `nexora.yaml`, `knowledge/rules/project.md` | `nexora init` (never overwrites) | Yes |
+| `.nexora/index.json` | `nexora index` (local store) | No, add it to `.gitignore` |
+| `.nexora/sync-<agent>.json` | `nexora sync` | Yes, together with the generated files |
+| `AGENTS.md` / `CLAUDE.md` block, `.agents/skills/`, `.claude/skills/` | `nexora sync` | Yes |
+
+Ignore only `.nexora/index.json`, not the whole `.nexora/` folder, so the sync
+manifests stay in version control next to the files they protect.
+</script>
+<script type="text/markdown" id="md-contributing"># Contributing
+
+[Read online](https://acierto.github.io/nexora/#contributing) · [Documentation home](https://acierto.github.io/nexora/)
+
+This guide is for people changing Nexora itself. To use Nexora, start with
+[Install](install.md) and the [Quickstart](quickstart.md).
+
+Project rules for humans and coding agents are in [AGENTS.md](../AGENTS.md):
+deterministic selection of mandatory rules, minimal dependencies, `internal/`
+packages until there is an external consumer, and tests without external
+services. Read it before larger changes.
+
+## Set up
+
+You need Go 1.23 or newer and Git. Python 3 is used by one documentation script
+and by an optional CLI recipe.
+
+```shell
+git clone https://github.com/acierto/nexora.git
+cd nexora
+go build -o bin/nexora ./cmd/nexora
+./bin/nexora version
+```
+
+`bin/` and `dist/` are ignored by Git. The module floor is `go 1.23.0`; do not use
+standard-library APIs added in later Go releases.
+
+## Repository layout
+
+| Path | Contents |
+| --- | --- |
+| `cmd/nexora` | Process entry point only |
+| `internal/cli` | Command parsing, output, exit codes |
+| `internal/app` | Loading and coordination shared by the CLI and MCP server |
+| `internal/config`, `internal/yamlutil` | Strict configuration and YAML decoding |
+| `internal/knowledge`, `internal/markdown`, `internal/registry`, `internal/resolver` | Knowledge model, loading, snapshots, deterministic resolution |
+| `internal/passage`, `internal/confluence`, `internal/embed`, `internal/index`, `internal/retrieval` | Documentation passages, connectors, stores, ranking |
+| `internal/mcp`, `internal/nativesync` | Agent delivery |
+| `tests/` | Executable-level integration tests, including the documented recipes |
+| `examples/` | Runnable sample projects, also used as test fixtures |
+| `docs/` | Guides and the documentation website (`docs/index.html`) |
+| `openspec/` | Change proposals, designs, specs, and task lists |
+| `scripts/` | Release build, install script, documentation sync |
+
+See [architecture decisions](architecture.md) for the dependency graph and the
+reasoning behind it.
+
+## Checks
+
+Run these before opening a pull request. CI runs the same steps.
+
+```shell
+gofmt -l .                     # must print nothing
+go vet ./...
+go test ./...
+python3 scripts/sync_docs.py --check
+```
+
+The tests need no network or services. They build the binary, run the examples,
+and execute the `sh` code blocks in `docs/quickstart.md`, `docs/cli.md`,
+`docs/troubleshooting.md`, and the example READMEs, so documentation that drifts
+from the implementation fails the build. Use `shell` instead of `sh` for commands
+that must not run in tests (for example ones that need an agent installed).
+
+The pgvector store has an integration test that runs only when
+`NEXORA_TEST_DATABASE_URL` is set:
+
+```shell
+docker run -d --name nexora-pg -e POSTGRES_PASSWORD=nexora -e POSTGRES_DB=nexora_test -p 5432:5432 pgvector/pgvector:pg16
+NEXORA_TEST_DATABASE_URL="postgres://postgres:nexora@localhost:5432/nexora_test?sslmode=disable" go test ./internal/index/
+```
+
+Embedding providers and Confluence are tested against local HTTP test servers;
+never call real services from tests.
+
+## Making a change
+
+Larger changes go through OpenSpec, which keeps a proposal, design, specs, and a
+task list under `openspec/changes/<name>/`. The repository includes OpenSpec
+skills for Claude Code (`.claude/`) and Codex (`.agents/`): `propose`, `apply`,
+`update`, `sync`, and `archive`. Validate a change with:
+
+```shell
+npx @fission-ai/openspec validate <change-name> --strict --no-interactive
+```
+
+Mark tasks done only after their verification passes, and record what you checked
+in [the verification record](verification.md). Small fixes and documentation
+edits do not need a change proposal.
+
+Keep pull requests focused, include tests for behavior changes, and update the
+user guides in the same pull request when behavior or output changes.
+
+## Documentation
+
+User guides live in `docs/*.md` and are written for people using Nexora:
+install, quickstart, task guides, and reference. Contributor material goes in
+this guide, [architecture.md](architecture.md), and [verification.md](verification.md).
+
+The website at https://acierto.github.io/nexora/ is the single file
+`docs/index.html`, published by GitHub Pages from the `docs/` folder on `main`
+(`.nojekyll` keeps it a plain static site). It embeds copies of the Markdown
+guides. After editing a guide, refresh and check the copies:
+
+```shell
+python3 scripts/sync_docs.py
+python3 scripts/sync_docs.py --check
+```
+
+To add a new guide, add it to `GUIDES` in `scripts/sync_docs.py` and add a
+matching `<script type="text/markdown" id="md-<key>">` block, page entry, and
+sidebar link in `docs/index.html`.
+
+Preview locally with `python3 -m http.server 8000 --directory docs` and open
+http://localhost:8000/. The page loads fonts, Three.js, and the Markdown renderer
+from CDNs, so previewing needs an internet connection.
+
+## Releases
+
+Releases are built by GitHub Actions when a version tag is pushed:
+
+```shell
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The [release workflow](../.github/workflows/release.yml) runs the tests, builds
+static binaries for macOS (arm64, amd64) and Linux (amd64, arm64) with
+`scripts/release-build.sh`, and publishes `nexora_<os>_<arch>.tar.gz` archives
+plus `checksums.txt` to a GitHub release with generated notes. The version is
+compiled in and shown by `nexora version`. Archive names carry no version, so the
+install script can always download from `releases/latest`.
+
+To try a release build locally:
+
+```shell
+scripts/release-build.sh v0.0.0-local
+ls dist/
+```
+
+To test the install script against that build, serve `dist/` and point the script
+at it:
+
+```shell
+python3 -m http.server 8765 --directory dist &
+NEXORA_DOWNLOAD_BASE=http://127.0.0.1:8765 NEXORA_INSTALL_DIR=/tmp/nexora-bin sh scripts/install.sh
+```
+
+License selection is still pending; choose one before the first public release.
+</script>
+<script type="text/markdown" id="md-format"># Write knowledge
+
+[Read online](https://acierto.github.io/nexora/#format) · [Documentation home](https://acierto.github.io/nexora/)
+
+Knowledge items are the instructions and context you want agents to use:
+**rules** to follow, **skills** (step-by-step procedures), **references**
+(where things live), and **decisions** (why things are the way they are). Each one
+is a Markdown file with a short YAML header. Nexora selects them deterministically
+by project, agent, and file, so the same task always gets the same rules.
+
+Put knowledge files in a knowledge source folder (`./knowledge` after
+`nexora init`). Ordinary documentation that has no header belongs in a docs
+source instead; see [Docs and Confluence](retrieval.md). Every configuration
+field is listed in the [configuration reference](configuration.md).
 
 ## Markdown metadata
 
@@ -969,6 +1270,16 @@ status: active
 Store knowledge as reviewable Markdown alongside the project.
 ```
 
+## Path patterns
+
+File applicability uses repository-relative, case-sensitive paths with `/`
+separators. `*` matches zero or more characters within one segment, `?` matches
+one character, and a whole `**` segment matches zero or more directories.
+`src/**/*.go` matches both `src/main.go` and `src/auth/service.go`.
+Brackets, braces, negation, embedded `**`, empty segments, `.`/`..` segments,
+absolute patterns, and backslashes in patterns are rejected. Request files may
+use Windows separators; absolute, drive-qualified, UNC, and traversal paths fail.
+
 ## Sources and versions
 
 Each item retains the source ID and a `/`-separated path relative to that source,
@@ -1015,7 +1326,7 @@ Documentation never becomes a knowledge item. It has no `kind`, `required`, or
 agent must follow in knowledge sources, and reference material in docs. See
 [Docs and Confluence](retrieval.md) for indexing, search, embeddings, and pgvector.
 </script>
-<script type="text/markdown" id="md-resolution"># How resolution works
+<script type="text/markdown" id="md-resolution"># How rules are matched
 
 [Read online](https://acierto.github.io/nexora/#resolution) · [Documentation home](https://acierto.github.io/nexora/)
 
@@ -1216,7 +1527,7 @@ embeddings are configured.
 ## pgvector (optional)
 
 The default store is one JSON file at `.nexora/index.json` next to the
-configuration (change it with `index.path`). Add `.nexora/` to `.gitignore`.
+configuration (change it with `index.path`). Add `.nexora/index.json` to `.gitignore`.
 For larger collections or a shared database, store passages in PostgreSQL with
 the [pgvector](https://github.com/pgvector/pgvector) extension:
 
@@ -1242,26 +1553,8 @@ are the same as the local store.
 
 ## Configuration reference
 
-| Field | Meaning / default |
-| --- | --- |
-| `sources[].type` | `knowledge` (default), `docs`, or `confluence` |
-| `sources[].path` | Directory for `knowledge` and `docs` sources |
-| `sources[].url` | Confluence base URL, for example `https://x.atlassian.net/wiki` |
-| `sources[].spaces` | Confluence space keys, at least one, unique |
-| `sources[].token_env` | Environment variable with the Confluence token (required for confluence) |
-| `sources[].user_env` | Environment variable with the Confluence user; enables basic auth |
-| `sources[].projects` | Restrict a docs or confluence source to these projects |
-| `index.store` | `local` (default) or `pgvector` |
-| `index.path` | Local index file, default `.nexora/index.json` relative to the config |
-| `index.dsn_env` | Environment variable with the PostgreSQL connection string (pgvector) |
-| `index.table` | pgvector table name, default `nexora_passages` |
-| `index.embeddings.provider` | `none` (default), `ollama`, or `openai` |
-| `index.embeddings.model` | Embedding model name (required with a provider) |
-| `index.embeddings.url` | Provider base URL; defaults per provider |
-| `index.embeddings.api_key_env` | Environment variable with the API key (openai) |
-| `index.embeddings.dimensions` | Expected vector size; enables the pgvector HNSW index |
-| `index.chunk.max_chars` | Maximum passage length, 200-20000, default 1200 |
-| `index.chunk.overlap_chars` | Overlap between passages, up to half of `max_chars`, default 150 |
+All source and index fields, with defaults, are listed in the
+[configuration reference](configuration.md).
 
 ## Trust boundary
 
@@ -1388,7 +1681,7 @@ follow each agent's own discovery and precedence rules. `--agent` values match
 knowledge metadata; they are not authentication. The server is a local, single-user
 stdio process. A remote HTTP server with authorization is future work.
 </script>
-<script type="text/markdown" id="md-cli"># CLI guide
+<script type="text/markdown" id="md-cli"># CLI reference
 
 [Read online](https://acierto.github.io/nexora/#cli) · [Documentation home](https://acierto.github.io/nexora/)
 
@@ -1405,6 +1698,7 @@ Commands use flags after the command name; positional arguments are rejected.
 | `search` | `--config PATH`, `--json`, `--query TEXT` (required), `--project ID`, `--limit N` | Returns documentation passages with explanations |
 | `mcp` | `--config PATH` | Serves knowledge over MCP on stdin/stdout until EOF |
 | `sync` | `--config PATH`, `--json`, `--agent codex\|claude` (required), `--project ID`, `--dir PATH`, `--check` | Writes the managed block and generated skills; `--check` writes nothing |
+| `version` | none (also `--version`) | Prints the version, for example `nexora v0.1.0` |
 
 The default config is `./nexora.yaml`; Nexora never searches parent directories.
 Relative sources resolve against the config's directory. Project defaults to its
@@ -1415,7 +1709,8 @@ excluded. A supplied empty project is distinct from omitting the flag.
 
 ## Recipes
 
-Run these from the Nexora repository root with the installed binary on PATH:
+These use the sample projects in the repository. Clone it and run them from its root
+with `nexora` on your PATH:
 
 ```sh
 nexora validate --config examples/local/nexora.yaml
@@ -1750,6 +2045,16 @@ the bundled example only; measure it on your own documentation before relying on
 ranking. The MCP server was tested with JSON-RPC exchanges over stdio; check your
 agent's MCP client configuration with your own setup.
 
+## Distribution
+
+Verified on 2026-10-26. `scripts/release-build.sh` produced static archives for
+darwin/arm64, darwin/amd64, linux/amd64, and linux/arm64 with `checksums.txt`; the
+linux/amd64 binary reported its compiled-in version through `nexora version`.
+`scripts/install.sh` installed that build from a local HTTP mirror
+(`NEXORA_DOWNLOAD_BASE`), and refused an archive whose checksum did not match.
+The GitHub Actions workflows (`ci.yml`, `release.yml`) have not run yet; the first
+pushed tag is their first real test. macOS binaries are not signed or notarized.
+
 </script>
 
 <!-- ======================= HOME ======================= -->
@@ -1761,8 +2066,8 @@ agent's MCP client configuration with your own setup.
     <div class="right">
       <p class="lede">Your team's know-how is spread across agent files (<code>CLAUDE.md</code>, <code>AGENTS.md</code>, Cursor rules), skill folders, internal docs and Confluence. Nexora gathers it in one place, indexes your documentation, and hands each agent exactly what applies to the task, with sources. Over MCP or straight into the files agents already read.</p>
       <div class="cta">
-        <a class="btn primary" href="#why">Why Nexora</a>
-        <a class="btn pink" href="#start">Get started</a>
+        <a class="btn primary" href="#install">Install</a>
+        <a class="btn pink" href="#start">Quickstart</a>
         <a class="btn" href="https://github.com/acierto/nexora" target="_blank" rel="noopener">GitHub ↗</a>
       </div>
     </div>
@@ -1866,44 +2171,41 @@ agent's MCP client configuration with your own setup.
 </section>
 
 <section class="sec" id="how">
-  <span class="eyebrow">How it works</span>
-  <h2>Write once. Index. <em>Deliver</em>.</h2>
-  <p class="sub">Three steps. The first run needs no server, database or API key; add Confluence, embeddings and pgvector when you want them.</p>
+  <span class="eyebrow">Get started</span>
+  <h2>Install. Configure. <em>Connect</em>.</h2>
+  <p class="sub">About ten minutes from an empty project to an agent that gets your rules and the right doc passages for each task. The <a href="#start">Quickstart</a> has every file and the expected output.</p>
   <div class="steps">
-    <div class="step tilt" style="--pc:var(--mint)">
+    <div class="step tilt" style="--pc:var(--ink)">
       <span class="badge">1</span>
-      <h3>Point Nexora at your knowledge</h3>
-      <p>Rules and skills with front matter, plus your docs folders and Confluence spaces.</p>
-<pre class="mini"><code><span class="tk-k">sources</span>:
-  - <span class="tk-k">id</span>: rules
+      <h3>Install</h3>
+      <p>One binary for macOS and Linux. Windows and other systems build it with Go.</p>
+<pre class="mini"><code><span class="tk-cmd">curl</span> <span class="tk-f">-fsSL</span> https://raw.githubusercontent.com/\
+  acierto/nexora/main/scripts/install.sh \
+  | <span class="tk-cmd">sh</span>
+
+<span class="tk-cmd">nexora</span> version</code></pre>
+    </div>
+    <div class="step tilt" style="--pc:var(--mint)">
+      <span class="badge">2</span>
+      <h3>Add rules and docs</h3>
+      <p>Write rules in <code>knowledge/</code> and point Nexora at your docs folder or Confluence.</p>
+<pre class="mini"><code><span class="tk-cmd">nexora</span> init <span class="tk-f">--project</span> my-api
+<span class="tk-c"># nexora.yaml</span>
+<span class="tk-k">sources</span>:
+  - <span class="tk-k">id</span>: local
     <span class="tk-k">path</span>: ./knowledge
   - <span class="tk-k">id</span>: handbook
     <span class="tk-k">type</span>: docs
-    <span class="tk-k">path</span>: ./handbook
-  - <span class="tk-k">id</span>: wiki
-    <span class="tk-k">type</span>: confluence
-    <span class="tk-k">spaces</span>: [PAY, ARCH]</code></pre>
-    </div>
-    <div class="step tilt" style="--pc:var(--ink)">
-      <span class="badge">2</span>
-      <h3>Index, then ask for a task</h3>
-      <p>Rules are matched by project, agent and file. Passages are retrieved for the task text.</p>
-<pre class="mini"><code><span class="tk-cmd">nexora</span> index
-<span class="tk-cmd">nexora</span> resolve <span class="tk-f">--agent</span> codex \
-  <span class="tk-f">--file</span> src/payments/refund.go \
-  <span class="tk-f">--task</span> <span class="tk-s">"add partial refunds"</span>
-<span class="tk-c"># Required rules (2) … Skills (1)</span>
-<span class="tk-c"># Passages (2): Refund policy › Partial…</span></code></pre>
+    <span class="tk-k">path</span>: ./docs</code></pre>
     </div>
     <div class="step tilt" style="--pc:var(--pink)">
       <span class="badge">3</span>
-      <h3>Deliver it to your agents</h3>
-      <p>Agents call the MCP server while they work, and always-on rules land in their native files.</p>
-<pre class="mini"><code><span class="tk-cmd">claude</span> mcp add nexora <span class="tk-d">--</span> \
+      <h3>Index and connect</h3>
+      <p>Your agent now asks Nexora for context: the rules for its files and the passages for its task.</p>
+<pre class="mini"><code><span class="tk-cmd">nexora</span> index
+<span class="tk-cmd">claude</span> mcp add nexora <span class="tk-d">--</span> \
   nexora mcp <span class="tk-f">--config</span> $PWD/nexora.yaml
-
-<span class="tk-cmd">nexora</span> sync <span class="tk-f">--agent</span> codex
-<span class="tk-c"># AGENTS.md block + .agents/skills/</span></code></pre>
+<span class="tk-c"># or: nexora sync --agent codex</span></code></pre>
     </div>
   </div>
   <div class="install" id="home-install"></div>
@@ -1970,8 +2272,8 @@ agent's MCP client configuration with your own setup.
 
 <section class="sec">
   <span class="eyebrow">The manual</span>
-  <h2>Nine short reads.</h2>
-  <div class="docs-grid" id="home-docs"></div>
+  <h2>Find what you need.</h2>
+  <div id="home-docs"></div>
 </section>
 
 <footer class="foot">
@@ -2233,24 +2535,27 @@ function codeBlock(code, lang){
 
 /* ===================== Markdown rendering ===================== */
 const PAGES = {
-  start:{num:'01',title:'Getting started',md:'md-start',file:'getting-started.md',eyebrow:'Guide 01',lede:'Build the binary, initialise a project, add one file-specific rule, and watch it appear and disappear from resolution.'},
-  format:{num:'02',title:'Knowledge format',md:'md-format',file:'knowledge-format.md',eyebrow:'Guide 02',lede:'Configuration, path grammar, front-matter fields, and a complete example of every kind.',widgets:[{after:'h2:Markdown metadata',tpl:'tpl-linter',pos:'before-next-h3'},{after:'h2:Markdown metadata',tpl:'tpl-glob',pos:'before'}]},
-  resolution:{num:'03',title:'How resolution works',md:'md-resolution',file:'resolution.md',eyebrow:'Guide 03',lede:'Applicability, ordering, provenance, and the trust boundary between retrieved text and trusted instructions.'},
-  retrieval:{num:'04',title:'Docs and Confluence',md:'md-retrieval',file:'retrieval.md',eyebrow:'Guide 04',lede:'Index internal documentation and Confluence spaces, search them, and get passages next to your rules, with keyword search, optional embeddings, and pgvector.'},
-  agents:{num:'05',title:'Connect agents',md:'md-agents',file:'agents.md',eyebrow:'Guide 05',lede:'Serve knowledge to Claude Code, Codex, and other MCP clients, and sync always-on rules into AGENTS.md, CLAUDE.md, and SKILL.md files.'},
-  cli:{num:'06',title:'CLI guide',md:'md-cli',file:'cli.md',eyebrow:'Guide 06',lede:'Every command and flag, recipes, the JSON envelopes, exit codes, and shell scripting.'},
-  troubleshooting:{num:'07',title:'Troubleshooting',md:'md-troubleshooting',file:'troubleshooting.md',eyebrow:'Guide 07',lede:'Common validation errors, and a checklist for the question everyone asks: why did my rule disappear?',widgets:[{after:'h2:Why did a rule disappear?',tpl:'tpl-diagnose',pos:'after-table'}]},
-  architecture:{title:'Architecture decisions',md:'md-architecture',file:'architecture.md',eyebrow:'Project',lede:'Package boundaries, the two index stores, why MCP is hand-written, and why lib/pq is the only new dependency.'},
-  verification:{title:'Verification record',md:'md-verification',file:'verification.md',eyebrow:'Project',lede:'What was checked, against real PostgreSQL with pgvector and with networking disabled, and where every behavior is tested.'},
+  install:{num:'01',title:'Install',md:'md-install',file:'install.md',eyebrow:'Use Nexora · 01',lede:'One command on macOS and Linux. Build from source for Windows and everything else.'},
+  start:{num:'02',title:'Quickstart',md:'md-start',file:'quickstart.md',eyebrow:'Use Nexora · 02',lede:'Five steps from an empty project to an agent that gets your rules and the right doc passages for every task.'},
+  format:{num:'03',title:'Write knowledge',md:'md-format',file:'knowledge-format.md',eyebrow:'Use Nexora · 03',lede:'Rules, skills, references, and decisions: the header fields, scoping by project, agent, and file, and a complete example of every kind.'},
+  retrieval:{num:'04',title:'Docs and Confluence',md:'md-retrieval',file:'retrieval.md',eyebrow:'Use Nexora · 04',lede:'Index internal documentation and Confluence spaces, search them, and get passages next to your rules, with optional embeddings and pgvector.'},
+  agents:{num:'05',title:'Connect agents',md:'md-agents',file:'agents.md',eyebrow:'Use Nexora · 05',lede:'Serve knowledge to Claude Code, Codex, and other MCP clients, and sync always-on rules into AGENTS.md, CLAUDE.md, and SKILL.md files.'},
+  configuration:{title:'Configuration',md:'md-configuration',file:'configuration.md',eyebrow:'Reference',lede:'Every nexora.yaml field, the environment variables Nexora reads, and the files it writes.'},
+  cli:{title:'CLI reference',md:'md-cli',file:'cli.md',eyebrow:'Reference',lede:'Every command and flag, recipes, the JSON envelopes, exit codes, and shell scripting.'},
+  resolution:{title:'How rules are matched',md:'md-resolution',file:'resolution.md',eyebrow:'Reference',lede:'Applicability, ordering, explanations, passages, and the trust boundary between retrieved text and trusted instructions.'},
+  troubleshooting:{title:'Troubleshooting',md:'md-troubleshooting',file:'troubleshooting.md',eyebrow:'Reference',lede:'Error messages and their fixes, and a checklist for the question everyone asks: why did my rule disappear?',widgets:[{after:'h2:Why did a rule disappear?',tpl:'tpl-diagnose',pos:'after-table'}]},
+  contributing:{title:'Contributing',md:'md-contributing',file:'contributing.md',eyebrow:'Contribute',lede:'Development setup, repository layout, checks, the OpenSpec workflow, the documentation site, and releases.'},
+  architecture:{title:'Architecture decisions',md:'md-architecture',file:'architecture.md',eyebrow:'Contribute',lede:'Package boundaries, the two index stores, why MCP is hand-written, and why lib/pq is the only new dependency.'},
+  verification:{title:'Verification record',md:'md-verification',file:'verification.md',eyebrow:'Contribute',lede:'What was checked, against real PostgreSQL with pgvector and with networking disabled, and where every behavior is tested.'},
 };
-const ORDER = ['home','playground','start','format','resolution','retrieval','agents','cli','troubleshooting','architecture','verification'];
+const ORDER = ['home','playground','install','start','format','retrieval','agents','configuration','cli','resolution','troubleshooting','contributing','architecture','verification'];
 const TITLES = {home:'Nexora',playground:'Resolution playground'}; for (const k in PAGES) TITLES[k]=PAGES[k].title;
 const slug = s => s.toLowerCase().replace(/<[^>]+>/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 function mapHref(href){
   if (/^https?:/.test(href)) return href;
   const m = href.match(/^(\.\.\/)?([^#]+?)(?:#(.*))?$/); if (!m) return href;
   const file = m[2];
-  const local = {'getting-started.md':'start','knowledge-format.md':'format','resolution.md':'resolution','retrieval.md':'retrieval','agents.md':'agents','cli.md':'cli','troubleshooting.md':'troubleshooting','architecture.md':'architecture','verification.md':'verification'};
+  const local = {'install.md':'install','quickstart.md':'start','knowledge-format.md':'format','retrieval.md':'retrieval','agents.md':'agents','configuration.md':'configuration','cli.md':'cli','resolution.md':'resolution','troubleshooting.md':'troubleshooting','contributing.md':'contributing','architecture.md':'architecture','verification.md':'verification'};
   if (!m[1] && local[file]) return '#'+local[file];
   return GH + (m[1] ? file : 'docs/'+file);
 }
@@ -2762,7 +3067,7 @@ function initTilt(root){
     el.addEventListener('pointerleave', ()=>{ el.style.transform = b; });
   });
 }
-const PCOL = {start:'--mint',format:'--grape',resolution:'--ink',retrieval:'--tang',agents:'--pink',cli:'--grape',troubleshooting:'--sun',architecture:'--mint',verification:'--ink'};
+const PCOL = {install:'--ink',start:'--mint',format:'--grape',retrieval:'--tang',agents:'--pink',configuration:'--sun',cli:'--grape',resolution:'--ink',troubleshooting:'--tang',contributing:'--mint',architecture:'--grape',verification:'--ink'};
 
 /* ===================== Router ===================== */
 const main = $('#main'), toc = $('#toc'), shell = $('#shell');
@@ -2783,9 +3088,12 @@ function show(page, anchor){
 }
 function renderHome(){
   main.appendChild($('#tpl-home').content.cloneNode(true));
-  $('#home-install', main).innerHTML = codeBlock(`# From a Nexora checkout (Go 1.23+)\ngo build -o bin/nexora ./cmd/nexora\n./bin/nexora resolve --config examples/local/nexora.yaml --agent codex --file src/auth/service.go\n\n# Index the example handbook and ask for a task\n./bin/nexora index --config examples/team-docs/nexora.yaml\n./bin/nexora resolve --config examples/team-docs/nexora.yaml --agent codex \\\n  --file src/payments/refund.go --task "add partial refunds"\n\n# In your own project\nnexora init --project my-api        # creates nexora.yaml + knowledge/rules/project.md\nnexora sync --agent claude          # CLAUDE.md block + .claude/skills/`, 'sh');
+  $('#home-install', main).innerHTML = '';
   mountPlayground($('#pg-mount', main));
-  $('#home-docs', main).innerHTML = ['start','format','resolution','retrieval','agents','cli','troubleshooting','architecture','verification'].map(k=>{ const p=PAGES[k]; return `<a class="card tilt" style="--pc:var(${PCOL[k]})" href="#${k}"><span class="badge">${p.num||'✦'}</span><h3>${esc(p.title)}</h3><p>${esc(p.lede)}</p><span class="foot">docs/${esc(p.file)}</span></a>`; }).join('');
+  const card = k => { const p=PAGES[k]; return `<a class="card tilt" style="--pc:var(${PCOL[k]})" href="#${k}"><span class="badge">${p.num||'✦'}</span><h3>${esc(p.title)}</h3><p>${esc(p.lede)}</p><span class="foot">docs/${esc(p.file)}</span></a>`; };
+  $('#home-docs', main).innerHTML = `<h3 class="dg-h">Use Nexora</h3><div class="docs-grid use">${['install','start','format','retrieval','agents'].map(card).join('')}</div>`
+    + `<h3 class="dg-h">Reference</h3><div class="docs-grid">${['configuration','cli','resolution','troubleshooting'].map(card).join('')}</div>`
+    + `<p class="dg-contrib">Working on Nexora itself? Read <a href="#contributing">Contributing</a>, the <a href="#architecture">architecture decisions</a>, and the <a href="#verification">verification record</a>.</p>`;
   initHero3D();
 }
 function renderDoc(page){
@@ -2798,7 +3106,8 @@ function renderDoc(page){
     const h = $$('h2', md).find(x=>/Markdown metadata/.test(x.textContent));
     const table = h && (() => { let n=h.nextElementSibling; while(n && !n.classList.contains('tbl')) n=n.nextElementSibling; return n; })();
     if (table){ const w = $('#tpl-linter').content.cloneNode(true); table.after(w); mountLinter($('.lint-w', md)); }
-    if (h){ const g = $('#tpl-glob').content.cloneNode(true); h.before(g); mountGlob($('.glob-w', md)); }
+    const pp = $$('h2', md).find(x=>/Path patterns/.test(x.textContent));
+    if (pp){ let n = pp.nextElementSibling; while (n && n.nextElementSibling && n.nextElementSibling.tagName !== 'H2') n = n.nextElementSibling; const g = $('#tpl-glob').content.cloneNode(true); (n||pp).after(g); mountGlob($('.glob-w', md)); }
   }
   if (page==='troubleshooting'){
     const h = $$('h2', md).find(x=>/disappear/.test(x.textContent));

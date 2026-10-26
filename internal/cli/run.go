@@ -26,7 +26,7 @@ import (
 	"github.com/acierto/nexora/internal/retrieval"
 )
 
-// Version is reported by the MCP server.
+// Version is set at build time with -ldflags "-X github.com/acierto/nexora/internal/cli.Version=v0.1.0".
 var Version = "dev"
 
 const usage = `Nexora — one knowledge layer for every AI agent
@@ -42,6 +42,7 @@ Commands:
   search     Search indexed documentation
   mcp        Serve knowledge to agents over MCP (stdio)
   sync       Write knowledge into AGENTS.md/CLAUDE.md and agent skill folders
+  version    Print the Nexora version
   help       Show help (help <command> for flags)
 
 Commands accept --config <path>; read commands also accept --json.
@@ -86,6 +87,12 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 	}
 	if len(args) == 0 || args[0] == "--help" || args[0] == "-h" || args[0] == "help" && len(args) == 1 {
 		return write([]byte(usage))
+	}
+	if args[0] == "version" || args[0] == "--version" {
+		if len(args) > 1 {
+			return fail(fmt.Errorf("version accepts no arguments"), 2)
+		}
+		return write([]byte("nexora " + Version + "\n"))
 	}
 	if args[0] == "help" {
 		args = append(append([]string{}, args[1:]...), "--help")

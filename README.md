@@ -2,105 +2,81 @@
 
 One knowledge layer. Every AI agent.
 
-**[Read the Nexora docs online](https://acierto.github.io/nexora/)** ·
+**[Documentation](https://acierto.github.io/nexora/)** ·
+[Install](https://acierto.github.io/nexora/#install) ·
 [Quickstart](https://acierto.github.io/nexora/#start) ·
 [Interactive playground](https://acierto.github.io/nexora/#playground)
 
 Your team's know-how is scattered across agent files (`CLAUDE.md`, `AGENTS.md`,
-Cursor rules), skill folders, internal docs, and Confluence. Nexora is the one
-place every agent gets it from:
+Cursor rules), skill folders, internal docs, and Confluence. Nexora gives every
+coding agent one place to get it from:
 
-- **Rules, skills, references, and decisions** live in Markdown with front
-  matter and are selected deterministically by project, agent, and file.
-- **Internal docs and Confluence pages** are indexed into passages and retrieved
-  for a task with keyword search, optional embeddings (Ollama or OpenAI-compatible),
-  and an optional pgvector store.
-- **Agents get it directly** through an MCP server (`nexora mcp`) and through
-  generated `AGENTS.md`/`CLAUDE.md` blocks and `SKILL.md` files (`nexora sync`).
+- **Your rules and skills**, written once in Markdown, reach Claude Code, Codex,
+  and other agents. Each task gets exactly the rules that apply to its project,
+  agent, and files.
+- **Your docs and Confluence pages** are indexed, so the agent gets the passages
+  that match what it is doing, with a link to the source.
+- **Your agents connect directly** through an MCP server, or through generated
+  `AGENTS.md`/`CLAUDE.md` sections and `SKILL.md` files.
 
-Every selection explains why it was picked and where it came from. Required rules
-never depend on search ranking. Nexora is a standalone Go CLI: the first run needs
-no Docker, database, cloud account, or API key.
+Every result says why it was selected and where it came from. Nexora is one
+executable: no Docker, database, cloud account, or API key needed to start.
 
-## Run locally
+## Install
 
-Build the standalone executable from this checkout:
+macOS and Linux:
 
-```sh
-go build -o bin/nexora ./cmd/nexora
-./bin/nexora validate --config examples/local/nexora.yaml
-./bin/nexora resolve --config examples/local/nexora.yaml --agent codex --file src/auth/service.go
+```shell
+curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.sh | sh
 ```
 
-The example selects three required rules: `security/authentication`,
-`go/conventions`, and `agents/codex`. Each includes source, version, and matching
-reasons. Then index a documentation folder and ask for a task:
+Windows and other systems: `go install github.com/acierto/nexora/cmd/nexora@latest`
+with Go 1.23 or newer. Details, manual downloads, and checksums are in
+[Install](docs/install.md).
 
-```sh
-./bin/nexora index --config examples/team-docs/nexora.yaml
-./bin/nexora resolve --config examples/team-docs/nexora.yaml --agent codex \
-  --file src/payments/refund.go --task "add partial refunds"
+## Connect it in five steps
+
+```shell
+nexora init --project my-api                 # 1. create nexora.yaml and knowledge/
+$EDITOR knowledge/rules/authentication.md     # 2. write a rule (see the quickstart)
+# 3. add your docs folder to nexora.yaml as a "docs" source
+nexora index                                  # 4. index your docs
+claude mcp add nexora -- nexora mcp --config "$PWD/nexora.yaml"   # 5. connect your agent
 ```
 
-The result adds handbook passages about partial refunds, with their file and the
-terms that matched, next to the payment rules. Knowledge stays on your machine.
-Nexora uses the network only when `nexora index` reads Confluence or calls an
-embedding provider, and when a configured provider embeds a search query.
+Now when the agent works on `src/auth/service.go`, it can ask Nexora for context
+and get your authentication rule plus the doc passages about the task. The
+[Quickstart](docs/quickstart.md) walks through each step with the exact files and
+expected output.
 
-To install into Go's binary directory, run `go install ./cmd/nexora` and put
-`$(go env GOPATH)/bin` on PATH (or use your configured GOBIN). In an existing
-project, `nexora init --project my-api` creates `nexora.yaml` and
-`knowledge/rules/project.md`. It refuses existing targets and symlinked
-destinations. Only `nexora sync` writes to `AGENTS.md` or `CLAUDE.md`, and only
-inside its own marked block.
+## Documentation
 
-| Command | Purpose |
-| --- | --- |
-| `nexora init [--project ID]` | Create local configuration and an example rule |
-| `nexora validate [--config PATH] [--json]` | Validate every source and report the count |
-| `nexora list [--config PATH] [--json]` | Inspect all knowledge, including inactive items |
-| `nexora resolve [--config PATH] [--project ID] [--agent ID] [--file PATH ...] [--task TEXT] [--limit N] [--json]` | Select applicable knowledge, plus documentation passages with `--task` |
-| `nexora index [--config PATH] [--source ID] [--json]` | Index docs and Confluence sources |
-| `nexora search --query TEXT [--config PATH] [--project ID] [--limit N] [--json]` | Search indexed documentation |
-| `nexora mcp [--config PATH]` | Serve knowledge to agents over MCP (stdio) |
-| `nexora sync --agent codex\|claude [--config PATH] [--project ID] [--dir PATH] [--check] [--json]` | Write knowledge into `AGENTS.md`/`CLAUDE.md` and skill folders |
-| `nexora help [COMMAND]` | Explain commands and flags |
+**Using Nexora**
 
-Read commands emit one JSON object with `--json`: validation returns `valid` and
-`item_count`, listing returns `items`, resolution returns five selection arrays
-plus `passages`, and search returns `hits`. Exit codes are 0 for success, 2 for usage errors, and 1 for configuration,
-loading, resolution, or I/O failures. Errors go to stderr; JSON goes to stdout.
+- [Install](docs/install.md): prebuilt binaries, the install script, Windows and other systems.
+- [Quickstart](docs/quickstart.md): from zero to a connected agent.
+- [Write knowledge](docs/knowledge-format.md): rules, skills, references, and decisions.
+- [Docs and Confluence](docs/retrieval.md): index documentation, embeddings, pgvector.
+- [Connect agents](docs/agents.md): MCP setup for Claude Code and Codex, and native sync.
+- [Examples](examples/README.md): sample projects you can run.
 
-## Learn and try
+**Reference**
 
-- [Getting started](docs/getting-started.md): create and use your first rule.
-- [Knowledge format](docs/knowledge-format.md): metadata, configuration, and examples of every kind.
-- [Resolution](docs/resolution.md): applicability, ordering, provenance, and trust boundaries.
-- [CLI guide](docs/cli.md): flags, recipes, JSON output, and scripting.
-- [Docs and Confluence](docs/retrieval.md): documentation sources, indexing, search, embeddings, and pgvector.
-- [Connect agents](docs/agents.md): the MCP server for Claude Code and Codex, and native sync.
-- [Troubleshooting](docs/troubleshooting.md): common errors and missing-rule explanations.
-- [Example catalog](examples/README.md): a Go API, shared knowledge across two projects, and searchable team docs.
+- [Configuration](docs/configuration.md): every `nexora.yaml` field.
+- [CLI](docs/cli.md): commands, flags, JSON output, and exit codes.
+- [How rules are matched](docs/resolution.md): applicability, ordering, and explanations.
+- [Troubleshooting](docs/troubleshooting.md): error messages and fixes.
 
-Planned next: plugins and shareable knowledge packs, a remote MCP server with
-authorization that mirrors source permissions, more connectors (Notion, Google
-Docs), full Agent Skills import, overrides, and context budgets.
+**Contributing**
 
-## Development
+- [Contributing](docs/contributing.md): development setup, tests, docs, and releases.
+- [Architecture](docs/architecture.md) and [verification record](docs/verification.md).
 
-Go 1.23 or newer is required to build from source. The initial compatibility
-floor is Go 1.23; supported production toolchains will be reviewed before release.
+## Status
 
-Implementation lives under `internal/`: knowledge models and path semantics,
-configuration, Markdown loading, registry snapshots, resolution, documentation
-passages, Confluence, embeddings, index stores, retrieval, MCP, native sync, and
-CLI output.
-The executable entry point is `cmd/nexora`. Public SDK contracts are deferred.
-
-```sh
-go test ./...
-go vet ./...
-```
-
-See [architecture decisions](docs/architecture.md). This project is under
-initial development. License selection is pending before public release.
+Nexora is in early development. Working today: knowledge selection, docs and
+Confluence indexing with optional embeddings and pgvector, the MCP server, and
+native sync for Claude Code and Codex. Planned: plugins and shareable knowledge
+packs, a remote server with permission-aware access, more connectors (Notion,
+Google Docs), overrides, and context budgets. License selection is pending before
+the first public release.

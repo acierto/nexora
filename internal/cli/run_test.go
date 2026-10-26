@@ -239,3 +239,19 @@ func TestOutputFailureAndCancellation(t *testing.T) {
 		t.Fatal(code, out.String(), err.String())
 	}
 }
+
+func TestVersion(t *testing.T) {
+	old := Version
+	Version = "v9.9.9"
+	defer func() { Version = old }()
+	for _, args := range [][]string{{"version"}, {"--version"}} {
+		var out, errOut bytes.Buffer
+		if code := run(context.Background(), args, t.TempDir(), &out, &errOut); code != 0 || out.String() != "nexora v9.9.9\n" {
+			t.Fatalf("%v: %d %q %q", args, code, out.String(), errOut.String())
+		}
+	}
+	var out, errOut bytes.Buffer
+	if code := run(context.Background(), []string{"version", "extra"}, t.TempDir(), &out, &errOut); code != 2 {
+		t.Fatalf("expected usage error, got %d", code)
+	}
+}

@@ -2,31 +2,26 @@
 
 **[Open the Nexora docs website](https://acierto.github.io/nexora/)**
 
-The website includes the user guides, searchable documentation, and an interactive
-resolution playground. Start with [Getting started online](https://acierto.github.io/nexora/#start).
+The website has the same guides, search, and an interactive resolution
+playground. On GitHub, read them here:
 
-Prefer reading on GitHub? Open the [quickstart](getting-started.md),
-[knowledge format](knowledge-format.md), [resolution guide](resolution.md),
-[docs and Confluence](retrieval.md), [connect agents](agents.md),
-[CLI reference](cli.md), or [troubleshooting](troubleshooting.md).
+## Using Nexora
 
-## Publishing and previewing
+1. [Install](install.md)
+2. [Quickstart](quickstart.md): connect Nexora to your agent
+3. [Write knowledge](knowledge-format.md)
+4. [Docs and Confluence](retrieval.md)
+5. [Connect agents](agents.md)
 
-GitHub Pages publishes the `docs/` directory from the `main` branch. The supplied
-Nexora Docs HTML is stored as `docs/index.html`; `.nojekyll` keeps it a plain
-static site. Push changes to `main` to publish an update. Deployment status is
-visible in the repository's **Actions** tab and **Settings → Pages**.
+## Reference
 
-The HTML includes copies of the nine Markdown guides. After changing them, run
-this from the repository root before committing:
+- [Configuration](configuration.md)
+- [CLI](cli.md)
+- [How rules are matched](resolution.md)
+- [Troubleshooting](troubleshooting.md)
 
-```sh
-python3 scripts/sync_docs.py
-python3 scripts/sync_docs.py --check
-```
+## Contributing
 
-To preview locally, run `python3 -m http.server 8000 --directory docs` from the
-repository root, then open **http://localhost:8000/**. Stop the server with Ctrl-C.
-Google Fonts, Three.js, and the Markdown renderer load from external CDNs, so
-the website needs an internet connection for those assets. The Nexora CLI
-continues to work offline.
+- [Contributing](contributing.md): setup, checks, documentation website, releases
+- [Architecture](architecture.md)
+- [Verification record](verification.md)

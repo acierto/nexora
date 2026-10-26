@@ -155,7 +155,7 @@ embeddings are configured.
 ## pgvector (optional)
 
 The default store is one JSON file at `.nexora/index.json` next to the
-configuration (change it with `index.path`). Add `.nexora/` to `.gitignore`.
+configuration (change it with `index.path`). Add `.nexora/index.json` to `.gitignore`.
 For larger collections or a shared database, store passages in PostgreSQL with
 the [pgvector](https://github.com/pgvector/pgvector) extension:
 
@@ -181,26 +181,8 @@ are the same as the local store.
 
 ## Configuration reference
 
-| Field | Meaning / default |
-| --- | --- |
-| `sources[].type` | `knowledge` (default), `docs`, or `confluence` |
-| `sources[].path` | Directory for `knowledge` and `docs` sources |
-| `sources[].url` | Confluence base URL, for example `https://x.atlassian.net/wiki` |
-| `sources[].spaces` | Confluence space keys, at least one, unique |
-| `sources[].token_env` | Environment variable with the Confluence token (required for confluence) |
-| `sources[].user_env` | Environment variable with the Confluence user; enables basic auth |
-| `sources[].projects` | Restrict a docs or confluence source to these projects |
-| `index.store` | `local` (default) or `pgvector` |
-| `index.path` | Local index file, default `.nexora/index.json` relative to the config |
-| `index.dsn_env` | Environment variable with the PostgreSQL connection string (pgvector) |
-| `index.table` | pgvector table name, default `nexora_passages` |
-| `index.embeddings.provider` | `none` (default), `ollama`, or `openai` |
-| `index.embeddings.model` | Embedding model name (required with a provider) |
-| `index.embeddings.url` | Provider base URL; defaults per provider |
-| `index.embeddings.api_key_env` | Environment variable with the API key (openai) |
-| `index.embeddings.dimensions` | Expected vector size; enables the pgvector HNSW index |
-| `index.chunk.max_chars` | Maximum passage length, 200-20000, default 1200 |
-| `index.chunk.overlap_chars` | Overlap between passages, up to half of `max_chars`, default 150 |
+All source and index fields, with defaults, are listed in the
+[configuration reference](configuration.md).
 
 ## Trust boundary
 

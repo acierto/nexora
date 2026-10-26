@@ -9,13 +9,16 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 GUIDES = {
-    "start": "getting-started.md",
+    "install": "install.md",
+    "start": "quickstart.md",
     "format": "knowledge-format.md",
-    "resolution": "resolution.md",
     "retrieval": "retrieval.md",
     "agents": "agents.md",
+    "configuration": "configuration.md",
     "cli": "cli.md",
+    "resolution": "resolution.md",
     "troubleshooting": "troubleshooting.md",
+    "contributing": "contributing.md",
     "architecture": "architecture.md",
     "verification": "verification.md",
 }

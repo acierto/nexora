@@ -1,4 +1,4 @@
-# CLI guide
+# CLI reference
 
 [Read online](https://acierto.github.io/nexora/#cli) · [Documentation home](https://acierto.github.io/nexora/)
 
@@ -15,6 +15,7 @@ Commands use flags after the command name; positional arguments are rejected.
 | `search` | `--config PATH`, `--json`, `--query TEXT` (required), `--project ID`, `--limit N` | Returns documentation passages with explanations |
 | `mcp` | `--config PATH` | Serves knowledge over MCP on stdin/stdout until EOF |
 | `sync` | `--config PATH`, `--json`, `--agent codex\|claude` (required), `--project ID`, `--dir PATH`, `--check` | Writes the managed block and generated skills; `--check` writes nothing |
+| `version` | none (also `--version`) | Prints the version, for example `nexora v0.1.0` |
 
 The default config is `./nexora.yaml`; Nexora never searches parent directories.
 Relative sources resolve against the config's directory. Project defaults to its
@@ -25,7 +26,8 @@ excluded. A supplied empty project is distinct from omitting the flag.
 
 ## Recipes
 
-Run these from the Nexora repository root with the installed binary on PATH:
+These use the sample projects in the repository. Clone it and run them from its root
+with `nexora` on your PATH:
 
 ```sh
 nexora validate --config examples/local/nexora.yaml

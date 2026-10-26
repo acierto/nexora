@@ -1,4 +1,4 @@
-# How resolution works
+# How rules are matched
 
 [Read online](https://acierto.github.io/nexora/#resolution) · [Documentation home](https://acierto.github.io/nexora/)
 

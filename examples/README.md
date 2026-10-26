@@ -1,8 +1,7 @@
 # Practical examples
 
-Build Nexora with `go build -o bin/nexora ./cmd/nexora`. Install with
-`go install ./cmd/nexora` and add Go's binary directory to PATH for the examples'
-copyable commands. Run those commands from the repository root.
+[Install Nexora](../docs/install.md), clone this repository, and run the commands
+from its root.
 
 | Example | Learn |
 | --- | --- |
