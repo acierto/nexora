@@ -18,6 +18,7 @@ import (
 	"github.com/acierto/nexora/internal/index"
 	"github.com/acierto/nexora/internal/knowledge"
 	"github.com/acierto/nexora/internal/markdown"
+	"github.com/acierto/nexora/internal/nativesync"
 	"github.com/acierto/nexora/internal/passage"
 	"github.com/acierto/nexora/internal/registry"
 	"github.com/acierto/nexora/internal/resolver"
@@ -76,12 +77,34 @@ type ContextRequest struct {
 	Files           []string
 	Task            string
 	Limit           int
+	Native          bool
 }
 
 // ContextResult is the deterministic resolution plus retrieved passages.
 type ContextResult struct {
 	resolver.Result
-	Passages []retrieval.Hit `json:"passages"`
+	Passages        []retrieval.Hit      `json:"passages"`
+	Documentation   DocumentationContext `json:"documentation"`
+	NativeKnowledge []NativeSelection    `json:"native_knowledge,omitempty"`
+}
+
+type DocumentationContext struct {
+	Status   string `json:"status"` // not_requested, not_configured, external, complete, unavailable
+	Guidance string `json:"guidance,omitempty"`
+	Message  string `json:"message,omitempty"`
+}
+
+// NativeSelection identifies selected knowledge whose body is already available
+// in verified native files. Optional rule bodies, references, and decisions remain
+// in the normal result because sync does not deliver their full content.
+type NativeSelection struct {
+	ID       string            `json:"id"`
+	Kind     knowledge.Kind    `json:"kind"`
+	Required bool              `json:"required"`
+	Version  string            `json:"version"`
+	Source   knowledge.Source  `json:"source"`
+	Reasons  []resolver.Reason `json:"reasons"`
+	File     string            `json:"file"`
 }
 
 func (a App) Context(ctx context.Context, req ContextRequest) (ContextResult, error) {
@@ -94,12 +117,52 @@ func (a App) Context(ctx context.Context, req ContextRequest) (ContextResult, er
 	if err != nil {
 		return ContextResult{}, err
 	}
-	out := ContextResult{Result: result, Passages: []retrieval.Hit{}}
-	if strings.TrimSpace(req.Task) == "" || len(loaded.Config.DocumentSources()) == 0 {
+	out := ContextResult{Result: result, Passages: []retrieval.Hit{}, Documentation: DocumentationContext{Status: "not_requested", Guidance: loaded.Config.Delivery.Documentation}}
+	if req.Native {
+		plan, err := nativesync.Plan(nativesync.Options{Agent: req.Agent, Project: project, Dir: loaded.Config.Dir, Items: loaded.Items, Documentation: loaded.Config.Delivery.Documentation})
+		if err != nil {
+			return ContextResult{}, fmt.Errorf("native delivery: %w", err)
+		}
+		if plan.Changed() || len(plan.Conflicts) > 0 {
+			return ContextResult{}, fmt.Errorf("native delivery requires up-to-date, unedited synced files next to nexora.yaml; run nexora sync --agent %s, or omit native mode for full context", req.Agent)
+		}
+		target := nativesync.Targets[req.Agent]
+		for _, group := range [][]resolver.Selection{result.RequiredRules, result.Skills} {
+			for _, s := range group {
+				file := target.Instructions
+				if s.Item.Kind == knowledge.Skill {
+					file = target.SkillsDir + "/" + nativesync.SkillName(s.Item.ID) + "/SKILL.md"
+				}
+				out.NativeKnowledge = append(out.NativeKnowledge, NativeSelection{ID: s.Item.ID, Kind: s.Item.Kind, Required: s.Item.Required, Version: s.Item.Version, Source: s.Item.Source, Reasons: s.Reasons, File: file})
+			}
+		}
+		out.RequiredRules = []resolver.Selection{}
+		out.Skills = []resolver.Selection{}
+	}
+	if strings.TrimSpace(req.Task) == "" {
+		return out, nil
+	}
+	if len(loaded.Config.DocumentSources()) == 0 {
+		out.Documentation.Status = "not_configured"
+		if out.Documentation.Guidance != "" {
+			out.Documentation.Status = "external"
+		}
 		return out, nil
 	}
 	out.Passages, err = a.search(ctx, loaded.Config, req.Task, project, req.Limit)
-	return out, err
+	if err != nil {
+		if ctx.Err() != nil {
+			return ContextResult{}, ctx.Err()
+		}
+		out.Passages = []retrieval.Hit{}
+		out.Documentation.Status = "unavailable"
+		// Provider errors can include URLs or credentials. Keep the partial
+		// context safe; search remains the explicit diagnostic command.
+		out.Documentation.Message = "Documentation retrieval unavailable; run nexora index if needed, or nexora search to diagnose configured sources. Selected knowledge is preserved."
+		return out, nil
+	}
+	out.Documentation.Status = "complete"
+	return out, nil
 }
 
 type SearchRequest struct {
@@ -115,6 +178,9 @@ func (a App) Search(ctx context.Context, req SearchRequest) ([]retrieval.Hit, er
 		return nil, err
 	}
 	if len(cfg.DocumentSources()) == 0 {
+		if cfg.Delivery.Documentation != "" {
+			return nil, fmt.Errorf("documentation lookup belongs to an existing service: %s Nexora does not call that service; use it directly", cfg.Delivery.Documentation)
+		}
 		return nil, fmt.Errorf("no docs, confluence, or pgvector sources are configured; add one to %s and run nexora index", a.ConfigPath)
 	}
 	return a.search(ctx, cfg, req.Query, Project(cfg, req.Project, req.ProjectExplicit), req.Limit)

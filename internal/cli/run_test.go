@@ -97,7 +97,7 @@ func TestReadWorkflow(t *testing.T) {
 		}
 	}
 	_, out, _ = invoke(t, root, "resolve", "--json", "--project", "other")
-	if strings.TrimSpace(out) != "{\n  \"required_rules\": [],\n  \"optional_rules\": [],\n  \"skills\": [],\n  \"references\": [],\n  \"decisions\": [],\n  \"passages\": []\n}" {
+	if strings.TrimSpace(out) != "{\n  \"required_rules\": [],\n  \"optional_rules\": [],\n  \"skills\": [],\n  \"references\": [],\n  \"decisions\": [],\n  \"passages\": [],\n  \"documentation\": {\n    \"status\": \"not_requested\"\n  }\n}" {
 		t.Fatal(out)
 	}
 	after, _ := os.ReadFile(configFile)

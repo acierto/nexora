@@ -125,3 +125,42 @@ func TestSearchVectorSources(t *testing.T) {
 		t.Fatalf("fused: %+v %v", hits, err)
 	}
 }
+
+func TestFuseLinkedCopiesAndLiveContent(t *testing.T) {
+	linked := func(id, text, digest string) index.Candidate {
+		c := cand(id, text, 1)
+		c.Passage.SourceID = strings.SplitN(id, ":", 2)[0]
+		c.Passage.Location = "https://docs.example.test/checkout"
+		c.Passage.Title = "Checkout"
+		c.Passage.Heading = "Recovery"
+		c.Passage.Digest = digest
+		return c
+	}
+	list := []index.Candidate{
+		linked("a:1", "Reconcile the original authorization", "v1"),
+		linked("b:1", "Reconcile the original authorization", "v1"),
+		linked("b:2", "A different section", "v1"),
+		linked("c:1", "Reconcile the original authorization", "v2"),
+	}
+	hits := Fuse(map[string][]index.Candidate{"keyword": list}, nil, 3)
+	if len(hits) != 3 || hits[0].Passage.ID != "a:1" || len(hits[0].Duplicates) != 1 || hits[0].Duplicates[0].ID != "b:1" || hits[0].Duplicates[0].SourceID != "b" {
+		t.Fatalf("dedup lost attribution, distinct text, version, or limit refill: %+v", hits)
+	}
+	if again := Fuse(map[string][]index.Candidate{"keyword": list}, nil, 3); !reflect.DeepEqual(hits, again) {
+		t.Fatal("duplicate attribution is not deterministic")
+	}
+	// Local paths are scoped to their sources, not globally canonical URLs.
+	for i := range list {
+		list[i].Passage.Location = "checkout.md"
+	}
+	if hits := Fuse(map[string][]index.Candidate{"keyword": list}, nil, 10); len(hits) != 4 {
+		t.Fatal("different local sources collapsed")
+	}
+	old := linked("table:1", "Old copied text", "old")
+	live := linked("table:1", "Current live text", "new")
+	live.Passage.Title = "Current title"
+	hits = Fuse(map[string][]index.Candidate{"keyword": {old}, "semantic/table": {live}}, nil, 5)
+	if len(hits) != 1 || hits[0].Passage.Text != "Current live text" || hits[0].Passage.Digest != "new" || hits[0].Passage.Title != "Current title" || len(hits[0].Reasons) != 2 {
+		t.Fatalf("live result replaced by stale copy: %+v", hits)
+	}
+}

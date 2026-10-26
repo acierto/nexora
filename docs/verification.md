@@ -131,3 +131,31 @@ linux/amd64 binary reported its compiled-in version through `nexora version`.
 The GitHub Actions workflows (`ci.yml`, `release.yml`) have not run yet; the first
 pushed tag is their first real test. macOS binaries are not signed or notarized.
 
+
+## Complementary delivery — v0.3.0
+
+Verified on 2026-10-26 with Go 1.23.3 on macOS arm64.
+
+| Check | Result |
+| --- | --- |
+| `go test ./...` | All packages passed, including executable native/external delivery and partial-context cases |
+| `go vet ./...`, `gofmt -l cmd internal tests`, `git diff --check` | Passed; no formatting output |
+| `python3 scripts/sync_docs.py --check` | All 12 embedded guides match their sources |
+| `openspec validate complementary-agent-delivery --strict --no-interactive` | Valid |
+| `scripts/release-build.sh v0.3.0` | Four static macOS/Linux archives and SHA-256 checksums built |
+
+`TestComplementaryDelivery` runs the existing-docs example in temporary directories
+for Codex and Claude. It checks native source/version citations, actual delivered
+bodies, unchanged optional/reference/decision content, CLI/MCP agreement, external
+search ownership, and rejection of missing sync, another project or agent, changed
+knowledge, and edited native blocks. `TestPartialContextKeepsMandatoryKnowledge`
+checks that missing documentation preserves selected rules and skills through
+both CLI and MCP, while invalid knowledge remains a hard failure.
+`TestFuseLinkedCopiesAndLiveContent` checks duplicate attribution, distinct
+versions/sections/local paths, result limits, determinism, and live text preference.
+
+No live enterprise documentation service or agent discovery was exercised. Lookup
+guidance does not implement a connector or user authorization. PostgreSQL tests
+remain conditional on `NEXORA_TEST_DATABASE_URL`; that variable was not set for
+this local run. The CI workflow exercises the database-backed tests separately.
+Cross-built Linux and macOS amd64 binaries were not executed locally.

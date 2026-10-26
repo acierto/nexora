@@ -65,3 +65,35 @@ embedding when a provider is configured. `validate`, `list`, and `resolve` witho
 
 See the [verification record](verification.md) for tested behavior and
 platform-build limitations.
+
+## Complementary agent delivery
+
+Nexora owns deterministic project knowledge. When a team already has a
+documentation service, `delivery.documentation` supplies agent-facing lookup
+guidance through native files and context responses. It does not add a connector,
+copy an index, or forward credentials. Documentation authentication and permissions
+stay with the existing service. External-only configurations omit the redundant
+MCP search tool and direct explicit search attempts to the configured service.
+Optional Nexora indexing remains useful for local
+or separately owned corpora; an MCP proxy and hosted composition are deferred.
+
+Explicit native context requests reuse `nativesync.Plan` as a read-only freshness
+check in the config directory. Only current, unchanged generated files permit
+required rule and skill bodies to be replaced by `native_knowledge` citations.
+Those citations preserve selection explanations and source/version. Optional
+rules, references, and decisions retain bodies. This avoids a second native
+tracking mechanism, while requiring the caller to know that its agent loads the
+files. No public extension contract or new dependency is introduced.
+
+Documentation retrieval failure does not invalidate deterministic selection.
+Context results include documentation status and a sanitized message; the CLI
+emits the partial context with exit 1, and MCP sets isError while retaining
+structuredContent. Invalid configuration or knowledge still fails completely.
+Cancellation also remains a hard failure. Standalone search reports diagnostic
+errors rather than partial hits.
+
+Rank fusion prefers live table content when a keyword snapshot returns the same
+ID. After ranking, exact linked copies share a slot while alternative citations
+remain in duplicates. Matching requires the same HTTP(S) URL, heading, trimmed
+body, and digest. Different versions and local paths are preserved. Snapshot
+refresh and live authorization are independent concerns, not solved by dedup.

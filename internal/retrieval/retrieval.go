@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"net/url"
 	"sort"
 	"strings"
 
@@ -26,9 +27,20 @@ type Reason struct {
 
 // Hit is one retrieved passage with its fused score.
 type Hit struct {
-	Passage passage.Passage `json:"passage"`
-	Score   float64         `json:"score"`
-	Reasons []Reason        `json:"reasons"`
+	Passage    passage.Passage `json:"passage"`
+	Score      float64         `json:"score"`
+	Reasons    []Reason        `json:"reasons"`
+	Duplicates []Duplicate     `json:"duplicates,omitempty"`
+}
+
+// Duplicate preserves attribution when identical linked passages are returned
+// by more than one source. Different bodies or document digests remain separate.
+type Duplicate struct {
+	ID       string `json:"id"`
+	SourceID string `json:"source_id"`
+	Title    string `json:"title"`
+	Location string `json:"location"`
+	Digest   string `json:"digest"`
 }
 
 // Request describes a search.
@@ -138,6 +150,11 @@ func Fuse(lists map[string][]index.Candidate, terms []string, limit int) []Hit {
 				h = &Hit{Passage: c.Passage.Clone(), Reasons: []Reason{}}
 				byID[c.Passage.ID] = h
 			}
+			// An existing vector table is read live. Prefer its current text and
+			// citation over the keyword snapshot for the same passage ID.
+			if strings.HasPrefix(method, "semantic/") {
+				h.Passage = c.Passage.Clone()
+			}
 			h.Score += 1 / float64(rrfK+rank+1)
 			name, source, _ := strings.Cut(method, "/")
 			reason := Reason{Method: name, Source: source, Rank: rank + 1, Score: round(c.Score), Terms: []string{}}
@@ -158,6 +175,27 @@ func Fuse(lists map[string][]index.Candidate, terms []string, limit int) []Hit {
 		}
 		return hits[i].Passage.ID < hits[j].Passage.ID
 	})
+	// Collapse only exact linked copies. A shared title, URL, or similar text
+	// alone must never erase a distinct section or a conflicting version.
+	unique := make([]Hit, 0, len(hits))
+	linked := map[string]int{}
+	for _, h := range hits {
+		p := h.Passage
+		u, err := url.Parse(p.Location)
+		key := ""
+		if err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != "" && strings.TrimSpace(p.Text) != "" {
+			key = p.Location + "\x00" + p.Heading + "\x00" + p.Digest + "\x00" + strings.TrimSpace(p.Text)
+		}
+		if idx, ok := linked[key]; key != "" && ok {
+			unique[idx].Duplicates = append(unique[idx].Duplicates, Duplicate{ID: p.ID, SourceID: p.SourceID, Title: p.Title, Location: p.Location, Digest: p.Digest})
+			continue
+		}
+		if key != "" {
+			linked[key] = len(unique)
+		}
+		unique = append(unique, h)
+	}
+	hits = unique
 	if limit > 0 && len(hits) > limit {
 		hits = hits[:limit]
 	}

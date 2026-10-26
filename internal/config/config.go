@@ -101,8 +101,15 @@ type Config struct {
 	Project       string   `yaml:"project"`
 	Sources       []Source `yaml:"sources"`
 	Index         Index    `yaml:"index"`
+	Delivery      Delivery `yaml:"delivery"`
 	// Dir is the absolute directory containing the configuration file.
 	Dir string `yaml:"-"`
+}
+
+// Delivery describes documentation lookup owned by an already connected service.
+// It is agent-facing guidance, not a connector or an authentication setting.
+type Delivery struct {
+	Documentation string `yaml:"documentation"`
 }
 
 var (
@@ -160,6 +167,10 @@ func (c Config) sourcesOf(kind string) []Source {
 }
 
 func (c *Config) validate(base string) error {
+	c.Delivery.Documentation = strings.TrimSpace(c.Delivery.Documentation)
+	if len(c.Delivery.Documentation) > 2000 {
+		return fmt.Errorf("delivery.documentation must be at most 2000 bytes")
+	}
 	if c.SchemaVersion != 1 {
 		return fmt.Errorf("schema_version: only version 1 is supported")
 	}

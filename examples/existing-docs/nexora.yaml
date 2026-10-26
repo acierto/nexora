@@ -1,0 +1,9 @@
+schema_version: 1
+project: commerce-api
+sources:
+  - id: local
+    path: ../local/knowledge
+# The agent already has access to this fictional documentation service.
+# Nexora emits this guidance; it does not connect, proxy, or authenticate to it.
+delivery:
+  documentation: Use the connected team-docs MCP to search documentation and open authoritative pages.

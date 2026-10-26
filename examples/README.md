@@ -7,6 +7,7 @@ from its root.
 | --- | --- |
 | [Local Go API](local/README.md) | 25 items: HTTP contracts, tenant isolation, checkout, inventory, migrations, webhooks, agent filters |
 | [Shared standards](shared-knowledge/README.md) | Shared Go/security standards and distinct commerce/billing error contracts |
+| [Existing docs MCP](existing-docs/README.md) | Reuse native project knowledge alongside an existing search service without a second index |
 | [Team docs](team-docs/README.md) | 7 knowledge items plus 12 documents: search operational scenarios and resolve rules with task passages |
 
 Each collection is fictional public sample content and runs offline, including

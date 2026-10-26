@@ -53,6 +53,7 @@ valid file, which `nexora init` writes, has a single knowledge source.
 | `sources[].columns.*` | pgvector | `id`, `text`, `vector` required; `title`, `location`, `document` optional |
 | `sources[].distance` | pgvector | `cosine` (default), `l2`, or `inner_product`; match how the vectors were made |
 | `sources[].embeddings.*` | pgvector | Required; the provider and model that produced the stored vectors, same fields as `index.embeddings` |
+| `delivery.documentation` | delivery | Optional agent-facing instructions for an existing connected documentation service; trimmed, maximum 2000 UTF-8 bytes. No connection or credentials are created |
 | `index.store` | index | `local` (default) or `pgvector` |
 | `index.path` | local store | Index file, default `.nexora/index.json` |
 | `index.dsn_env` / `index.table` | pgvector store | Variable holding the connection string; table, default `nexora_passages` |
@@ -66,6 +67,11 @@ rejected: a knowledge source cannot set `url` or `projects`, and a confluence
 source cannot set `path`. Configuration never contains secrets and does not
 expand environment variables or `~`; fields ending in `_env` name a variable that
 is read only when Nexora needs it. Parent directories are not searched.
+
+Use a knowledge-only config with `delivery.documentation` when another service
+already owns documentation search. Nexora emits the guidance in native files and
+context responses; it does not execute it or contact the named service. See
+[existing documentation integration](agents.md#keep-an-existing-documentation-mcp).
 
 Source root paths are canonicalized, but symlink entries inside source trees are
 rejected.

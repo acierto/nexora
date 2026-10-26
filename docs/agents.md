@@ -2,13 +2,81 @@
 
 [Read online](https://acierto.github.io/nexora/#agents) · [Documentation home](https://acierto.github.io/nexora/)
 
-Nexora delivers knowledge to agents in two ways that work well together:
+Nexora delivers deterministic project knowledge through native files, its CLI,
+and a stdio MCP server. Choose one primary route for rule and skill bodies.
+Documentation retrieval is optional; an existing documentation service can keep
+owning search, freshness, authentication, and permissions.
 
-- **MCP server.** `nexora mcp` lets Claude Code, Codex, and other MCP clients ask
-  for task-specific rules, skills, and documentation passages while they work.
-- **Native sync.** `nexora sync` writes the rules that always apply into
-  `AGENTS.md` or `CLAUDE.md` and generates `SKILL.md` files, so agents see them
-  even before calling a tool.
+## Keep an existing documentation MCP
+
+Start with this arrangement when your agent already has documentation access:
+
+```text
+Git knowledge --> Nexora sync --> Native rules and skills --> Agent
+                                                              |
+                                                              +--> Existing docs MCP
+```
+
+Configure only your knowledge source and agent-facing lookup guidance:
+
+```yaml
+schema_version: 1
+project: commerce-api
+sources:
+  - id: local
+    path: ./knowledge
+delivery:
+  documentation: Use the connected team-docs MCP to search documentation and open authoritative pages.
+```
+
+Then run:
+
+```shell
+nexora sync --agent codex
+nexora resolve --agent codex --native --file src/orders/checkout.go --task "recover an authorization timeout" --json
+```
+
+Use `claude` for both commands when syncing Claude's files. The generated native
+block tells the agent where to look up documentation. Context responses also
+include that guidance. With a task and no Nexora document sources,
+`documentation.status` is `external` and `passages` is empty. Nexora does not call,
+proxy, authenticate to, or configure the other MCP. Connect that service through
+its own supported setup; let it enforce the caller's document permissions.
+
+No production database connection, embedding provider, Confluence token, or second
+index is required by Nexora for this arrangement. You can still add distinct
+local docs as Nexora sources; those are searched independently and external
+guidance remains available. Give each corpus one primary search owner to avoid
+asking two services for the same documents.
+
+Try the [runnable existing-docs example](../examples/existing-docs/README.md).
+When external guidance is configured without Nexora document sources, MCP tool
+listing omits `search_knowledge` so the agent sees only the existing service's
+search tool. Direct Nexora search requests point to the configured service.
+Restart the MCP connection after changing this setup so clients refresh their
+tool discovery. A combined call that delegates search is future work.
+
+## Avoid repeating native knowledge
+
+Full context remains the default. Use `resolve --native` or MCP `get_context`
+with `native: true` only when the receiving agent loads Nexora's synced files.
+Supply `agent: codex` or `agent: claude`.
+
+Before suppressing any body, Nexora computes a read-only sync plan for the
+requested project and agent next to `nexora.yaml`. All generated files and the
+manifest must be current and unedited. Missing files, changed knowledge, a
+different project, or hand edits fail the request. Resync or omit native mode to
+get full context. Syncing to a different `--dir` is supported, but native context
+verification currently checks only the config directory.
+
+Selected required rules and skills move into `native_knowledge` citations with
+ID, kind, required status, version, source/digest, applicability reasons, and the
+native file path. Their normal arrays are empty because their bodies are already
+in the verified files. Optional rule bodies, references, and decisions remain in
+the normal arrays: native sync does not deliver their complete content.
+
+Verification proves the files are current; it cannot prove an agent loaded or
+followed them. Native mode is explicit and never selected automatically.
 
 ## MCP server
 
@@ -44,7 +112,7 @@ All tools are read-only.
 
 | Tool | Arguments | Returns |
 | --- | --- | --- |
-| `get_context` | `project`, `agent`, `files`, `task`, `limit` (all optional) | The same groups as `nexora resolve --json`, including `passages` when `task` is set |
+| `get_context` | `project`, `agent`, `files`, `task`, `limit`, `native` (all optional) | The same groups as `nexora resolve --json`, including `passages` when `task` is set |
 | `search_knowledge` | `query` (required), `project`, `limit` | `{ "hits": [...] }` documentation passages with explanations |
 | `get_knowledge` | `id` (required) | `{ "kind": "knowledge", "item": ... }` or `{ "kind": "passage", "passage": ... }` |
 | `list_skills` | `project`, `agent` | Active skills that apply, with their path restrictions |
@@ -52,11 +120,16 @@ All tools are read-only.
 `project` defaults to the configured project. Results include the JSON as text
 content and as `structuredContent`. Invalid arguments and failures, such as an
 unknown ID or a missing index, come back as tool errors (`isError: true`) with a
-message the agent can act on.
+message the agent can act on. `get_context` also preserves selected knowledge
+when documentation fails: its result has `isError: true`, usable
+`structuredContent`, and `documentation.status: unavailable`. This is a partial
+result, not a successful complete lookup. Fix the retrieval problem before
+assuming documentation is covered. Configuration and knowledge validation errors
+remain hard errors without partial context.
 
-The server also sends short instructions during initialization: call
-`get_context` before changing code, follow required rules unless trusted
-instructions say otherwise, and treat passages as reference material.
+Initialization guidance explains native delivery, external documentation lookup,
+and partial results. Required knowledge remains subject to the receiving agent's
+trusted instructions; passages are reference material.
 
 ## Native sync
 
@@ -80,7 +153,8 @@ required rules that apply to the project and agent:
   patterns and content;
 - optional rules as a one-line summary each;
 - the generated skills;
-- a pointer to `nexora resolve --task` and the MCP server for task-specific context.
+- a pointer to verified native context lookup and either configured external
+  documentation guidance or Nexora task retrieval.
 
 Each rule shows its source and version. Rules restricted to another agent are
 left out.

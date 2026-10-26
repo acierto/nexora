@@ -106,7 +106,7 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 	flags.SetOutput(&parseOutput)
 	flags.Usage = func() { fmt.Fprintf(&parseOutput, "Usage: nexora %s [flags]\n", command); flags.PrintDefaults() }
 	var configPath, project, agent, task, query, source, dir string
-	var asJSON, check bool
+	var asJSON, check, native bool
 	var limit int
 	var files fileFlags
 	if command == "init" {
@@ -124,6 +124,7 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 		flags.Var(&files, "file", "repository-relative file (repeatable)")
 		flags.StringVar(&task, "task", "", "describe the task to also retrieve documentation passages")
 		flags.IntVar(&limit, "limit", 5, "maximum passages with --task (1-50)")
+		flags.BoolVar(&native, "native", false, "cite verified synced rules and skills instead of repeating bodies (requires --agent)")
 	case "search":
 		flags.StringVar(&query, "query", "", "search text (required)")
 		flags.StringVar(&project, "project", "", "project ID (default: configuration project)")
@@ -175,6 +176,7 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 	}
 	a := app.App{ConfigPath: configPath, Getenv: streams.Getenv, HTTP: streams.HTTP}
 	var value any
+	partial := false
 	switch command {
 	case "validate", "list":
 		loaded, err := a.Load(ctx)
@@ -213,13 +215,23 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 			}
 		}
 	case "resolve":
-		result, err := a.Context(ctx, app.ContextRequest{Project: project, ProjectExplicit: wasSet(flags, "project"), Agent: agent, Files: files, Task: task, Limit: limit})
+		result, err := a.Context(ctx, app.ContextRequest{Project: project, ProjectExplicit: wasSet(flags, "project"), Agent: agent, Files: files, Task: task, Limit: limit, Native: native})
 		if err != nil {
 			return fail(err, 1)
 		}
 		value = result
+		partial = result.Documentation.Status == "unavailable"
+		if partial {
+			fmt.Fprintln(stderr, result.Documentation.Message)
+		}
 		if !asJSON {
 			renderResult(&output, result.Result)
+			for _, item := range result.NativeKnowledge {
+				fmt.Fprintf(&output, "Native %s: %s (required: %t), version %s, %s:%s; read %s\n", item.Kind, item.ID, item.Required, item.Version, item.Source.ID, item.Source.Path, item.File)
+			}
+			if result.Documentation.Guidance != "" {
+				fmt.Fprintln(&output, "Documentation lookup: "+result.Documentation.Guidance)
+			}
 			if strings.TrimSpace(task) != "" {
 				renderHits(&output, "Passages", result.Passages)
 			}
@@ -279,7 +291,7 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 		} else if !filepath.IsAbs(dir) {
 			dir = filepath.Join(cwd, dir)
 		}
-		plan, err := nativesync.Plan(nativesync.Options{Agent: agent, Project: app.Project(loaded.Config, project, wasSet(flags, "project")), Dir: dir, Items: loaded.Items})
+		plan, err := nativesync.Plan(nativesync.Options{Agent: agent, Project: app.Project(loaded.Config, project, wasSet(flags, "project")), Dir: dir, Items: loaded.Items, Documentation: loaded.Config.Delivery.Documentation})
 		if err != nil {
 			return fail(err, 1)
 		}
@@ -309,7 +321,11 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 			return fail(err, 1)
 		}
 	}
-	return write(output.Bytes())
+	code := write(output.Bytes())
+	if code == 0 && partial {
+		return 1
+	}
+	return code
 }
 
 func encode(w io.Writer, value any) error {
@@ -362,6 +378,9 @@ func renderHits(output io.Writer, title string, hits []retrieval.Hit) {
 			heading += " › " + strings.TrimPrefix(p.Heading, p.Title+" › ")
 		}
 		fmt.Fprintf(output, "  %s — %s\n  Source: %s (%s); id: %s\n", heading, p.Location, p.SourceID, p.SourceType, p.ID)
+		for _, duplicate := range h.Duplicates {
+			fmt.Fprintf(output, "  Also found: %s (%s), digest %s\n", duplicate.ID, duplicate.SourceID, duplicate.Digest)
+		}
 		for _, r := range h.Reasons {
 			if len(r.Terms) > 0 {
 				fmt.Fprintf(output, "  %s: rank %d, matched %s\n", r.Method, r.Rank, strings.Join(r.Terms, ", "))

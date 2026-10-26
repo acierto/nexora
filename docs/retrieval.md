@@ -10,6 +10,14 @@ task, each with its source and the reason it was picked.
 Documentation never becomes a rule. Required rules are still selected only by
 project, agent, and file metadata; retrieval cannot add, remove, or reorder them.
 
+## Already have documentation search?
+
+Keep an existing documentation MCP as the primary source when it already offers
+search, page lookup, user authentication, and permission checks. Nexora can supply
+project rules and skills alongside it without indexing those documents. See
+[existing documentation integration](agents.md#keep-an-existing-documentation-mcp).
+Use Nexora's retrieval below for corpora you choose to own locally or index here.
+
 ## Add documentation sources
 
 Sources have a `type`. The default, `knowledge`, holds front-matter knowledge as
@@ -332,3 +340,35 @@ their content.
 
 Try it with the [team docs example](../examples/team-docs/README.md), then
 [connect your agents](agents.md).
+
+## Freshness, citations, and overlapping sources
+
+Docs and Confluence passages are snapshots refreshed by `nexora index`. Reloading
+the index on every tool call reads the latest saved snapshot; it does not recrawl
+the upstream service. Schedule or run indexing according to your freshness needs.
+
+For existing pgvector sources, semantic results come from the live table while
+keyword results and `get_knowledge` use the last indexed text copy. When the same
+passage ID appears in both, context/search returns the live semantic text and
+metadata. A keyword-only match can still be stale, so refresh the text copy when
+the source changes. This is not a guarantee of a consistent live snapshot.
+
+Map `columns.title`, `columns.location`, and `columns.document` when using an
+existing table, so agents receive readable titles, authoritative URLs, and stable
+document attribution. If omitted, Nexora can only fall back to row/document IDs.
+Document content digests are provenance, not upstream revision numbers.
+
+After rank fusion, exact copies with the same absolute HTTP(S) location, heading,
+trimmed body, and digest occupy one result slot. The highest-ranked representative
+keeps its score; `duplicates` preserves the other IDs, sources, titles, URLs, and
+digests. Copies do not gain an extra score just because they exist in another
+source. Distinct bodies, digests, sections, and local paths remain separate. This
+is conservative duplicate removal, not semantic deduplication or URL aliasing.
+Choose one owner per corpus to avoid broader overlaps with an external MCP.
+
+When retrieval fails during context resolution, rules, skills, references, and
+decisions are preserved with an explicit `unavailable` status. CLI exits 1; MCP
+sets `isError: true` while retaining `structuredContent`. An empty successful
+search and an unavailable service are separate states. Use `search` to diagnose
+provider or index errors; partial context messages do not expose raw provider
+errors that might contain connection details.

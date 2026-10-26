@@ -1032,6 +1032,7 @@ valid file, which `nexora init` writes, has a single knowledge source.
 | `sources[].columns.*` | pgvector | `id`, `text`, `vector` required; `title`, `location`, `document` optional |
 | `sources[].distance` | pgvector | `cosine` (default), `l2`, or `inner_product`; match how the vectors were made |
 | `sources[].embeddings.*` | pgvector | Required; the provider and model that produced the stored vectors, same fields as `index.embeddings` |
+| `delivery.documentation` | delivery | Optional agent-facing instructions for an existing connected documentation service; trimmed, maximum 2000 UTF-8 bytes. No connection or credentials are created |
 | `index.store` | index | `local` (default) or `pgvector` |
 | `index.path` | local store | Index file, default `.nexora/index.json` |
 | `index.dsn_env` / `index.table` | pgvector store | Variable holding the connection string; table, default `nexora_passages` |
@@ -1045,6 +1046,11 @@ rejected: a knowledge source cannot set `url` or `projects`, and a confluence
 source cannot set `path`. Configuration never contains secrets and does not
 expand environment variables or `~`; fields ending in `_env` name a variable that
 is read only when Nexora needs it. Parent directories are not searched.
+
+Use a knowledge-only config with `delivery.documentation` when another service
+already owns documentation search. Nexora emits the guidance in native files and
+context responses; it does not execute it or contact the named service. See
+[existing documentation integration](agents.md#keep-an-existing-documentation-mcp).
 
 Source root paths are canonicalized, but symlink entries inside source trees are
 rejected.
@@ -1455,6 +1461,14 @@ task, each with its source and the reason it was picked.
 Documentation never becomes a rule. Required rules are still selected only by
 project, agent, and file metadata; retrieval cannot add, remove, or reorder them.
 
+## Already have documentation search?
+
+Keep an existing documentation MCP as the primary source when it already offers
+search, page lookup, user authentication, and permission checks. Nexora can supply
+project rules and skills alongside it without indexing those documents. See
+[existing documentation integration](agents.md#keep-an-existing-documentation-mcp).
+Use Nexora's retrieval below for corpora you choose to own locally or index here.
+
 ## Add documentation sources
 
 Sources have a `type`. The default, `knowledge`, holds front-matter knowledge as
@@ -1777,18 +1791,118 @@ their content.
 
 Try it with the [team docs example](../examples/team-docs/README.md), then
 [connect your agents](agents.md).
+
+## Freshness, citations, and overlapping sources
+
+Docs and Confluence passages are snapshots refreshed by `nexora index`. Reloading
+the index on every tool call reads the latest saved snapshot; it does not recrawl
+the upstream service. Schedule or run indexing according to your freshness needs.
+
+For existing pgvector sources, semantic results come from the live table while
+keyword results and `get_knowledge` use the last indexed text copy. When the same
+passage ID appears in both, context/search returns the live semantic text and
+metadata. A keyword-only match can still be stale, so refresh the text copy when
+the source changes. This is not a guarantee of a consistent live snapshot.
+
+Map `columns.title`, `columns.location`, and `columns.document` when using an
+existing table, so agents receive readable titles, authoritative URLs, and stable
+document attribution. If omitted, Nexora can only fall back to row/document IDs.
+Document content digests are provenance, not upstream revision numbers.
+
+After rank fusion, exact copies with the same absolute HTTP(S) location, heading,
+trimmed body, and digest occupy one result slot. The highest-ranked representative
+keeps its score; `duplicates` preserves the other IDs, sources, titles, URLs, and
+digests. Copies do not gain an extra score just because they exist in another
+source. Distinct bodies, digests, sections, and local paths remain separate. This
+is conservative duplicate removal, not semantic deduplication or URL aliasing.
+Choose one owner per corpus to avoid broader overlaps with an external MCP.
+
+When retrieval fails during context resolution, rules, skills, references, and
+decisions are preserved with an explicit `unavailable` status. CLI exits 1; MCP
+sets `isError: true` while retaining `structuredContent`. An empty successful
+search and an unavailable service are separate states. Use `search` to diagnose
+provider or index errors; partial context messages do not expose raw provider
+errors that might contain connection details.
 </script>
 <script type="text/markdown" id="md-agents"># Connect agents
 
 [Read online](https://acierto.github.io/nexora/#agents) · [Documentation home](https://acierto.github.io/nexora/)
 
-Nexora delivers knowledge to agents in two ways that work well together:
+Nexora delivers deterministic project knowledge through native files, its CLI,
+and a stdio MCP server. Choose one primary route for rule and skill bodies.
+Documentation retrieval is optional; an existing documentation service can keep
+owning search, freshness, authentication, and permissions.
 
-- **MCP server.** `nexora mcp` lets Claude Code, Codex, and other MCP clients ask
-  for task-specific rules, skills, and documentation passages while they work.
-- **Native sync.** `nexora sync` writes the rules that always apply into
-  `AGENTS.md` or `CLAUDE.md` and generates `SKILL.md` files, so agents see them
-  even before calling a tool.
+## Keep an existing documentation MCP
+
+Start with this arrangement when your agent already has documentation access:
+
+```text
+Git knowledge --> Nexora sync --> Native rules and skills --> Agent
+                                                              |
+                                                              +--> Existing docs MCP
+```
+
+Configure only your knowledge source and agent-facing lookup guidance:
+
+```yaml
+schema_version: 1
+project: commerce-api
+sources:
+  - id: local
+    path: ./knowledge
+delivery:
+  documentation: Use the connected team-docs MCP to search documentation and open authoritative pages.
+```
+
+Then run:
+
+```shell
+nexora sync --agent codex
+nexora resolve --agent codex --native --file src/orders/checkout.go --task "recover an authorization timeout" --json
+```
+
+Use `claude` for both commands when syncing Claude's files. The generated native
+block tells the agent where to look up documentation. Context responses also
+include that guidance. With a task and no Nexora document sources,
+`documentation.status` is `external` and `passages` is empty. Nexora does not call,
+proxy, authenticate to, or configure the other MCP. Connect that service through
+its own supported setup; let it enforce the caller's document permissions.
+
+No production database connection, embedding provider, Confluence token, or second
+index is required by Nexora for this arrangement. You can still add distinct
+local docs as Nexora sources; those are searched independently and external
+guidance remains available. Give each corpus one primary search owner to avoid
+asking two services for the same documents.
+
+Try the [runnable existing-docs example](../examples/existing-docs/README.md).
+When external guidance is configured without Nexora document sources, MCP tool
+listing omits `search_knowledge` so the agent sees only the existing service's
+search tool. Direct Nexora search requests point to the configured service.
+Restart the MCP connection after changing this setup so clients refresh their
+tool discovery. A combined call that delegates search is future work.
+
+## Avoid repeating native knowledge
+
+Full context remains the default. Use `resolve --native` or MCP `get_context`
+with `native: true` only when the receiving agent loads Nexora's synced files.
+Supply `agent: codex` or `agent: claude`.
+
+Before suppressing any body, Nexora computes a read-only sync plan for the
+requested project and agent next to `nexora.yaml`. All generated files and the
+manifest must be current and unedited. Missing files, changed knowledge, a
+different project, or hand edits fail the request. Resync or omit native mode to
+get full context. Syncing to a different `--dir` is supported, but native context
+verification currently checks only the config directory.
+
+Selected required rules and skills move into `native_knowledge` citations with
+ID, kind, required status, version, source/digest, applicability reasons, and the
+native file path. Their normal arrays are empty because their bodies are already
+in the verified files. Optional rule bodies, references, and decisions remain in
+the normal arrays: native sync does not deliver their complete content.
+
+Verification proves the files are current; it cannot prove an agent loaded or
+followed them. Native mode is explicit and never selected automatically.
 
 ## MCP server
 
@@ -1824,7 +1938,7 @@ All tools are read-only.
 
 | Tool | Arguments | Returns |
 | --- | --- | --- |
-| `get_context` | `project`, `agent`, `files`, `task`, `limit` (all optional) | The same groups as `nexora resolve --json`, including `passages` when `task` is set |
+| `get_context` | `project`, `agent`, `files`, `task`, `limit`, `native` (all optional) | The same groups as `nexora resolve --json`, including `passages` when `task` is set |
 | `search_knowledge` | `query` (required), `project`, `limit` | `{ "hits": [...] }` documentation passages with explanations |
 | `get_knowledge` | `id` (required) | `{ "kind": "knowledge", "item": ... }` or `{ "kind": "passage", "passage": ... }` |
 | `list_skills` | `project`, `agent` | Active skills that apply, with their path restrictions |
@@ -1832,11 +1946,16 @@ All tools are read-only.
 `project` defaults to the configured project. Results include the JSON as text
 content and as `structuredContent`. Invalid arguments and failures, such as an
 unknown ID or a missing index, come back as tool errors (`isError: true`) with a
-message the agent can act on.
+message the agent can act on. `get_context` also preserves selected knowledge
+when documentation fails: its result has `isError: true`, usable
+`structuredContent`, and `documentation.status: unavailable`. This is a partial
+result, not a successful complete lookup. Fix the retrieval problem before
+assuming documentation is covered. Configuration and knowledge validation errors
+remain hard errors without partial context.
 
-The server also sends short instructions during initialization: call
-`get_context` before changing code, follow required rules unless trusted
-instructions say otherwise, and treat passages as reference material.
+Initialization guidance explains native delivery, external documentation lookup,
+and partial results. Required knowledge remains subject to the receiving agent's
+trusted instructions; passages are reference material.
 
 ## Native sync
 
@@ -1860,7 +1979,8 @@ required rules that apply to the project and agent:
   patterns and content;
 - optional rules as a one-line summary each;
 - the generated skills;
-- a pointer to `nexora resolve --task` and the MCP server for task-specific context.
+- a pointer to verified native context lookup and either configured external
+  documentation guidance or Nexora task retrieval.
 
 Each rule shows its source and version. Rules restricted to another agent are
 left out.
@@ -1903,7 +2023,7 @@ Commands use flags after the command name; positional arguments are rejected.
 | `init` | `--project ID` | Creates configuration and a scoped example rule; default ID is directory basename |
 | `validate` | `--config PATH`, `--json` | Loads every source; reports validity and item count |
 | `list` | `--config PATH`, `--json` | Lists active, draft, and archived items in ID order |
-| `resolve` | `--config PATH`, `--json`, `--project ID`, `--agent ID`, repeatable `--file PATH`, `--task TEXT`, `--limit N` | Returns active applicable knowledge; with `--task`, also documentation passages |
+| `resolve` | `--config PATH`, `--json`, `--project ID`, `--agent ID`, repeatable `--file PATH`, `--task TEXT`, `--limit N`, `--native` | Returns active applicable knowledge; with `--task`, also documentation passages |
 | `index` | `--config PATH`, `--json`, `--source ID` | Indexes every docs, confluence, and pgvector source, or one |
 | `search` | `--config PATH`, `--json`, `--query TEXT` (required), `--project ID`, `--limit N` | Returns documentation passages with explanations |
 | `mcp` | `--config PATH` | Serves knowledge over MCP on stdin/stdout until EOF |
@@ -1931,7 +2051,7 @@ nexora resolve --config examples/local/nexora.yaml --agent codex --file src/auth
 nexora resolve --config examples/local/nexora.yaml --project unrelated --agent codex --file src/auth/service.go
 ```
 
-Validation reports 9 items. Codex selects required IDs `security/authentication`,
+Validation reports 25 items. Codex selects required IDs `security/authentication`,
 `go/conventions`, `agents/codex`; Claude substitutes `agents/claude` for the last
 ID. Repeated file flags select the union of file matches without duplicate items.
 The unrelated project selects only the global `go/conventions` and agent-specific
@@ -1952,7 +2072,7 @@ nexora search --config examples/team-docs/nexora.yaml --query "rollback producti
 nexora resolve --config examples/team-docs/nexora.yaml --agent codex --file src/payments/refund.go --task "add partial refunds" --limit 2
 ```
 
-Indexing reports 4 documents and 13 passages for the `handbook` source. The search
+Indexing reports 12 documents and 37 passages for the `handbook` source. The search
 returns the runbook passage `handbook:runbooks/deploy.html#3`. The resolve call
 returns the required rules `payments/idempotency` and `observability/logging`, the
 skill `skills/issue-refund`, and two refund-policy passages.
@@ -1970,18 +2090,32 @@ by hand, which makes it suitable for CI.
 
 ## JSON and shell scripts
 
-Validation produces `{"valid":true,"item_count":9}`. List produces
+Validation produces `{"valid":true,"item_count":25}`. List produces
 `{"items":[...]}` with full knowledge values. Resolution produces these arrays:
 
 ```json
-{"required_rules":[],"optional_rules":[],"skills":[],"references":[],"decisions":[],"passages":[]}
+{"required_rules":[],"optional_rules":[],"skills":[],"references":[],"decisions":[],"passages":[],"documentation":{"status":"not_requested"}}
 ```
+
+`documentation.status` is `not_requested` without a task, `not_configured` when
+no document sources or external guidance exist, `external` when lookup belongs
+to the configured existing service, `complete` after successful Nexora retrieval,
+or `unavailable` on retrieval failure. `complete` with an empty passage array
+means the query had no matches, not an outage. Guidance and failure messages are
+included when applicable.
+
+With `--native`, selected required rules and skills are represented in
+`native_knowledge`, with ID, kind, required status, source/version, reasons, and
+native file path. Full optional rules, references, and decisions remain in their
+normal arrays. This requires `--agent codex|claude` and verified up-to-date sync
+next to the config. See [native context delivery](agents.md#avoid-repeating-native-knowledge).
 
 `passages` is empty unless `--task` is given. Search produces `{"hits":[...]}`.
 A hit is `{"passage":{...},"score":...,"reasons":[...]}`; passage fields are `id`,
 `source_id`, `source_type`, `document_id`, `title`, `heading`, `text`, `location`,
 `digest`, and `projects`, and each reason has `method` (`keyword` or `semantic`),
-`rank`, `score`, and the matched `terms`. Index produces
+`rank`, `score`, and the matched `terms`. Exact linked copies can include
+`duplicates` citations (`id`, `source_id`, `title`, `location`, `digest`). Index produces
 `{"store":...,"model":...,"sources":[{"id","type","documents","passages","embedded"}]}`.
 Sync produces `{"agent","project","changes":[{"path","action"}],"conflicts":[]}`.
 
@@ -2010,7 +2144,11 @@ agents/codex
 Success exits 0; unknown commands, flags, and invalid CLI usage exit 2.
 Configuration, source validation, path validation, I/O, missing index, embedding,
 Confluence, and sync conflict failures exit 1.
-Failures use stderr and do not return a partial JSON registry. Human-readable
+Configuration and knowledge failures use stderr and do not return partial
+context. A documentation retrieval failure during `resolve --task` is different:
+stdout retains selected knowledge with `documentation.status: unavailable`, stderr
+reports the problem, and the command exits 1. Consumers must inspect exit status
+and documentation status. Standalone `search` still fails without partial hits. Human-readable
 output also includes content, provenance, and selection reasons. Output is data;
 do not execute knowledge content as shell commands.
 </script>
@@ -2161,6 +2299,38 @@ embedding when a provider is configured. `validate`, `list`, and `resolve` witho
 
 See the [verification record](verification.md) for tested behavior and
 platform-build limitations.
+
+## Complementary agent delivery
+
+Nexora owns deterministic project knowledge. When a team already has a
+documentation service, `delivery.documentation` supplies agent-facing lookup
+guidance through native files and context responses. It does not add a connector,
+copy an index, or forward credentials. Documentation authentication and permissions
+stay with the existing service. External-only configurations omit the redundant
+MCP search tool and direct explicit search attempts to the configured service.
+Optional Nexora indexing remains useful for local
+or separately owned corpora; an MCP proxy and hosted composition are deferred.
+
+Explicit native context requests reuse `nativesync.Plan` as a read-only freshness
+check in the config directory. Only current, unchanged generated files permit
+required rule and skill bodies to be replaced by `native_knowledge` citations.
+Those citations preserve selection explanations and source/version. Optional
+rules, references, and decisions retain bodies. This avoids a second native
+tracking mechanism, while requiring the caller to know that its agent loads the
+files. No public extension contract or new dependency is introduced.
+
+Documentation retrieval failure does not invalidate deterministic selection.
+Context results include documentation status and a sanitized message; the CLI
+emits the partial context with exit 1, and MCP sets isError while retaining
+structuredContent. Invalid configuration or knowledge still fails completely.
+Cancellation also remains a hard failure. Standalone search reports diagnostic
+errors rather than partial hits.
+
+Rank fusion prefers live table content when a keyword snapshot returns the same
+ID. After ranking, exact linked copies share a slot while alternative citations
+remain in duplicates. Matching requires the same HTTP(S) URL, heading, trimmed
+body, and digest. Different versions and local paths are preserved. Snapshot
+refresh and live authorization are independent concerns, not solved by dedup.
 </script>
 <script type="text/markdown" id="md-verification"># Local MVP verification
 
@@ -2295,6 +2465,34 @@ linux/amd64 binary reported its compiled-in version through `nexora version`.
 The GitHub Actions workflows (`ci.yml`, `release.yml`) have not run yet; the first
 pushed tag is their first real test. macOS binaries are not signed or notarized.
 
+
+## Complementary delivery — v0.3.0
+
+Verified on 2026-10-26 with Go 1.23.3 on macOS arm64.
+
+| Check | Result |
+| --- | --- |
+| `go test ./...` | All packages passed, including executable native/external delivery and partial-context cases |
+| `go vet ./...`, `gofmt -l cmd internal tests`, `git diff --check` | Passed; no formatting output |
+| `python3 scripts/sync_docs.py --check` | All 12 embedded guides match their sources |
+| `openspec validate complementary-agent-delivery --strict --no-interactive` | Valid |
+| `scripts/release-build.sh v0.3.0` | Four static macOS/Linux archives and SHA-256 checksums built |
+
+`TestComplementaryDelivery` runs the existing-docs example in temporary directories
+for Codex and Claude. It checks native source/version citations, actual delivered
+bodies, unchanged optional/reference/decision content, CLI/MCP agreement, external
+search ownership, and rejection of missing sync, another project or agent, changed
+knowledge, and edited native blocks. `TestPartialContextKeepsMandatoryKnowledge`
+checks that missing documentation preserves selected rules and skills through
+both CLI and MCP, while invalid knowledge remains a hard failure.
+`TestFuseLinkedCopiesAndLiveContent` checks duplicate attribution, distinct
+versions/sections/local paths, result limits, determinism, and live text preference.
+
+No live enterprise documentation service or agent discovery was exercised. Lookup
+guidance does not implement a connector or user authorization. PostgreSQL tests
+remain conditional on `NEXORA_TEST_DATABASE_URL`; that variable was not set for
+this local run. The CI workflow exercises the database-backed tests separately.
+Cross-built Linux and macOS amd64 binaries were not executed locally.
 </script>
 
 <!-- ======================= HOME ======================= -->
@@ -2304,7 +2502,7 @@ pushed tag is their first real test. macOS binaries are not signed or notarized.
     <span class="sticker">✦ open source · local-first · written in Go</span>
     <h1>One knowledge layer.<br><span class="hl">Every AI&nbsp;agent.</span></h1>
     <div class="right">
-      <p class="lede">Nexora turns the docs and Confluence pages your team already maintains into context for coding agents. It indexes them once. When Claude Code, Codex, or any MCP client starts a task, Nexora returns your rules for those files and the passages that matter, with sources. Nobody rewrites that knowledge into <code>CLAUDE.md</code> or <code>AGENTS.md</code> again.</p>
+      <p class="lede">Nexora delivers project rules, skills, references, and decisions to coding agents, matched deterministically by project, file, and agent. Keep your existing documentation MCP for search and permissions. Use Nexora's optional local retrieval when you need it, and native delivery to avoid repeating knowledge bodies.</p>
       <div class="cta">
         <a class="btn primary" href="#how-it-works">How it works</a>
         <a class="btn pink" href="#install">Install</a>
@@ -2316,8 +2514,8 @@ pushed tag is their first real test. macOS binaries are not signed or notarized.
 
 <section class="sec" id="how-it-works">
   <span class="eyebrow">How it works</span>
-  <h2>Your docs become the <em>agent's context</em>.</h2>
-  <p class="sub">Two phases. Index the knowledge you already have, once. After that, every agent asks Nexora for exactly what its task needs.</p>
+  <h2>Project knowledge becomes <em>applicable context</em>.</h2>
+  <p class="sub">Start with versioned rules and native skills. Keep documentation in your existing search service, or use the optional indexing path below. <a href="#agents">See integration choices</a>.</p>
   <div class="flowx">
     <div class="lane">
       <div class="lane-h"><span class="ph">1</span><b>Index time</b><code>nexora index</code></div>
@@ -2353,8 +2551,8 @@ pushed tag is their first real test. macOS binaries are not signed or notarized.
 
 <section class="sec" id="why">
   <span class="eyebrow">Why Nexora</span>
-  <h2>Stop rewriting your docs <em>for every agent</em>.</h2>
-  <p class="sub">Today the same knowledge is copied by hand from Confluence and internal docs into <code>CLAUDE.md</code>, <code>AGENTS.md</code>, and Cursor rules, for every agent and every repo, and the copies drift. Nexora reads the source instead.</p>
+  <h2>Define project knowledge <em>once</em>.</h2>
+  <p class="sub">Project rules can drift between agent files and repositories. Nexora selects versioned knowledge and generates native files while your existing documentation service continues to own search, freshness, and access.</p>
   <div class="versus">
     <div class="vs-col before">
       <div class="vs-h"><span class="pill no">Today</span><b>Copied everywhere</b></div>
@@ -2363,13 +2561,13 @@ pushed tag is their first real test. macOS binaries are not signed or notarized.
         <div class="f" style="--x:52%;--y:0%;--r:5deg;--d:.6s"><span>AGENTS.md</span><small>shop-api</small></div>
         <div class="f" style="--x:5%;--y:38%;--r:3deg;--d:1.2s"><span>.cursor/rules/auth.mdc</span><small>shop-api</small></div>
         <div class="f warn" style="--x:53%;--y:40%;--r:-4deg;--d:.3s"><span>CLAUDE.md</span><small>billing-api · <em>outdated</em></small></div>
-        <div class="f warn" style="--x:1%;--y:72%;--r:4deg;--d:.9s"><span>Confluence › Payments</span><small><em>invisible to agents</em></small></div>
+        <div class="f warn" style="--x:1%;--y:72%;--r:4deg;--d:.9s"><span>Confluence › Payments</span><small><em>separate lookup</em></small></div>
         <div class="f warn" style="--x:50%;--y:75%;--r:-3deg;--d:1.5s"><span>docs/adr/0042-tokens.md</span><small><em>never loaded</em></small></div>
       </div>
       <ul class="ticks">
         <li class="x">The same rule is copied into every agent file and repo</li>
         <li class="x">Copies drift apart and nobody notices</li>
-        <li class="x">Internal docs and Confluence are invisible to agents</li>
+        <li class="x">Rules and searchable reference material have different roles</li>
         <li class="x">No record of what the agent relied on, or why</li>
       </ul>
     </div>
@@ -2387,7 +2585,7 @@ pushed tag is their first real test. macOS binaries are not signed or notarized.
       <ul class="ticks">
         <li class="v">One registry for rules, skills, references and decisions</li>
         <li class="v">Rules scoped by project, agent and file path</li>
-        <li class="v">Internal docs and Confluence searchable, with optional embeddings</li>
+        <li class="v">Existing docs MCP alongside optional Nexora retrieval</li>
         <li class="v">Every pick cites its source, and every passage links back to its page</li>
       </ul>
     </div>
@@ -2416,7 +2614,7 @@ pushed tag is their first real test. macOS binaries are not signed or notarized.
 <section class="sec" id="how">
   <span class="eyebrow">Get started</span>
   <h2>Install. Configure. <em>Connect</em>.</h2>
-  <p class="sub">About ten minutes from an empty project to an agent that gets your rules and the right doc passages for each task. The <a href="#start">Quickstart</a> has every file and the expected output.</p>
+  <p class="sub">Start with project knowledge and native sync. Add documentation indexing only for content you choose to search through Nexora. The <a href="#start">Quickstart</a> has every file and the expected output.</p>
   <div class="steps">
     <div class="step tilt" style="--pc:var(--ink)">
       <span class="badge">1</span>
@@ -2430,22 +2628,21 @@ pushed tag is their first real test. macOS binaries are not signed or notarized.
     </div>
     <div class="step tilt" style="--pc:var(--mint)">
       <span class="badge">2</span>
-      <h3>Add rules and docs</h3>
-      <p>Write rules in <code>knowledge/</code> and point Nexora at your docs folder or Confluence.</p>
+      <h3>Add project knowledge</h3>
+      <p>Write rules in <code>knowledge/</code>. If documentation already has a connected MCP, add lookup guidance instead of a second index.</p>
 <pre class="mini"><code><span class="tk-cmd">nexora</span> init <span class="tk-f">--project</span> my-api
 <span class="tk-c"># nexora.yaml</span>
 <span class="tk-k">sources</span>:
   - <span class="tk-k">id</span>: local
     <span class="tk-k">path</span>: ./knowledge
-  - <span class="tk-k">id</span>: handbook
-    <span class="tk-k">type</span>: docs
-    <span class="tk-k">path</span>: ./docs</code></pre>
+<span class="tk-k">delivery</span>:
+  <span class="tk-k">documentation</span>: Use the connected docs MCP.</code></pre>
     </div>
     <div class="step tilt" style="--pc:var(--pink)">
       <span class="badge">3</span>
-      <h3>Index and connect</h3>
-      <p>Your agent now asks Nexora for context: the rules for its files and the passages for its task.</p>
-<pre class="mini"><code><span class="tk-cmd">nexora</span> index
+      <h3>Sync and connect</h3>
+      <p>Native files carry project rules and skills. Use optional MCP context lookup alongside the documentation service already connected to your agent.</p>
+<pre class="mini"><code><span class="tk-cmd">nexora</span> sync <span class="tk-f">--agent</span> codex
 <span class="tk-cmd">claude</span> mcp add nexora <span class="tk-d">--</span> \
   nexora mcp <span class="tk-f">--config</span> $PWD/nexora.yaml
 <span class="tk-c"># or: nexora sync --agent codex</span></code></pre>

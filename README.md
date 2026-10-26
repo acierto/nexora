@@ -7,38 +7,38 @@ One knowledge layer. Every AI agent.
 [Quickstart](https://acierto.github.io/nexora/#start) ·
 [Interactive playground](https://acierto.github.io/nexora/#playground)
 
-Nexora turns the docs and Confluence pages your team already maintains into
-context for coding agents. It indexes them once. When Claude Code, Codex, or any
-MCP client starts a task, Nexora returns your rules for those files and the
-passages that matter, with sources. Nobody rewrites that knowledge into
-`CLAUDE.md`, `AGENTS.md`, or Cursor rules again.
+Nexora keeps project rules, skills, references, and decisions in one versioned
+knowledge registry and delivers applicable knowledge to coding agents. Required
+rules match project, file, and agent metadata deterministically, with provenance.
+
+Already have a documentation MCP? Keep it. Use Nexora for project knowledge and
+your existing service for documentation search, authentication, and permissions.
+[Connect an existing documentation service](docs/agents.md#keep-an-existing-documentation-mcp)
+without copying its index or distributing database and embedding credentials.
 
 ## How it works
 
 ```text
-Index time   Confluence spaces ┐
-             docs/ folders     ┴─ nexora index ─▶ passages: BM25 + optional embeddings
-                                                  (local file or PostgreSQL + pgvector)
-             existing pgvector table ─────────▶ text copied for BM25; vectors stay in place
+Git knowledge --> Nexora --> Native instructions and skills --> Agent
+                     |                                         |
+                     +--> CLI / MCP: applicable context         +--> Existing docs MCP
+                                                                    (optional)
 
-Task time    agent ─ get_context(task, files) ─▶ Nexora ─▶ required rules  from knowledge/, matched by project, agent, file
-             (MCP)                                        + top passages   from the index, keyword + vector, rank-fused
-                                                          each with its source and the reason it was picked
+Optional local docs / Confluence / pgvector --> Nexora retrieval --> Agent
 ```
 
-- **Rules are never ranked away.** Required rules are selected from metadata;
-  search only adds passages next to them.
-- **Every item is traceable** to its file or page, version or digest, and the
-  reason it matched.
-- **Starts offline.** Keyword search needs no API key; add embeddings (Ollama or
-  OpenAI-compatible) and pgvector when you want them.
-- **Reuses what you embedded.** Point Nexora at an existing pgvector table and it
-  searches those vectors in place, embedding only the query.
-- **Also native.** `nexora sync` writes always-on rules into `AGENTS.md` or
-  `CLAUDE.md` and generates `SKILL.md` files, without touching your own text.
+- **Required rules are deterministic.** Search never decides mandatory inclusion.
+- **Traceable context.** Every selected item includes its source, version, and why
+  it matched.
+- **Complementary delivery.** Native sync generates agent files. Opt-in native
+  context cites verified synced rules and skills instead of repeating their bodies.
+- **Optional documentation retrieval.** Index local docs for offline keyword
+  search, or configure Confluence, embeddings, and pgvector where needed.
+- **Explicit partial results.** A retrieval outage preserves selected project
+  knowledge and reports unavailable documentation.
 
-Nexora is one executable: no Docker, database, cloud account, or API key needed
-to start.
+Nexora is one Go executable. Local knowledge needs no database, cloud account,
+embedding API key, or documentation index.
 
 ## Install
 
@@ -52,20 +52,21 @@ Windows and other systems: `go install github.com/acierto/nexora/cmd/nexora@late
 with Go 1.23 or newer. Details, manual downloads, and checksums are in
 [Install](docs/install.md).
 
-## Connect it in five steps
+## Start with project knowledge
 
 ```shell
-nexora init --project my-api                 # 1. create nexora.yaml and knowledge/
-$EDITOR knowledge/rules/authentication.md     # 2. write a rule (see the quickstart)
-# 3. add your docs folder to nexora.yaml as a "docs" source
-nexora index                                  # 4. index your docs
-claude mcp add nexora -- nexora mcp --config "$PWD/nexora.yaml"   # 5. connect your agent
+nexora init --project my-api
+$EDITOR knowledge/rules/authentication.md
+nexora validate
+nexora sync --agent codex                       # or: --agent claude
+nexora resolve --agent codex --file src/auth/service.go
 ```
 
-Now when the agent works on `src/auth/service.go`, it can ask Nexora for context
-and get your authentication rule plus the doc passages about the task. The
-[Quickstart](docs/quickstart.md) walks through each step with the exact files and
-expected output.
+Use the generated native files with your agent, or connect `nexora mcp` for
+context lookup. If documentation already has a search service, configure
+`delivery.documentation` with lookup guidance; no indexing step is needed.
+The [agent integration guide](docs/agents.md) covers both delivery modes, and the
+[Quickstart](docs/quickstart.md) adds optional Nexora documentation search.
 
 ## Documentation
 

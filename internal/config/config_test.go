@@ -76,3 +76,31 @@ func TestConfig(t *testing.T) {
 		}
 	})
 }
+
+func TestDeliveryGuidanceValidation(t *testing.T) {
+	root := t.TempDir()
+	base := "schema_version: 1\nproject: test\nsources:\n  - id: local\n    path: .\n"
+	file := filepath.Join(root, "nexora.yaml")
+	for _, tc := range []struct {
+		value string
+		valid bool
+	}{
+		{"documentation: '  Use the connected docs MCP.  '", true},
+		{"documentation: ''", true},
+		{"documentation: 42", false},
+		{"documentation: null", false},
+		{"documentation: '" + strings.Repeat("x", 2001) + "'", false},
+		{"endpoint: https://example.test", false},
+	} {
+		if err := os.WriteFile(file, []byte(base+"delivery:\n  "+tc.value+"\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		cfg, err := Load(file)
+		if (err == nil) != tc.valid {
+			t.Fatalf("%s: %v", tc.value, err)
+		}
+		if tc.valid && cfg.Delivery.Documentation != strings.TrimSpace(cfg.Delivery.Documentation) {
+			t.Fatal("untrimmed guidance")
+		}
+	}
+}
