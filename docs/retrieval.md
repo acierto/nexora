@@ -113,13 +113,44 @@ Every hit explains itself:
 }
 ```
 
-Without embeddings, Nexora ranks with BM25 keyword scoring. Words are lowercased,
-common stop words are dropped, and a small suffix rule lets `refunds` and
-`refunded` match `refund`; matched terms are shown in that normalized form. With
-embeddings, a second list ranks passages by cosine similarity. The two lists are
-merged with reciprocal rank fusion (k = 60), so a passage found by both methods
-rises to the top, and each method's rank appears in `reasons`. Ties are broken by
-passage ID, so the same index and query always give the same result.
+### Why keyword search first
+
+Internal docs are full of exact names: service names, error codes, config keys,
+team jargon. A keyword index finds those reliably, works offline, needs no API key
+or model, and can show exactly which words matched. That is why it is always on,
+and embeddings are an optional second opinion for questions phrased differently
+from the docs.
+
+### How BM25 works
+
+BM25 is the standard keyword ranking used by search engines such as Lucene and
+Elasticsearch. For each word of the query that appears in a passage, it adds a
+score made of three parts:
+
+- **Rare words count more.** A word found in few passages (`rollback`) is worth
+  much more than one found in most of them (`service`). This is the *inverse
+  document frequency*.
+- **Repeats help, but less each time.** A passage that says `refund` three times
+  beats one that says it once, but the tenth mention adds almost nothing
+  (saturation, controlled by k1 = 1.2).
+- **Long passages don't win by size.** Scores are adjusted for passage length, so
+  a long page that mentions a word in passing does not outrank a short section
+  about it (length normalization, b = 0.75).
+
+Before matching, words are lowercased, common stop words are dropped, and a small
+suffix rule lets `refunds` and `refunded` match `refund`; matched terms are shown
+in that normalized form in `reasons`. The local index computes BM25 at query
+time; the pgvector store uses PostgreSQL full-text ranking (`ts_rank_cd` with
+PostgreSQL's English stemming and stop words), which follows the same ideas.
+
+### Combining keyword and embeddings
+
+With embeddings, a second list ranks passages by cosine similarity, so "how do I
+undo a release" can find a passage titled "Rolling back". The two lists are merged
+with reciprocal rank fusion (k = 60): each passage gets `1 / (60 + rank)` from
+each list it appears in, so a passage found by both methods rises to the top, and
+each method's rank appears in `reasons`. Ties are broken by passage ID, so the
+same index and query always give the same result.
 
 ## Embeddings (optional)
 
