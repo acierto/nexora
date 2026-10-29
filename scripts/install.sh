@@ -42,7 +42,15 @@ asset="nexora_${os}_${arch}.tar.gz"
 
 download() {
 	if command -v curl >/dev/null 2>&1; then
-		curl -fsSL "$1" -o "$2"
+		if curl -fsSL "$1" -o "$2"; then
+			return 0
+		else
+			status=$?
+		fi
+		if [ "$status" -eq 60 ] || [ "$status" -eq 77 ]; then
+			echo "nexora install: HTTPS certificate trust failed. Check your system trust store or curl CA settings; see https://acierto.github.io/nexora/#troubleshooting. Certificate verification remains enabled." >&2
+		fi
+		return "$status"
 	elif command -v wget >/dev/null 2>&1; then
 		wget -q "$1" -O "$2"
 	else

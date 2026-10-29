@@ -177,6 +177,16 @@ Edit the knowledge files, not the generated output, then sync again. Commit the
 generated files and the manifest together. In CI, `nexora sync --check` fails when
 someone changed knowledge without syncing.
 
+## Recoverable integration
+
+Install the CLI once using the [shared installer](install.md), then run it with
+each project's config. Avoid copying a downloader into every repository. Missing
+installation, invalid configuration or an unavailable MCP connection should
+produce an actionable warning and leave code access and repair commands
+available. Context lookup is a workflow aid, not an authorization boundary.
+Keep trusted repository instructions available independently of Nexora. Report
+partial documentation coverage while retaining usable selected context.
+
 ## What this does not do
 
 Nexora delivers text. It does not control how an agent weighs that text against

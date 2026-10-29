@@ -778,6 +778,31 @@ curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install
 curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.sh | NEXORA_INSTALL_DIR=/usr/local/bin sh
 ```
 
+### Reuse the installation across projects
+
+Install Nexora once and let each project keep its own `nexora.yaml` and knowledge
+files. MCP clients can run the installed binary directly:
+
+```json
+{
+  "mcpServers": {
+    "Project Knowledge": {
+      "command": "nexora",
+      "args": ["mcp", "--config", "nexora.yaml"]
+    }
+  }
+}
+```
+
+Start the client from the project root, or pass an absolute config path. Ensure
+its process inherits the install directory in PATH; desktop clients may need an
+absolute binary path. Restart/reconnect after installing. Projects do not need
+their own downloader, archive extractor or Python runtime. The upstream installer
+owns release selection, platform detection and checksum verification.
+
+No certificate export is part of normal installation. If installation fails with
+an HTTPS trust error, see [troubleshooting](troubleshooting.md#installation-and-certificate-trust).
+
 ### Manual download
 
 1. Download your archive and `checksums.txt` from the table above or the
@@ -2008,6 +2033,16 @@ Edit the knowledge files, not the generated output, then sync again. Commit the
 generated files and the manifest together. In CI, `nexora sync --check` fails when
 someone changed knowledge without syncing.
 
+## Recoverable integration
+
+Install the CLI once using the [shared installer](install.md), then run it with
+each project's config. Avoid copying a downloader into every repository. Missing
+installation, invalid configuration or an unavailable MCP connection should
+produce an actionable warning and leave code access and repair commands
+available. Context lookup is a workflow aid, not an authorization boundary.
+Keep trusted repository instructions available independently of Nexora. Report
+partial documentation coverage while retaining usable selected context.
+
 ## What this does not do
 
 Nexora delivers text. It does not control how an agent weighs that text against
@@ -2194,6 +2229,34 @@ these failures; unknown commands/flags return 2.
 These cases are reproduced in configuration, Markdown, initialization, and CLI
 tests. For permission failures, ensure the current user can read every source
 and file; do not run the CLI as a privileged user to bypass the diagnosis.
+
+## Installation and certificate trust
+
+A public release download still uses HTTPS to verify the server. Public access
+means no login is required; it does not eliminate certificate verification. The
+standard installer uses curl or wget with that tool's configured trust store.
+No separate Python downloader or certificate export is required by Nexora.
+
+If a custom Python wrapper reports `CERTIFICATE_VERIFY_FAILED` before Nexora
+starts, try the standard installer first. Python can use a different trust store
+from system curl or a browser; the error alone does not identify the missing CA.
+
+If the standard installer also fails, inspect the downloader's certificate error
+and the machine's trust settings. A proxy that intercepts HTTPS may require an
+organization-approved CA in the system trust store. For an explicitly managed
+PEM bundle, curl supports `CURL_CA_BUNDLE` and wget supports `--ca-certificate`.
+`REQUESTS_CA_BUNDLE` configures Python Requests, not urllib, curl or the Nexora
+binary. Python's `PYTHONHTTPSVERIFY=0` is not a portable remedy for urllib errors.
+Do not use insecure download flags; preserve release checksum verification.
+
+## Optional agent setup failures
+
+A project integrating Nexora should warn once when the binary, configuration or
+MCP connection is unavailable, explain how to install or reconnect, and allow
+repository navigation and recovery to continue under trusted local instructions.
+Do not make every read, shell command or documentation lookup depend on MCP
+availability. Preserve usable selected knowledge from partial context and report
+missing documentation; never present a partial result as a complete lookup.
 
 ## Why did a rule disappear?
 

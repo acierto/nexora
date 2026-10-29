@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.1 — 2026-10-29
+
+- Explain curl certificate trust failures in the shared installer while retaining HTTPS and checksum verification.
+- Document one installation shared by projects, direct MCP startup, client PATH, and warning-only handling of missing setup or partial context.
+- Test the installer against real release archives and HTTP/HTTPS servers, including checksum and certificate failures.
+
+
 ## v0.3.0 — 2026-10-26
 
 Nexora now works alongside an existing documentation MCP without requiring a

@@ -36,6 +36,34 @@ These cases are reproduced in configuration, Markdown, initialization, and CLI
 tests. For permission failures, ensure the current user can read every source
 and file; do not run the CLI as a privileged user to bypass the diagnosis.
 
+## Installation and certificate trust
+
+A public release download still uses HTTPS to verify the server. Public access
+means no login is required; it does not eliminate certificate verification. The
+standard installer uses curl or wget with that tool's configured trust store.
+No separate Python downloader or certificate export is required by Nexora.
+
+If a custom Python wrapper reports `CERTIFICATE_VERIFY_FAILED` before Nexora
+starts, try the standard installer first. Python can use a different trust store
+from system curl or a browser; the error alone does not identify the missing CA.
+
+If the standard installer also fails, inspect the downloader's certificate error
+and the machine's trust settings. A proxy that intercepts HTTPS may require an
+organization-approved CA in the system trust store. For an explicitly managed
+PEM bundle, curl supports `CURL_CA_BUNDLE` and wget supports `--ca-certificate`.
+`REQUESTS_CA_BUNDLE` configures Python Requests, not urllib, curl or the Nexora
+binary. Python's `PYTHONHTTPSVERIFY=0` is not a portable remedy for urllib errors.
+Do not use insecure download flags; preserve release checksum verification.
+
+## Optional agent setup failures
+
+A project integrating Nexora should warn once when the binary, configuration or
+MCP connection is unavailable, explain how to install or reconnect, and allow
+repository navigation and recovery to continue under trusted local instructions.
+Do not make every read, shell command or documentation lookup depend on MCP
+availability. Preserve usable selected knowledge from partial context and report
+missing documentation; never present a partial result as a complete lookup.
+
 ## Why did a rule disappear?
 
 List includes inactive and nonmatching items; resolve selects only active matches.

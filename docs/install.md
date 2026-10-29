@@ -39,6 +39,31 @@ curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install
 curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.sh | NEXORA_INSTALL_DIR=/usr/local/bin sh
 ```
 
+### Reuse the installation across projects
+
+Install Nexora once and let each project keep its own `nexora.yaml` and knowledge
+files. MCP clients can run the installed binary directly:
+
+```json
+{
+  "mcpServers": {
+    "Project Knowledge": {
+      "command": "nexora",
+      "args": ["mcp", "--config", "nexora.yaml"]
+    }
+  }
+}
+```
+
+Start the client from the project root, or pass an absolute config path. Ensure
+its process inherits the install directory in PATH; desktop clients may need an
+absolute binary path. Restart/reconnect after installing. Projects do not need
+their own downloader, archive extractor or Python runtime. The upstream installer
+owns release selection, platform detection and checksum verification.
+
+No certificate export is part of normal installation. If installation fails with
+an HTTPS trust error, see [troubleshooting](troubleshooting.md#installation-and-certificate-trust).
+
 ### Manual download
 
 1. Download your archive and `checksums.txt` from the table above or the
