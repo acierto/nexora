@@ -97,3 +97,20 @@ ID. After ranking, exact linked copies share a slot while alternative citations
 remain in duplicates. Matching requires the same HTTP(S) URL, heading, trimmed
 body, and digest. Different versions and local paths are preserved. Snapshot
 refresh and live authorization are independent concerns, not solved by dedup.
+
+## Version-selected MCP runtimes
+
+The installed CLI can bootstrap an exact release or explicitly select latest
+through `mcp --version`. `internal/runtimeversion` owns immutable tag resolution,
+platform archives, bounded HTTP reads, SHA-256 checksums, regular-file extraction,
+atomic per-user caching and cached executable integrity. The CLI owns child
+streams, startup diagnostics and exit propagation. Children receive a direct MCP
+invocation without a selector, preventing recursion. No new dependency or public
+extension interface is introduced.
+
+A cached exact pin needs no network. Latest resolution is fresh per invocation
+and never silently falls back. Project configuration selects policy without
+embedding a downloader or warning hook. Setup warnings originate in Nexora;
+missing bootstrap executables are necessarily client launch errors. Neither
+failure establishes a permission gate for repository work. Local cache owners
+remain trusted, and runtime selection does not add remote authorization.

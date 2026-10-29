@@ -788,7 +788,7 @@ files. MCP clients can run the installed binary directly:
   "mcpServers": {
     "Project Knowledge": {
       "command": "nexora",
-      "args": ["mcp", "--config", "nexora.yaml"]
+      "args": ["mcp", "--version", "v0.4.0", "--config", "nexora.yaml"]
     }
   }
 }
@@ -799,6 +799,11 @@ its process inherits the install directory in PATH; desktop clients may need an
 absolute binary path. Restart/reconnect after installing. Projects do not need
 their own downloader, archive extractor or Python runtime. The upstream installer
 owns release selection, platform detection and checksum verification.
+
+The example pins the project runtime independently of the installed bootstrap.
+Use `"latest"` as the selector to follow published releases. Runtime selection
+requires a v0.4.0 or newer bootstrap and never silently falls back to another
+version; see [the CLI reference](cli.md#runtime-selection-for-mcp).
 
 No certificate export is part of normal installation. If installation fails with
 an HTTPS trust error, see [troubleshooting](troubleshooting.md#installation-and-certificate-trust).
@@ -2033,6 +2038,28 @@ Edit the knowledge files, not the generated output, then sync again. Commit the
 generated files and the manifest together. In CI, `nexora sync --check` fails when
 someone changed knowledge without syncing.
 
+## Project runtime versions
+
+Declare an exact runtime in the MCP client configuration:
+
+```json
+{
+  "mcpServers": {
+    "Project Knowledge": {
+      "command": "nexora",
+      "args": ["mcp", "--version", "v0.4.0", "--config", "nexora.yaml"]
+    }
+  }
+}
+```
+
+Use `"latest"` instead of `"v0.4.0"` to opt into the current published release.
+Nexora owns resolution, verified download, shared caching, subprocess startup and
+failure diagnostics. The installed bootstrap must support `mcp --version`
+(v0.4.0 or newer). See [runtime selection](cli.md#runtime-selection-for-mcp) for
+offline pins, fresh latest resolution and cache recovery. Projects keep only
+configuration and knowledge, without a warning hook or custom installer.
+
 ## Recoverable integration
 
 Install the CLI once using the [shared installer](install.md), then run it with
@@ -2066,7 +2093,7 @@ Commands use flags after the command name; positional arguments are rejected.
 | `resolve` | `--config PATH`, `--json`, `--project ID`, `--agent ID`, repeatable `--file PATH`, `--task TEXT`, `--limit N`, `--native` | Returns active applicable knowledge; with `--task`, also documentation passages |
 | `index` | `--config PATH`, `--json`, `--source ID` | Indexes every docs, confluence, and pgvector source, or one |
 | `search` | `--config PATH`, `--json`, `--query TEXT` (required), `--project ID`, `--limit N` | Returns documentation passages with explanations |
-| `mcp` | `--config PATH` | Serves knowledge over MCP on stdin/stdout until EOF |
+| `mcp` | `--config PATH`, `--version latest\|vX.Y.Z` | Serves knowledge over MCP on stdin/stdout until EOF |
 | `sync` | `--config PATH`, `--json`, `--agent codex\|claude` (required), `--project ID`, `--dir PATH`, `--check` | Writes the managed block and generated skills; `--check` writes nothing |
 | `version` | none (also `--version`) | Prints the version, for example `nexora v0.1.0` |
 
@@ -2076,6 +2103,33 @@ configured value; an invocation override never modifies that file. An absent
 agent excludes agent-restricted items. No files means path-restricted items are
 excluded. A supplied empty project is distinct from omitting the flag.
 `--limit` accepts 1 to 50 and defaults to 5.
+
+## Runtime selection for MCP
+
+`nexora mcp --version v0.4.0 --config nexora.yaml` runs that exact published
+release. The installed Nexora executable is the bootstrap; it downloads and
+verifies the selected runtime into a shared user cache and starts it with the
+same stdin/stdout/stderr streams. It does not silently run the bootstrap version
+or fall back to another release. Omitting `--version` retains direct operation.
+
+`nexora mcp --version latest --config nexora.yaml` resolves GitHub's current
+latest release to its immutable tag on every startup. The resolved tag is logged
+to stderr. This explicitly opts into release updates; pin a tag for reproducible
+project behavior. If latest resolution fails, startup fails with a warning rather
+than silently reusing a stale latest selection.
+
+Exact cached releases work offline. Uncached releases require HTTPS downloads of
+the archive and checksums. Both archive checksums and cached executable integrity
+are verified. The default cache is `nexora/runtimes` below the OS user cache
+(macOS `~/Library/Caches`, Linux normally `~/.cache`); `NEXORA_RUNTIME_CACHE`
+overrides the runtime cache directory. To repair a corrupted entry, remove only
+the version/platform directory named in the diagnostic and retry.
+
+Runtime acquisition and invalid-configuration diagnostics belong to Nexora and
+are written only to stderr. A failed MCP server does not deny other agent tools.
+A missing bootstrap executable is reported by the MCP client; Nexora cannot emit
+a diagnostic before it exists. Install a v0.4.0 or newer bootstrap once and
+restart/reconnect the client. No project warning hook or downloader is needed.
 
 ## Recipes
 
@@ -2249,6 +2303,19 @@ PEM bundle, curl supports `CURL_CA_BUNDLE` and wget supports `--ca-certificate`.
 binary. Python's `PYTHONHTTPSVERIFY=0` is not a portable remedy for urllib errors.
 Do not use insecure download flags; preserve release checksum verification.
 
+## Runtime selection failures
+
+`mcp --version` requires a v0.4.0 or newer bootstrap executable. An older
+bootstrap reports an unknown flag; upgrade the installation once and restart the
+MCP client. The project selector then controls the actual server release.
+
+An exact cached version can start offline. `latest` always needs release metadata
+and never silently falls back when the network is unavailable. Startup warnings
+name acquisition or configuration failures and leave other agent tools available.
+For a cache integrity failure, remove only the version/platform directory named
+in the diagnostic and retry online. HTTPS and checksum failures remain failures;
+no unverified binary or different version is launched.
+
 ## Optional agent setup failures
 
 A project integrating Nexora should warn once when the binary, configuration or
@@ -2399,6 +2466,23 @@ ID. After ranking, exact linked copies share a slot while alternative citations
 remain in duplicates. Matching requires the same HTTP(S) URL, heading, trimmed
 body, and digest. Different versions and local paths are preserved. Snapshot
 refresh and live authorization are independent concerns, not solved by dedup.
+
+## Version-selected MCP runtimes
+
+The installed CLI can bootstrap an exact release or explicitly select latest
+through `mcp --version`. `internal/runtimeversion` owns immutable tag resolution,
+platform archives, bounded HTTP reads, SHA-256 checksums, regular-file extraction,
+atomic per-user caching and cached executable integrity. The CLI owns child
+streams, startup diagnostics and exit propagation. Children receive a direct MCP
+invocation without a selector, preventing recursion. No new dependency or public
+extension interface is introduced.
+
+A cached exact pin needs no network. Latest resolution is fresh per invocation
+and never silently falls back. Project configuration selects policy without
+embedding a downloader or warning hook. Setup warnings originate in Nexora;
+missing bootstrap executables are necessarily client launch errors. Neither
+failure establishes a permission gate for repository work. Local cache owners
+remain trusted, and runtime selection does not add remote authorization.
 </script>
 <script type="text/markdown" id="md-verification"># Local MVP verification
 

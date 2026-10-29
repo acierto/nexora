@@ -255,3 +255,16 @@ func TestVersion(t *testing.T) {
 		t.Fatalf("expected usage error, got %d", code)
 	}
 }
+
+func TestMCPStartupWarning(t *testing.T) {
+	code, out, err := invoke(t, t.TempDir(), "mcp")
+	if code != 1 || out != "" || !strings.Contains(err, "Nexora warning") || !strings.Contains(err, "Continue repository work") {
+		t.Fatal(code, out, err)
+	}
+	for _, selector := range []string{"", "../escape", "v0.4"} {
+		code, out, err := invoke(t, t.TempDir(), "mcp", "--version", selector)
+		if code != 2 || out != "" || !strings.Contains(err, "--version must be") {
+			t.Fatal(code, out, err)
+		}
+	}
+}

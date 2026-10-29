@@ -55,6 +55,19 @@ PEM bundle, curl supports `CURL_CA_BUNDLE` and wget supports `--ca-certificate`.
 binary. Python's `PYTHONHTTPSVERIFY=0` is not a portable remedy for urllib errors.
 Do not use insecure download flags; preserve release checksum verification.
 
+## Runtime selection failures
+
+`mcp --version` requires a v0.4.0 or newer bootstrap executable. An older
+bootstrap reports an unknown flag; upgrade the installation once and restart the
+MCP client. The project selector then controls the actual server release.
+
+An exact cached version can start offline. `latest` always needs release metadata
+and never silently falls back when the network is unavailable. Startup warnings
+name acquisition or configuration failures and leave other agent tools available.
+For a cache integrity failure, remove only the version/platform directory named
+in the diagnostic and retry online. HTTPS and checksum failures remain failures;
+no unverified binary or different version is launched.
+
 ## Optional agent setup failures
 
 A project integrating Nexora should warn once when the binary, configuration or

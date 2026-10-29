@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.0 — 2026-10-29
+
+- Add `mcp --version latest` and exact release tags, with verified shared runtime caching and offline reuse of exact pins.
+- Resolve latest to a release tag on each startup; never silently fall back to another version after a download or integrity failure.
+- Own MCP setup diagnostics upstream and keep protocol stdout separate from warnings on stderr; projects need no custom warning hook.
+- Add real release-server, cache-integrity, concurrent-install and MCP subprocess integration coverage.
+
+
 ## v0.3.1 — 2026-10-29
 
 - Explain curl certificate trust failures in the shared installer while retaining HTTPS and checksum verification.

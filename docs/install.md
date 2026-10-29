@@ -49,7 +49,7 @@ files. MCP clients can run the installed binary directly:
   "mcpServers": {
     "Project Knowledge": {
       "command": "nexora",
-      "args": ["mcp", "--config", "nexora.yaml"]
+      "args": ["mcp", "--version", "v0.4.0", "--config", "nexora.yaml"]
     }
   }
 }
@@ -60,6 +60,11 @@ its process inherits the install directory in PATH; desktop clients may need an
 absolute binary path. Restart/reconnect after installing. Projects do not need
 their own downloader, archive extractor or Python runtime. The upstream installer
 owns release selection, platform detection and checksum verification.
+
+The example pins the project runtime independently of the installed bootstrap.
+Use `"latest"` as the selector to follow published releases. Runtime selection
+requires a v0.4.0 or newer bootstrap and never silently falls back to another
+version; see [the CLI reference](cli.md#runtime-selection-for-mcp).
 
 No certificate export is part of normal installation. If installation fails with
 an HTTPS trust error, see [troubleshooting](troubleshooting.md#installation-and-certificate-trust).

@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -24,6 +25,7 @@ import (
 	"github.com/acierto/nexora/internal/nativesync"
 	"github.com/acierto/nexora/internal/resolver"
 	"github.com/acierto/nexora/internal/retrieval"
+	"github.com/acierto/nexora/internal/runtimeversion"
 )
 
 // Version is set at build time with -ldflags "-X github.com/acierto/nexora/internal/cli.Version=v0.1.0".
@@ -58,9 +60,10 @@ func (f *fileFlags) Set(value string) error { *f = append(*f, value); return nil
 
 // Streams lets tests supply stdin for the MCP server.
 type Streams struct {
-	Stdin  io.Reader
-	Getenv func(string) string
-	HTTP   *http.Client
+	Stdin   io.Reader
+	Getenv  func(string) string
+	HTTP    *http.Client
+	Runtime runtimeversion.Options
 }
 
 func Run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
@@ -105,7 +108,7 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
 	flags.SetOutput(&parseOutput)
 	flags.Usage = func() { fmt.Fprintf(&parseOutput, "Usage: nexora %s [flags]\n", command); flags.PrintDefaults() }
-	var configPath, project, agent, task, query, source, dir string
+	var configPath, project, agent, task, query, source, dir, runtimeSelector string
 	var asJSON, check, native bool
 	var limit int
 	var files fileFlags
@@ -118,6 +121,8 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 		}
 	}
 	switch command {
+	case "mcp":
+		flags.StringVar(&runtimeSelector, "version", "", "run this exact release tag or latest using a verified shared runtime cache")
 	case "resolve":
 		flags.StringVar(&project, "project", "", "project ID (default: configuration project)")
 		flags.StringVar(&agent, "agent", "", "agent ID for applicability matching only")
@@ -156,6 +161,9 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 	}
 	if command == "sync" && agent != "codex" && agent != "claude" {
 		return fail(fmt.Errorf("sync requires --agent codex or --agent claude"), 2)
+	}
+	if command == "mcp" && wasSet(flags, "version") && !runtimeversion.ValidSelector(runtimeSelector) {
+		return fail(fmt.Errorf("--version must be latest or an exact release tag such as v0.4.0"), 2)
 	}
 	if ctx.Err() != nil {
 		return fail(ctx.Err(), 1)
@@ -271,9 +279,38 @@ func RunWith(ctx context.Context, args []string, cwd string, streams Streams, st
 			}
 		}
 	case "mcp":
+		startupFailure := func(err error) int {
+			return fail(fmt.Errorf("Nexora warning: MCP is unavailable: %w. See https://acierto.github.io/nexora/#install for setup. Continue repository work using trusted local instructions; other agent tools must remain available", err), 1)
+		}
+		if runtimeSelector != "" {
+			opts := streams.Runtime
+			if opts.HTTP == nil {
+				opts.HTTP = streams.HTTP
+			}
+			if opts.CacheDir == "" && streams.Getenv != nil {
+				opts.CacheDir = streams.Getenv("NEXORA_RUNTIME_CACHE")
+			}
+			selected, err := runtimeversion.Resolve(ctx, runtimeSelector, opts)
+			if err != nil {
+				return startupFailure(err)
+			}
+			fmt.Fprintf(stderr, "Nexora: using runtime %s (requested %s)\n", selected.Version, runtimeSelector)
+			child := exec.CommandContext(ctx, selected.Path, "mcp", "--config", configPath)
+			child.Stdin = streams.Stdin
+			child.Stdout = stdout
+			child.Stderr = stderr
+			if err := child.Run(); err != nil {
+				var exited *exec.ExitError
+				if errors.As(err, &exited) && exited.ExitCode() >= 0 {
+					return exited.ExitCode()
+				}
+				return startupFailure(err)
+			}
+			return 0
+		}
 		loaded, err := a.Load(ctx)
 		if err != nil {
-			return fail(err, 1)
+			return startupFailure(err)
 		}
 		_ = loaded
 		server := &mcp.Server{App: a, Version: Version, Log: stderr}

@@ -177,6 +177,28 @@ Edit the knowledge files, not the generated output, then sync again. Commit the
 generated files and the manifest together. In CI, `nexora sync --check` fails when
 someone changed knowledge without syncing.
 
+## Project runtime versions
+
+Declare an exact runtime in the MCP client configuration:
+
+```json
+{
+  "mcpServers": {
+    "Project Knowledge": {
+      "command": "nexora",
+      "args": ["mcp", "--version", "v0.4.0", "--config", "nexora.yaml"]
+    }
+  }
+}
+```
+
+Use `"latest"` instead of `"v0.4.0"` to opt into the current published release.
+Nexora owns resolution, verified download, shared caching, subprocess startup and
+failure diagnostics. The installed bootstrap must support `mcp --version`
+(v0.4.0 or newer). See [runtime selection](cli.md#runtime-selection-for-mcp) for
+offline pins, fresh latest resolution and cache recovery. Projects keep only
+configuration and knowledge, without a warning hook or custom installer.
+
 ## Recoverable integration
 
 Install the CLI once using the [shared installer](install.md), then run it with
