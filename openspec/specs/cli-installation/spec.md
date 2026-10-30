@@ -1,7 +1,9 @@
 # cli-installation Specification
 
 ## Purpose
-TBD - created by archiving change repeatable-cli-installation. Update Purpose after archive.
+
+Provide a reusable, verified installation of the Nexora CLI for local users and
+project setup scripts, preserving working installations when upgrades fail.
 
 ## Requirements
 
