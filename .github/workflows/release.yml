@@ -44,4 +44,4 @@ jobs:
             gh release delete "$VERSION" --cleanup-tag --yes
           fi
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then verify=--verify-tag; else verify="--target $GITHUB_SHA"; fi
-          gh release create "$VERSION" dist/*.tar.gz dist/checksums.txt --title "Nexora $VERSION" --generate-notes $verify
+          gh release create "$VERSION" dist/*.tar.gz dist/install.sh dist/checksums.txt --title "Nexora $VERSION" --generate-notes $verify

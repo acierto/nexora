@@ -114,3 +114,15 @@ embedding a downloader or warning hook. Setup warnings originate in Nexora;
 missing bootstrap executables are necessarily client launch errors. Neither
 failure establishes a permission gate for repository work. Local cache owners
 remain trusted, and runtime selection does not add remote authorization.
+
+## Repeatable CLI installation
+
+The release-owned POSIX installer supports opt-in `--ensure` with a stable minimum
+version. Compatibility applies only to the configured installation directory;
+projects can launch that deterministic path without duplicating version selection.
+The installer checks release checksums and the staged executable's reported version
+before same-filesystem rename. Download, extraction or validation errors leave the
+previous binary in place. Rechecking compatibility before publication allows a run
+to reuse an installation completed while downloading; concurrent upgrades to
+different pins are not serialized. Exact MCP runtime selection remains independent.
+The installer is also published as a release asset, alongside archives and checksums.

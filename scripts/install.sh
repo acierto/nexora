@@ -8,6 +8,7 @@
 #   NEXORA_INSTALL_DIR  target directory (default: $HOME/.local/bin)
 #   NEXORA_DOWNLOAD_BASE  download from this URL instead of GitHub (mirrors, tests)
 #
+# Pass --ensure with a stable NEXORA_VERSION to reuse that version or newer.
 # The script downloads nexora_<os>_<arch>.tar.gz and checksums.txt, verifies
 # the SHA-256 checksum, and installs the nexora binary. It never uses sudo.
 set -eu
@@ -20,6 +21,38 @@ fail() {
 	echo "nexora install: $*" >&2
 	exit 1
 }
+
+ensure=false
+case "${1:-}" in
+"") [ "$#" -eq 0 ] || fail "usage: install.sh [--ensure]" ;;
+--ensure) [ "$#" -eq 1 ] || fail "usage: install.sh [--ensure]"; ensure=true ;;
+*) fail "usage: install.sh [--ensure]" ;;
+esac
+
+stable() {
+	printf '%s\n' "$1" | LC_ALL=C grep -Eq '^v[0-9]{1,8}\.[0-9]{1,8}\.[0-9]{1,8}$'
+}
+compatible() {
+	[ -x "$install_dir/nexora" ] || return 1
+	installed=$("$install_dir/nexora" version 2>/dev/null) || return 1
+	case "$installed" in "nexora v"*) installed=${installed#nexora } ;; *) return 1 ;; esac
+	stable "$installed" || return 1
+	awk -v have="${installed#v}" -v need="${version#v}" 'BEGIN {
+		split(have, h, "."); split(need, n, ".")
+		for (i=1; i<=3; i++) {
+			if (h[i]+0 > n[i]+0) exit 0
+			if (h[i]+0 < n[i]+0) exit 1
+		}
+		exit 0
+	}'
+}
+if "$ensure"; then
+	stable "$version" || fail "--ensure requires a stable NEXORA_VERSION, for example v0.4.1"
+	if compatible; then
+		echo "Using nexora $installed at $install_dir/nexora"
+		exit 0
+	fi
+fi
 
 case "$(uname -s)" in
 Darwin) os=darwin ;;
@@ -42,7 +75,7 @@ asset="nexora_${os}_${arch}.tar.gz"
 
 download() {
 	if command -v curl >/dev/null 2>&1; then
-		if curl -fsSL "$1" -o "$2"; then
+		if curl -fsSL --connect-timeout 10 --max-time 120 "$1" -o "$2"; then
 			return 0
 		else
 			status=$?
@@ -52,14 +85,18 @@ download() {
 		fi
 		return "$status"
 	elif command -v wget >/dev/null 2>&1; then
-		wget -q "$1" -O "$2"
+		wget -q --timeout=120 --tries=1 "$1" -O "$2"
 	else
 		fail "curl or wget is required"
 	fi
 }
 
-tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT INT TERM
+mkdir -p "$install_dir"
+[ ! -d "$install_dir/nexora" ] || fail "destination is a directory: $install_dir/nexora"
+tmp=$(mktemp -d "$install_dir/.nexora-install.XXXXXX")
+trap 'rm -rf "$tmp"' 0
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 echo "Downloading $asset ($version)"
 download "$base/$asset" "$tmp/$asset" || fail "could not download $base/$asset"
@@ -75,8 +112,19 @@ fi
 [ "$expected" = "$actual" ] || fail "checksum mismatch for $asset"
 
 tar -xzf "$tmp/$asset" -C "$tmp" nexora
-mkdir -p "$install_dir"
-install -m 0755 "$tmp/nexora" "$install_dir/nexora"
+[ -f "$tmp/nexora" ] && [ ! -L "$tmp/nexora" ] || fail "archive must contain a regular nexora executable"
+chmod 0755 "$tmp/nexora"
+reported=$("$tmp/nexora" version) || fail "downloaded executable cannot run"
+case "$reported" in "nexora v"*) ;; *) fail "downloaded executable has no release version" ;; esac
+if [ "$version" != latest ] && [ "$reported" != "nexora $version" ]; then
+	fail "downloaded executable reports $reported; expected nexora $version"
+fi
+if "$ensure" && compatible; then
+	echo "Using nexora $installed at $install_dir/nexora"
+	exit 0
+fi
+[ ! -d "$install_dir/nexora" ] || fail "destination is a directory: $install_dir/nexora"
+mv -f "$tmp/nexora" "$install_dir/nexora"
 
 echo "Installed $("$install_dir/nexora" version) to $install_dir/nexora"
 case ":$PATH:" in

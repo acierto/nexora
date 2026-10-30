@@ -34,10 +34,11 @@ for target in $targets; do
 	rm -rf "$work"
 done
 
+cp scripts/install.sh "$dist/install.sh"
 cd "$dist"
 if command -v sha256sum >/dev/null 2>&1; then
-	sha256sum ./*.tar.gz | sed 's# \./# #' > checksums.txt
+	sha256sum ./*.tar.gz ./install.sh | sed 's# \./# #' > checksums.txt
 else
-	shasum -a 256 ./*.tar.gz | sed 's# \./# #' > checksums.txt
+	shasum -a 256 ./*.tar.gz ./install.sh | sed 's# \./# #' > checksums.txt
 fi
 cat checksums.txt

@@ -39,6 +39,46 @@ curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install
 curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.sh | NEXORA_INSTALL_DIR=/usr/local/bin sh
 ```
 
+### Automated project setup
+
+Releases include `install.sh`. Projects can download a pinned copy and invoke it
+without maintaining their own version checks, platform detection or installer:
+
+```shell
+curl -fsSL --connect-timeout 10 --max-time 60 \
+  https://github.com/acierto/nexora/releases/download/v0.4.1/install.sh \
+  -o /tmp/nexora-install.sh
+NEXORA_VERSION=v0.4.1 sh /tmp/nexora-install.sh --ensure
+```
+
+`--ensure` requires a stable version pin. It reuses that version or a newer stable
+release in `NEXORA_INSTALL_DIR` (default `~/.local/bin`) without downloading a
+binary. It does not search PATH. Missing, older, broken, development and prerelease
+installations are replaced. Fetching the script itself still requires network
+access; a previously downloaded script can be used offline with a compatible
+installation. Without `--ensure`, the installer installs the requested version,
+including an explicit downgrade.
+
+Downloads have time limits and retain TLS verification. Installation verifies the
+archive checksum and executable version in a temporary directory on the target
+filesystem, then renames the executable into place. Failed downloads or validation
+preserve an existing executable and clean temporary files. No shell profile is
+changed. Projects decide whether an installation failure should stop their setup.
+
+For MCP clients whose PATH omits the install directory, use a shell only to expand
+the user-specific location; no project launcher script is needed:
+
+```json
+{
+  "command": "sh",
+  "args": ["-c", "exec \"${NEXORA_INSTALL_DIR:-$HOME/.local/bin}/nexora\" \"$@\"", "nexora", "mcp", "--version", "v0.4.0", "--config", "nexora.yaml"]
+}
+```
+
+Start the client in the project root, or provide an absolute config path. Set the
+same `NEXORA_INSTALL_DIR` for setup and the client when customizing it. Reconnect
+an already-running client after setup. MCP launch itself never invokes the installer.
+
 ### Reuse the installation across projects
 
 Install Nexora once and let each project keep its own `nexora.yaml` and knowledge
