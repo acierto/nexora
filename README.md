@@ -70,6 +70,14 @@ context lookup. If documentation already has a search service, configure
 The [agent integration guide](docs/agents.md) covers both delivery modes, and the
 [Quickstart](docs/quickstart.md) adds optional Nexora documentation search.
 
+## Agent skill
+
+[`skills/nexora/SKILL.md`](skills/nexora/SKILL.md) is an agent skill for Claude Code
+and other skill-aware agents: before editing a file the agent resolves the rules
+that apply to it, and after changing knowledge it validates and syncs. Copy
+`skills/nexora` into `~/.claude/skills/` or a project's `.claude/skills/`; see
+[Agent skill](docs/agents.md#agent-skill).
+
 ## Documentation
 
 **Using Nexora**

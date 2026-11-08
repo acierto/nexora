@@ -79,6 +79,8 @@ h1,h2,h3,h4{font-family:var(--display);line-height:1.12;text-wrap:balance;margin
 .brand:hover .logo{transform:rotate(6deg) scale(1.06)}
 .brand .logo svg{width:22px;height:22px}
 .brand small{font:600 10.5px/1 var(--mono);color:var(--fg-3);letter-spacing:.02em;padding:4px 7px;border-radius:999px;background:var(--bg-3)}
+.lic{font:600 10.5px/1 var(--mono);color:var(--fg-3);letter-spacing:.02em;padding:4px 7px;border-radius:999px;background:var(--bg-3);white-space:nowrap}
+.lic:hover{color:var(--fg);text-decoration:none}
 .top .spacer{flex:1}
 .top nav{display:flex;gap:4px}
 .top nav a{padding:7px 12px;border-radius:10px;color:var(--fg-2);font-weight:600;font-size:14.5px}
@@ -653,7 +655,7 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
   .top nav{display:none}
   .searchbtn{min-width:0}
   .searchbtn span.t,.searchbtn kbd{display:none}
-  .brand small{display:none}
+  .brand small,.lic{display:none}
   .side{position:fixed;left:0;top:calc(var(--top) + env(safe-area-inset-top,0px));width:min(300px,86vw);height:calc(100vh - var(--top) - env(safe-area-inset-top,0px));background:var(--bg-2);border-right:1.5px solid var(--line-2);padding:22px 18px 40px max(28px,env(safe-area-inset-left,0px));z-index:35;transform:translateX(-105%);transition:transform .22s ease;box-shadow:var(--shadow)}
   .side{height:calc(100dvh - var(--top) - env(safe-area-inset-top,0px));padding-bottom:max(40px,env(safe-area-inset-bottom,0px));overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
   .side.open{transform:none}
@@ -687,6 +689,7 @@ footer.foot{margin-top:84px;padding:22px 24px;border-radius:20px;background:var(
     <span class="logo"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 23V9l9 9V9" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M20 19l5 4M25 19l-5 4" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg></span>
     nexora <small>open source</small>
   </a>
+  <a class="lic" href="https://github.com/acierto/nexora/blob/main/LICENSE" target="_blank" rel="noopener">MIT licensed</a>
   <span class="spacer"></span>
   <nav aria-label="Primary">
     <a href="#home" data-nav="home">Overview</a>
@@ -871,6 +874,68 @@ xattr -d com.apple.quarantine ~/.local/bin/nexora
 
 Downloads made with `curl`, including the install script, are not quarantined.
 
+## Windows
+
+Prebuilt binaries for Windows 10 and 11 are published for every release:
+
+| System | Archive |
+| --- | --- |
+| Windows, x64 (most PCs) | [`nexora_windows_amd64.zip`](https://github.com/acierto/nexora/releases/latest/download/nexora_windows_amd64.zip) |
+| Windows on Arm (Snapdragon, Copilot+ PCs) | [`nexora_windows_arm64.zip`](https://github.com/acierto/nexora/releases/latest/download/nexora_windows_arm64.zip) |
+| SHA-256 checksums for all archives | [`checksums.txt`](https://github.com/acierto/nexora/releases/latest/download/checksums.txt) |
+
+### PowerShell install script
+
+```powershell
+irm https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.ps1 | iex
+```
+
+The script picks the archive for your processor, downloads it from the latest
+GitHub release, verifies its SHA-256 checksum, and installs `nexora.exe` into
+`%LOCALAPPDATA%\Programs\nexora`. It adds that folder to your user `PATH` (never
+the system `PATH`) and needs no administrator rights. Open a new terminal
+afterwards so the updated `PATH` applies. It works in Windows PowerShell 5.1 and
+PowerShell 7.
+
+Options, set as environment variables in the same PowerShell session first:
+
+```powershell
+$env:NEXORA_VERSION = "v1.0.0"                        # default: latest
+$env:NEXORA_INSTALL_DIR = "$HOME\bin"                 # default: %LOCALAPPDATA%\Programs\nexora
+irm https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.ps1 | iex
+```
+
+Releases include `install.ps1`, so automation can download a pinned copy from
+`https://github.com/acierto/nexora/releases/download/<version>/install.ps1`.
+`NEXORA_DOWNLOAD_BASE` points the script at a mirror URL or a local folder holding
+the zip and `checksums.txt`. Failed downloads or verification leave an existing
+`nexora.exe` unchanged. The PowerShell script has no `--ensure` mode.
+
+### Manual download on Windows
+
+1. Download your zip and `checksums.txt` from the table above or the
+   [releases page](https://github.com/acierto/nexora/releases/latest).
+2. Check the zip: run `Get-FileHash nexora_windows_amd64.zip` in PowerShell and
+   compare the hash (case-insensitive) with that file's line in `checksums.txt`.
+3. Extract `nexora.exe` into a folder of your choice, for example
+   `%LOCALAPPDATA%\Programs\nexora`, and add that folder to your `PATH`:
+   Settings → System → About → Advanced system settings → Environment Variables,
+   then edit `Path` for your user.
+
+### SmartScreen warning
+
+The Windows binaries are not code-signed yet. The first time you run a
+browser-downloaded `nexora.exe`, Microsoft Defender SmartScreen may show "Windows
+protected your PC". Choose **More info**, then **Run anyway**. Verify the checksum
+first if you want to be sure the file is the published one.
+
+Commands in the guides work the same in PowerShell and Command Prompt.
+Configuration paths use `/` and work on Windows too, and `--file` accepts either
+`/` or `\`. Knowledge files checked out with CRLF line endings have the same
+versions as on macOS and Linux. The Windows build is compiled and tested on Linux
+and macOS but not yet exercised on Windows itself; please report problems in the
+[issue tracker](https://github.com/acierto/nexora/issues).
+
 ## Check the installation
 
 ```shell
@@ -880,10 +945,10 @@ nexora help
 
 `nexora version` prints the release, for example `nexora v0.1.0`.
 
-## Windows, other systems, and other architectures
+## Other systems and architectures
 
-There are no prebuilt binaries for Windows, FreeBSD, or 32-bit systems yet.
-Nexora is plain Go with no C dependencies, so it builds anywhere Go runs:
+There are no prebuilt binaries for FreeBSD or 32-bit systems. Nexora is plain Go
+with no C dependencies, so it builds anywhere Go runs:
 
 1. Install Go 1.23 or newer from [go.dev/dl](https://go.dev/dl/).
 2. Install Nexora:
@@ -892,23 +957,17 @@ Nexora is plain Go with no C dependencies, so it builds anywhere Go runs:
 go install github.com/acierto/nexora/cmd/nexora@latest
 ```
 
-This puts `nexora` (`nexora.exe` on Windows) in Go's binary directory: run
-`go env GOPATH` and look in its `bin` folder, typically `~/go/bin` or
-`%USERPROFILE%\go\bin`. Add that folder to your `PATH`. On Windows: Settings →
-System → About → Advanced system settings → Environment Variables, then edit
-`Path` for your user. From a checkout of the repository, `go build -o nexora ./cmd/nexora`
-builds the binary in place instead.
-
-On Windows, run the commands in PowerShell or Command Prompt as shown in the
-guides, replacing `nexora` with `nexora.exe` if your shell does not add the
-extension. Configuration paths use `/` and work on Windows too. The Windows build
-is compiled and tested on Linux and macOS but not yet exercised on Windows itself;
-please report problems in the [issue tracker](https://github.com/acierto/nexora/issues).
+This puts `nexora` in Go's binary directory: run `go env GOPATH` and look in its
+`bin` folder, typically `~/go/bin`. Add that folder to your `PATH`. From a checkout
+of the repository, `go build -o nexora ./cmd/nexora` builds the binary in place
+instead. The same works on Windows (`%USERPROFILE%\go\bin\nexora.exe`) if you
+prefer building from source.
 
 ## Upgrade and uninstall
 
 Run the install script again to upgrade, or repeat the manual download. With Go,
-run the same `go install` command. To uninstall, delete the `nexora` binary.
+run the same `go install` command. To uninstall, delete the `nexora` binary
+(`nexora.exe` on Windows, and remove its folder from your user `PATH`).
 Nexora writes nothing outside your projects except where you configure it: the
 `.nexora/` folder next to `nexora.yaml` holds the local index and sync manifests.
 
@@ -1198,7 +1257,8 @@ standard-library APIs added in later Go releases.
 | `examples/` | Runnable sample projects, also used as test fixtures |
 | `docs/` | Guides and the documentation website (`docs/index.html`) |
 | `openspec/` | Change proposals, designs, specs, and task lists |
-| `scripts/` | Release build, install script, documentation sync |
+| `scripts/` | Release build, install scripts (`install.sh`, `install.ps1`), skill packaging, documentation sync, Windows test notes |
+| `skills/nexora/` | The Nexora agent skill (`SKILL.md`) |
 
 See [architecture decisions](architecture.md) for the dependency graph and the
 reasoning behind it.
@@ -1287,9 +1347,14 @@ Alternatively, run the **Release** workflow from the Actions tab (or
 selected commit.
 
 The [release workflow](../.github/workflows/release.yml) runs the tests, builds
-static binaries for macOS (arm64, amd64) and Linux (amd64, arm64) with
-`scripts/release-build.sh`, and publishes `nexora_<os>_<arch>.tar.gz` archives
-plus `checksums.txt` to a GitHub release with generated notes. The version is
+static binaries for macOS (arm64, amd64), Linux (amd64, arm64) and Windows (amd64,
+arm64) with `scripts/release-build.sh`, and publishes `nexora_<os>_<arch>.tar.gz`
+archives for macOS and Linux, `nexora_windows_<arch>.zip` archives for Windows,
+`install.sh`, `install.ps1` and `checksums.txt` to a GitHub release with generated
+notes. Windows binaries are cross-compiled and not code-signed; before releasing
+changes to them or to `install.ps1`, run the
+[Windows VM test](https://github.com/acierto/nexora/blob/main/scripts/windows/README.md).
+`zip` must be installed to build the Windows archives. The version is
 compiled in and shown by `nexora version`. Archive names carry no version, so the
 install script can always download from `releases/latest`.
 
@@ -1311,6 +1376,7 @@ NEXORA_DOWNLOAD_BASE=http://127.0.0.1:8765 NEXORA_INSTALL_DIR=/tmp/nexora-bin sh
 ## License
 
 Nexora is open source under the [MIT License](https://github.com/acierto/nexora/blob/main/LICENSE).
+Contributions are accepted under the MIT License.
 Release archives include the license alongside the binary and README.
 </script>
 <script type="text/markdown" id="md-format"># Write knowledge
@@ -1332,7 +1398,8 @@ field is listed in the [configuration reference](configuration.md).
 
 Every `.md` file in a configured source must be UTF-8 and begin with YAML front
 matter between `---` delimiter lines, followed by a nonempty Markdown body.
-LF and CRLF are accepted and body text is preserved. Other regular files are
+LF and CRLF are accepted; CRLF is read as LF, so body text and versions are
+the same on every platform. Other regular files are
 ignored. One invalid document rejects the entire load; files are never executed.
 
 | Field | Meaning / default |
@@ -1437,9 +1504,10 @@ use Windows separators; absolute, drive-qualified, UNC, and traversal paths fail
 ## Sources and versions
 
 Each item retains the source ID and a `/`-separated path relative to that source,
-plus a lowercase SHA-256 digest of the original file bytes. Explicit versions
-are retained; absent versions become `sha256:<digest>`. Even a line-ending change
-changes the digest. Load times and filesystem modification times are not versions.
+plus a lowercase SHA-256 digest of the file bytes with CRLF line endings read as
+LF. Explicit versions are retained; absent versions become `sha256:<digest>`. A
+CRLF checkout (Git for Windows' default `core.autocrlf`) keeps the same digest;
+any other byte change, including trailing whitespace, changes it. Load times and filesystem modification times are not versions.
 Duplicate IDs fail with both locations; source order does not override knowledge.
 
 Use dedicated source directories for metadata-bearing knowledge. Keep ordinary
@@ -2073,6 +2141,9 @@ becomes `issue-refund`.
 - a generated skill file or the managed block was edited by hand since the last
   sync.
 
+A checkout that only converts line endings to CRLF, as Git for Windows does by
+default, is not an edit and counts as up to date.
+
 Generated skills that no longer apply are removed only if they are unchanged.
 Edit the knowledge files, not the generated output, then sync again. Commit the
 generated files and the manifest together. In CI, `nexora sync --check` fails when
@@ -2099,6 +2170,42 @@ failure diagnostics. The installed bootstrap must support `mcp --version`
 (v0.4.0 or newer). See [runtime selection](cli.md#runtime-selection-for-mcp) for
 offline pins, fresh latest resolution and cache recovery. Projects keep only
 configuration and knowledge, without a warning hook or custom installer.
+
+## Agent skill
+
+The repository includes an agent skill, [`skills/nexora/SKILL.md`](https://github.com/acierto/nexora/blob/main/skills/nexora/SKILL.md),
+that teaches an agent the Nexora workflow without any MCP setup. In a project
+with a `nexora.yaml`, the agent:
+
+- checks that `nexora` is installed, and points you to this guide instead of
+  installing it without your go-ahead;
+- runs `nexora resolve --agent claude --file <path>` before editing a file and
+  follows the required rules, citing their source and version in its summary;
+- runs `nexora validate` and `nexora sync --agent claude` after changing knowledge
+  or `nexora.yaml`, and reports validation errors and sync conflicts;
+- stops and points out a conflict between a rule and your request.
+
+The skill uses only existing commands and never edits agent configuration on its
+own. Resolved knowledge stays project data; it does not override your
+instructions.
+
+To install it in Claude Code, copy the `skills/nexora` folder into your personal
+skills folder, `~/.claude/skills/` (all projects), or into a project's
+`.claude/skills/` (that project only, and shared through Git):
+
+```shell
+git clone --depth 1 https://github.com/acierto/nexora.git /tmp/nexora-src
+mkdir -p ~/.claude/skills && cp -R /tmp/nexora-src/skills/nexora ~/.claude/skills/
+```
+
+Start a new Claude Code session if the skill does not appear. The skill is also
+listed on the Agensi marketplace: TODO: add the Agensi listing URL once it is live.
+Maintainers build the upload package with `scripts/package-skill.sh`, which writes
+`dist/nexora-skill.zip`.
+
+This skill is separate from the skills that `nexora sync` generates from your
+knowledge: those carry your project's procedures, while this one tells the agent
+how to use Nexora itself.
 
 ## Recoverable integration
 
@@ -2834,7 +2941,7 @@ succeeded, and the live site matched the updated `docs/index.html` byte for byte
     <div class="step tilt" style="--pc:var(--ink)">
       <span class="badge">1</span>
       <h3>Install</h3>
-      <p>One binary for macOS and Linux. Windows and other systems build it with Go.</p>
+      <p>One binary for macOS, Linux, and Windows. On Windows, use the PowerShell installer from the Install guide.</p>
 <pre class="mini"><code><span class="tk-cmd">curl</span> <span class="tk-f">-fsSL</span> https://raw.githubusercontent.com/\
   acierto/nexora/main/scripts/install.sh \
   | <span class="tk-cmd">sh</span>
@@ -2873,8 +2980,8 @@ succeeded, and the live site matched the updated `docs/index.html` byte for byte
 </section>
 
 <footer class="foot">
-  <span>Nexora · early development · planned next: remote server with permission-aware access, more connectors, plugins and knowledge packs</span>
-  <span><a href="https://github.com/acierto/nexora/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a></span>
+  <span>Nexora · <a href="https://github.com/acierto/nexora/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a> · <a href="https://github.com/acierto/nexora" target="_blank" rel="noopener">Source on GitHub</a></span>
+  <span>Early development · planned next: remote server with permission-aware access, more connectors, plugins and knowledge packs</span>
   <span>Docs rendered from <a href="https://github.com/acierto/nexora/tree/main/docs" target="_blank" rel="noopener">acierto/nexora/docs</a></span>
 </footer>
 </template>
@@ -3164,7 +3271,7 @@ function codeBlock(code, lang){
 
 /* ===================== Markdown rendering ===================== */
 const PAGES = {
-  install:{num:'01',title:'Install',md:'md-install',file:'install.md',eyebrow:'Use Nexora · 01',lede:'One command on macOS and Linux. Build from source for Windows and everything else.'},
+  install:{num:'01',title:'Install',md:'md-install',file:'install.md',eyebrow:'Use Nexora · 01',lede:'One command on macOS, Linux, and Windows. Build from source for everything else.'},
   start:{num:'02',title:'Quickstart',md:'md-start',file:'quickstart.md',eyebrow:'Use Nexora · 02',lede:'Five steps from an empty project to an agent that gets your rules and the right doc passages for every task.'},
   format:{num:'03',title:'Write knowledge',md:'md-format',file:'knowledge-format.md',eyebrow:'Use Nexora · 03',lede:'Rules, skills, references, and decisions: the header fields, scoping by project, agent, and file, and a complete example of every kind.'},
   retrieval:{num:'04',title:'Docs and Confluence',md:'md-retrieval',file:'retrieval.md',eyebrow:'Use Nexora · 04',lede:'Index internal documentation and Confluence spaces, reuse tables you already embedded, search them, and get passages next to your rules, with optional embeddings and pgvector.'},
@@ -3710,7 +3817,7 @@ function show(page, anchor){
   $$('.side a[data-page]').forEach(a=>a.toggleAttribute('aria-current', a.dataset.page===page));
   $$('.top nav a').forEach(a=>a.toggleAttribute('aria-current', (a.dataset.nav==='docs' && PAGES[page]) || a.dataset.nav===page));
   document.title = page==='home' ? 'Nexora Docs' : `${TITLES[page]} · Nexora Docs`;
-  if (page==='home') renderHome(); else if (page==='playground'){ main.appendChild($('#tpl-playground').content.cloneNode(true)); mountPlayground($('#pg-mount', main)); }
+  if (page==='home') renderHome(); else if (page==='playground'){ main.appendChild($('#tpl-playground').content.cloneNode(true)); mountPlayground($('#pg-mount', main)); main.appendChild(siteFooter()); }
   else renderDoc(page);
   wireCopy(main); initTilt(main);
   if (anchor){ const t = document.getElementById(anchor); if (t) requestAnimationFrame(()=>t.scrollIntoView({block:'start'})); } else window.scrollTo(0,0);
@@ -3728,6 +3835,8 @@ function renderHome(){
     + `<p class="dg-contrib">Working on Nexora itself? Read <a href="#contributing">Contributing</a>, the <a href="#architecture">architecture decisions</a>, and the <a href="#verification">verification record</a>.</p>`;
   initHero3D();
 }
+const SITEFOOT = `<span>Nexora · <a href="https://github.com/acierto/nexora/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a> · <a href="https://github.com/acierto/nexora" target="_blank" rel="noopener">Source on GitHub</a></span>`;
+function siteFooter(){ const f=document.createElement('footer'); f.className='foot'; f.innerHTML=SITEFOOT; return f; }
 function renderDoc(page){
   const p = PAGES[page]; const src = document.getElementById(p.md).textContent;
   const art = document.createElement('article'); art.className='article'; art.style.setProperty('--pc', `var(${PCOL[page]})`);
@@ -3759,7 +3868,7 @@ function renderDoc(page){
   const i = ORDER.indexOf(page); const prev = ORDER[i-1], next = ORDER[i+1];
   const pg = document.createElement('nav'); pg.className='pager'; pg.setAttribute('aria-label','Previous and next');
   pg.innerHTML = (prev?`<a href="#${prev}"><span>← Previous</span>${esc(TITLES[prev])}</a>`:'<span></span>') + (next?`<a class="next" href="#${next}"><span>Next →</span>${esc(TITLES[next])}</a>`:'');
-  art.appendChild(pg); main.appendChild(art);
+  art.appendChild(pg); art.appendChild(siteFooter()); main.appendChild(art);
   // toc
   const hs = $$('h2,h3', md).filter(h=>h.id);
   if (hs.length){ toc.innerHTML = `<span class="eyebrow">On this page</span>` + hs.map(h=>`<a href="#${h.id}" class="${h.tagName==='H3'?'l3':''}" data-h="${h.id}">${esc(h.firstChild.textContent)}</a>`).join('');

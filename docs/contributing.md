@@ -40,7 +40,8 @@ standard-library APIs added in later Go releases.
 | `examples/` | Runnable sample projects, also used as test fixtures |
 | `docs/` | Guides and the documentation website (`docs/index.html`) |
 | `openspec/` | Change proposals, designs, specs, and task lists |
-| `scripts/` | Release build, install script, documentation sync |
+| `scripts/` | Release build, install scripts (`install.sh`, `install.ps1`), skill packaging, documentation sync, Windows test notes |
+| `skills/nexora/` | The Nexora agent skill (`SKILL.md`) |
 
 See [architecture decisions](architecture.md) for the dependency graph and the
 reasoning behind it.
@@ -129,9 +130,14 @@ Alternatively, run the **Release** workflow from the Actions tab (or
 selected commit.
 
 The [release workflow](../.github/workflows/release.yml) runs the tests, builds
-static binaries for macOS (arm64, amd64) and Linux (amd64, arm64) with
-`scripts/release-build.sh`, and publishes `nexora_<os>_<arch>.tar.gz` archives
-plus `checksums.txt` to a GitHub release with generated notes. The version is
+static binaries for macOS (arm64, amd64), Linux (amd64, arm64) and Windows (amd64,
+arm64) with `scripts/release-build.sh`, and publishes `nexora_<os>_<arch>.tar.gz`
+archives for macOS and Linux, `nexora_windows_<arch>.zip` archives for Windows,
+`install.sh`, `install.ps1` and `checksums.txt` to a GitHub release with generated
+notes. Windows binaries are cross-compiled and not code-signed; before releasing
+changes to them or to `install.ps1`, run the
+[Windows VM test](https://github.com/acierto/nexora/blob/main/scripts/windows/README.md).
+`zip` must be installed to build the Windows archives. The version is
 compiled in and shown by `nexora version`. Archive names carry no version, so the
 install script can always download from `releases/latest`.
 
@@ -153,4 +159,5 @@ NEXORA_DOWNLOAD_BASE=http://127.0.0.1:8765 NEXORA_INSTALL_DIR=/tmp/nexora-bin sh
 ## License
 
 Nexora is open source under the [MIT License](https://github.com/acierto/nexora/blob/main/LICENSE).
+Contributions are accepted under the MIT License.
 Release archives include the license alongside the binary and README.

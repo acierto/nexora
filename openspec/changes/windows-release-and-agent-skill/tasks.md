@@ -26,10 +26,10 @@
 
 ## 5. Guides and site
 
-- [ ] 5.1 Add an "Agent skill" section to docs/agents.md (behavior, Claude Code install paths, Agensi listing TODO) and a README section.
-- [ ] 5.2 State MIT contribution terms in docs/contributing.md and CONTRIBUTING.md; mention Windows in the release section.
-- [ ] 5.3 Run scripts/sync_docs.py; add "MIT licensed" by the brand and a linked footer to docs/index.html; confirm search covers new guide text.
-- [ ] 5.4 Check `sync_docs.py --check` and the rendered Install, Connect agents and Contributing pages and hash links in a browser.
+- [x] 5.1 Add an "Agent skill" section to docs/agents.md (behavior, Claude Code install paths, Agensi listing TODO) and a README section.
+- [x] 5.2 State MIT contribution terms in docs/contributing.md and CONTRIBUTING.md; mention Windows in the release section.
+- [x] 5.3 Run scripts/sync_docs.py; add "MIT licensed" by the brand and a linked footer to docs/index.html; confirm search covers new guide text.
+- [x] 5.4 Check `sync_docs.py --check` and the rendered Install, Connect agents and Contributing pages and hash links in a browser.
 
 ## 6. Checks, changelog and release
 

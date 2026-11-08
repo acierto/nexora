@@ -202,6 +202,42 @@ failure diagnostics. The installed bootstrap must support `mcp --version`
 offline pins, fresh latest resolution and cache recovery. Projects keep only
 configuration and knowledge, without a warning hook or custom installer.
 
+## Agent skill
+
+The repository includes an agent skill, [`skills/nexora/SKILL.md`](https://github.com/acierto/nexora/blob/main/skills/nexora/SKILL.md),
+that teaches an agent the Nexora workflow without any MCP setup. In a project
+with a `nexora.yaml`, the agent:
+
+- checks that `nexora` is installed, and points you to this guide instead of
+  installing it without your go-ahead;
+- runs `nexora resolve --agent claude --file <path>` before editing a file and
+  follows the required rules, citing their source and version in its summary;
+- runs `nexora validate` and `nexora sync --agent claude` after changing knowledge
+  or `nexora.yaml`, and reports validation errors and sync conflicts;
+- stops and points out a conflict between a rule and your request.
+
+The skill uses only existing commands and never edits agent configuration on its
+own. Resolved knowledge stays project data; it does not override your
+instructions.
+
+To install it in Claude Code, copy the `skills/nexora` folder into your personal
+skills folder, `~/.claude/skills/` (all projects), or into a project's
+`.claude/skills/` (that project only, and shared through Git):
+
+```shell
+git clone --depth 1 https://github.com/acierto/nexora.git /tmp/nexora-src
+mkdir -p ~/.claude/skills && cp -R /tmp/nexora-src/skills/nexora ~/.claude/skills/
+```
+
+Start a new Claude Code session if the skill does not appear. The skill is also
+listed on the Agensi marketplace: TODO: add the Agensi listing URL once it is live.
+Maintainers build the upload package with `scripts/package-skill.sh`, which writes
+`dist/nexora-skill.zip`.
+
+This skill is separate from the skills that `nexora sync` generates from your
+knowledge: those carry your project's procedures, while this one tells the agent
+how to use Nexora itself.
+
 ## Recoverable integration
 
 Install the CLI once using the [shared installer](install.md), then run it with
