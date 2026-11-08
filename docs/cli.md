@@ -41,7 +41,8 @@ than silently reusing a stale latest selection.
 Exact cached releases work offline. Uncached releases require HTTPS downloads of
 the archive and checksums. Both archive checksums and cached executable integrity
 are verified. The default cache is `nexora/runtimes` below the OS user cache
-(macOS `~/Library/Caches`, Linux normally `~/.cache`); `NEXORA_RUNTIME_CACHE`
+(macOS `~/Library/Caches`, Linux normally `~/.cache`, Windows `%LOCALAPPDATA%`);
+Windows runtimes exist from v1.0.0, so pin v1.0.0 or newer there; `NEXORA_RUNTIME_CACHE`
 overrides the runtime cache directory. To repair a corrupted entry, remove only
 the version/platform directory named in the diagnostic and retry.
 

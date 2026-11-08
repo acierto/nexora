@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.0.0 — 2026-11-08
+
+- Prebuilt Windows binaries (amd64, arm64) and a PowerShell installer.
+- Added the `nexora` agent skill in `skills/nexora/`.
+- `mcp --version` selects Windows runtimes from the new zip archives; Windows hosts
+  need a v1.0.0 or newer runtime pin.
+- Knowledge files and synced agent files checked out with CRLF line endings (Git for
+  Windows' default) keep the same versions and count as up to date.
+
+Upgrade: items without an explicit `version` that were stored with CRLF line
+endings get a new `sha256:` version once, because digests now read CRLF as LF.
+LF files are unaffected. Windows binaries are not code-signed yet; SmartScreen may
+warn on first run (More info → Run anyway).
+
+
 ## v0.4.0 — 2026-10-29
 
 - Add `mcp --version latest` and exact release tags, with verified shared runtime caching and offline reuse of exact pins.
