@@ -1,6 +1,6 @@
 name: Release
 
-# Publish macOS and Linux binaries by pushing a tag such as v0.1.0, or by running
+# Publish macOS, Linux and Windows binaries by pushing a tag such as v0.1.0, or by running
 # this workflow from the Actions tab with a version; the tag is then created on
 # the selected commit.
 on:
@@ -34,6 +34,8 @@ jobs:
           go-version-file: go.mod
       - name: Test
         run: go test ./...
+      - name: Install zip
+        run: command -v zip >/dev/null || { sudo apt-get update && sudo apt-get install -y zip; }
       - name: Build archives
         run: scripts/release-build.sh "$VERSION"
       - name: Publish release
@@ -44,4 +46,10 @@ jobs:
             gh release delete "$VERSION" --cleanup-tag --yes
           fi
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then verify=--verify-tag; else verify="--target $GITHUB_SHA"; fi
-          gh release create "$VERSION" dist/*.tar.gz dist/install.sh dist/checksums.txt --title "Nexora $VERSION" --generate-notes $verify
+          cat > notes.md <<'NOTES'
+          **Windows** (10 and 11): `nexora_windows_amd64.zip`, or `nexora_windows_arm64.zip`
+          for Arm PCs, or the PowerShell installer `install.ps1`. Not code-signed yet:
+          SmartScreen may show "Windows protected your PC"; choose More info → Run anyway.
+          Verify downloads with `checksums.txt`; the installer does this automatically.
+          NOTES
+          gh release create "$VERSION" dist/*.tar.gz dist/*.zip dist/install.sh dist/install.ps1 dist/checksums.txt --title "Nexora $VERSION" --notes-file notes.md --generate-notes $verify

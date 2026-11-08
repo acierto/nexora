@@ -3,6 +3,7 @@ package runtimeversion
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"bytes"
 	"compress/gzip"
 	"context"
@@ -49,7 +50,7 @@ func Resolve(ctx context.Context, selector string, opts Options) (Executable, er
 	if opts.Arch == "" {
 		opts.Arch = runtime.GOARCH
 	}
-	if (opts.OS != "darwin" && opts.OS != "linux") || (opts.Arch != "arm64" && opts.Arch != "amd64") {
+	if (opts.OS != "darwin" && opts.OS != "linux" && opts.OS != "windows") || (opts.Arch != "arm64" && opts.Arch != "amd64") {
 		return Executable{}, fmt.Errorf("no prebuilt Nexora runtime for %s/%s", opts.OS, opts.Arch)
 	}
 	if opts.DownloadBase == "" {
@@ -83,12 +84,15 @@ func Resolve(ctx context.Context, selector string, opts Options) (Executable, er
 		opts.CacheDir = filepath.Join(base, "nexora", "runtimes")
 	}
 	dir := filepath.Join(opts.CacheDir, tag, opts.OS+"_"+opts.Arch)
+	name, asset := "nexora", fmt.Sprintf("nexora_%s_%s.tar.gz", opts.OS, opts.Arch)
+	if opts.OS == "windows" {
+		name, asset = "nexora.exe", fmt.Sprintf("nexora_%s_%s.zip", opts.OS, opts.Arch)
+	}
 	if _, err := os.Lstat(dir); err == nil {
-		return cached(dir, tag)
+		return cached(dir, tag, name)
 	} else if !os.IsNotExist(err) {
 		return Executable{}, err
 	}
-	asset := fmt.Sprintf("nexora_%s_%s.tar.gz", opts.OS, opts.Arch)
 	base := strings.TrimRight(opts.DownloadBase, "/") + "/" + tag + "/"
 	checksums, err := download(ctx, opts.HTTP, base+"checksums.txt", 1<<20)
 	if err != nil {
@@ -105,7 +109,7 @@ func Resolve(ctx context.Context, selector string, opts Options) (Executable, er
 	if digest(archive) != expected {
 		return Executable{}, fmt.Errorf("release %s archive checksum mismatch", tag)
 	}
-	executable, err := extract(archive)
+	executable, err := extract(archive, name)
 	if err != nil {
 		return Executable{}, err
 	}
@@ -118,7 +122,7 @@ func Resolve(ctx context.Context, selector string, opts Options) (Executable, er
 		return Executable{}, err
 	}
 	defer os.RemoveAll(temporary)
-	if err := os.WriteFile(filepath.Join(temporary, "nexora"), executable, 0700); err != nil {
+	if err := os.WriteFile(filepath.Join(temporary, name), executable, 0700); err != nil {
 		return Executable{}, err
 	}
 	metadata, _ := json.Marshal(manifest{Version: tag, SHA256: digest(executable)})
@@ -127,15 +131,16 @@ func Resolve(ctx context.Context, selector string, opts Options) (Executable, er
 	}
 	if err := os.Rename(temporary, dir); err != nil {
 		// Another installer may have completed the same immutable version first.
-		if winner, checkErr := cached(dir, tag); checkErr == nil {
+		if winner, checkErr := cached(dir, tag, name); checkErr == nil {
 			return winner, nil
 		}
 		return Executable{}, err
 	}
-	return cached(dir, tag)
+	return cached(dir, tag, name)
 }
 
-func cached(dir, tag string) (Executable, error) {
+// cached verifies an installed runtime; name is the platform's executable name.
+func cached(dir, tag, name string) (Executable, error) {
 	fail := func() (Executable, error) {
 		return Executable{}, fmt.Errorf("runtime cache integrity check failed for %s; remove that version's cache directory and retry", dir)
 	}
@@ -143,9 +148,9 @@ func cached(dir, tag string) (Executable, error) {
 	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
 		return fail()
 	}
-	for _, name := range []string{"nexora", "manifest.json"} {
-		info, err := os.Lstat(filepath.Join(dir, name))
-		if err != nil || !info.Mode().IsRegular() || info.Size() > 128<<20 || (name == "manifest.json" && info.Size() > 4096) {
+	for _, file := range []string{name, "manifest.json"} {
+		info, err := os.Lstat(filepath.Join(dir, file))
+		if err != nil || !info.Mode().IsRegular() || info.Size() > 128<<20 || (file == "manifest.json" && info.Size() > 4096) {
 			return fail()
 		}
 	}
@@ -157,11 +162,11 @@ func cached(dir, tag string) (Executable, error) {
 	if json.Unmarshal(data, &metadata) != nil || metadata.Version != tag {
 		return fail()
 	}
-	executable, err := os.ReadFile(filepath.Join(dir, "nexora"))
+	executable, err := os.ReadFile(filepath.Join(dir, name))
 	if err != nil || digest(executable) != metadata.SHA256 {
 		return fail()
 	}
-	return Executable{Path: filepath.Join(dir, "nexora"), Version: tag}, nil
+	return Executable{Path: filepath.Join(dir, name), Version: tag}, nil
 }
 func digest(data []byte) string { sum := sha256.Sum256(data); return hex.EncodeToString(sum[:]) }
 func checksum(data []byte, asset string) (string, error) {
@@ -204,7 +209,10 @@ func download(ctx context.Context, client *http.Client, url string, limit int64)
 	}
 	return data, nil
 }
-func extract(archive []byte) ([]byte, error) {
+func extract(archive []byte, name string) ([]byte, error) {
+	if name == "nexora.exe" {
+		return extractZip(archive, name)
+	}
 	gz, err := gzip.NewReader(bytes.NewReader(archive))
 	if err != nil {
 		return nil, err
@@ -220,7 +228,7 @@ func extract(archive []byte) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		if member.Name != "nexora" {
+		if member.Name != name {
 			continue
 		}
 		if (member.Typeflag != tar.TypeReg && member.Typeflag != tar.TypeRegA) || member.Size <= 0 || member.Size > 128<<20 || executable != nil {
@@ -229,6 +237,38 @@ func extract(archive []byte) ([]byte, error) {
 		executable, err = io.ReadAll(reader)
 		if err != nil {
 			return nil, err
+		}
+	}
+	if executable == nil {
+		return nil, fmt.Errorf("Nexora executable missing from release archive")
+	}
+	return executable, nil
+}
+
+func extractZip(archive []byte, name string) ([]byte, error) {
+	reader, err := zip.NewReader(bytes.NewReader(archive), int64(len(archive)))
+	if err != nil {
+		return nil, err
+	}
+	var executable []byte
+	for _, member := range reader.File {
+		if member.Name != name {
+			continue
+		}
+		if !member.Mode().IsRegular() || member.UncompressedSize64 == 0 || member.UncompressedSize64 > 128<<20 || executable != nil {
+			return nil, fmt.Errorf("invalid Nexora executable in release archive")
+		}
+		file, err := member.Open()
+		if err != nil {
+			return nil, err
+		}
+		executable, err = io.ReadAll(io.LimitReader(file, 128<<20+1))
+		file.Close()
+		if err != nil {
+			return nil, err
+		}
+		if len(executable) == 0 || len(executable) > 128<<20 {
+			return nil, fmt.Errorf("invalid Nexora executable in release archive")
 		}
 	}
 	if executable == nil {

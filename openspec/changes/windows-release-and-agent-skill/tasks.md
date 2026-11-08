@@ -1,10 +1,10 @@
 ## 1. Windows release binaries
 
-- [ ] 1.1 Add windows/amd64 and windows/arm64 to release-build.sh, packaging `nexora.exe`, README.md and LICENSE as version-free zips listed in checksums.txt.
-- [ ] 1.2 Add scripts/install.ps1 (env vars, arch detection, SHA-256 and version verification, user-PATH only, `irm | iex` safe) and copy it into dist with a checksum.
-- [ ] 1.3 Support Windows zips and `nexora.exe` in runtimeversion for `mcp --version`; unit-test zip extraction, invalid entries and cache naming.
-- [ ] 1.4 Update release.yml: install zip if missing, upload zips and install.ps1, mention Windows and the SmartScreen note in release notes.
-- [ ] 1.5 Add tests/release_test.go running release-build.sh for Windows targets and checking zip contents and checksums. Verify: `go test ./tests -run Release`.
+- [x] 1.1 Add windows/amd64 and windows/arm64 to release-build.sh, packaging `nexora.exe`, README.md and LICENSE as version-free zips listed in checksums.txt.
+- [x] 1.2 Add scripts/install.ps1 (env vars, arch detection, SHA-256 and version verification, user-PATH only, `irm | iex` safe) and copy it into dist with a checksum.
+- [x] 1.3 Support Windows zips and `nexora.exe` in runtimeversion for `mcp --version`; unit-test zip extraction, invalid entries and cache naming.
+- [x] 1.4 Update release.yml: install zip if missing, upload zips and install.ps1, mention Windows and the SmartScreen note in release notes.
+- [x] 1.5 Add tests/release_test.go running release-build.sh for Windows targets and checking zip contents and checksums. Verify: `go test ./tests -run Release`.
 
 ## 2. Real Windows verification
 

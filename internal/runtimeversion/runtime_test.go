@@ -2,6 +2,7 @@ package runtimeversion
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"bytes"
 	"compress/gzip"
 	"context"
@@ -127,7 +128,7 @@ func TestRuntimeRefusals(t *testing.T) {
 		{name: "invalid latest tag", selector: "latest", data: valid, latest: `{"tag_name":"../../escape"}`},
 		{name: "invalid selector", selector: "../escape", data: valid},
 		{name: "empty selector", selector: "", data: valid},
-		{name: "unsupported platform", selector: "v0.4.0", os: "windows", data: valid},
+		{name: "unsupported platform", selector: "v0.4.0", os: "freebsd", data: valid},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var calls atomic.Int32
@@ -157,7 +158,7 @@ func TestRuntimeRefusals(t *testing.T) {
 			if err == nil {
 				t.Fatal("expected refusal")
 			}
-			if (!ValidSelector(tc.selector) || platform == "windows") && calls.Load() != 0 {
+			if (!ValidSelector(tc.selector) || platform == "freebsd") && calls.Load() != 0 {
 				t.Fatal("refusal after network request")
 			}
 			if _, err := os.Stat(filepath.Join(cache, "v0.4.0", "linux_amd64", "nexora")); !os.IsNotExist(err) {
@@ -189,4 +190,89 @@ func TestConcurrentRuntimeInstall(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+}
+
+func zipArchive(t *testing.T, name string, mode os.FileMode, payload []byte) []byte {
+	t.Helper()
+	var b bytes.Buffer
+	zw := zip.NewWriter(&b)
+	header := &zip.FileHeader{Name: name, Method: zip.Deflate}
+	header.SetMode(mode)
+	w, err := zw.CreateHeader(header)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.Write(payload); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return b.Bytes()
+}
+
+func TestWindowsRuntimeSelection(t *testing.T) {
+	payload := []byte("windows executable bytes")
+	for _, tc := range []struct {
+		name string
+		data []byte
+		ok   bool
+	}{
+		{name: "verified zip", data: zipArchive(t, "nexora.exe", 0755, payload), ok: true},
+		{name: "missing executable", data: zipArchive(t, "nexora", 0755, payload)},
+		{name: "nested executable", data: zipArchive(t, "bin/nexora.exe", 0755, payload)},
+		{name: "symlink executable", data: zipArchive(t, "nexora.exe", os.ModeSymlink|0755, []byte("target"))},
+		{name: "empty executable", data: zipArchive(t, "nexora.exe", 0755, nil)},
+		{name: "tar instead of zip", data: archive(t, "nexora.exe", tar.TypeReg, payload)},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests []string
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests = append(requests, r.URL.Path)
+				switch r.URL.Path {
+				case "/v1.0.0/checksums.txt":
+					fmt.Fprintf(w, "%s  nexora_windows_arm64.zip\n", digest(tc.data))
+				case "/v1.0.0/nexora_windows_arm64.zip":
+					_, _ = w.Write(tc.data)
+				default:
+					http.NotFound(w, r)
+				}
+			}))
+			defer server.Close()
+			cache := t.TempDir()
+			opts := Options{CacheDir: cache, DownloadBase: server.URL, OS: "windows", Arch: "arm64"}
+			selected, err := Resolve(context.Background(), "v1.0.0", opts)
+			path := filepath.Join(cache, "v1.0.0", "windows_arm64", "nexora.exe")
+			if !tc.ok {
+				if err == nil {
+					t.Fatal("expected refusal")
+				}
+				if _, err := os.Stat(path); !os.IsNotExist(err) {
+					t.Fatal("installed a refused artifact", err)
+				}
+				return
+			}
+			if err != nil || selected.Path != path || selected.Version != "v1.0.0" {
+				t.Fatal(selected, err)
+			}
+			got, err := os.ReadFile(path)
+			if err != nil || !bytes.Equal(got, payload) {
+				t.Fatal(string(got), err)
+			}
+			requests = nil
+			if again, err := Resolve(context.Background(), "v1.0.0", opts); err != nil || again != selected || len(requests) != 0 {
+				t.Fatal("cached Windows runtime", again, err, requests)
+			}
+		})
+	}
+	t.Run("release without Windows archive", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, strings.Repeat("a", 64)+"  nexora_linux_amd64.tar.gz")
+		}))
+		defer server.Close()
+		_, err := Resolve(context.Background(), "v0.4.1", Options{CacheDir: t.TempDir(), DownloadBase: server.URL, OS: "windows", Arch: "amd64"})
+		if err == nil || !strings.Contains(err.Error(), "no entry for nexora_windows_amd64.zip") {
+			t.Fatal(err)
+		}
+	})
 }
