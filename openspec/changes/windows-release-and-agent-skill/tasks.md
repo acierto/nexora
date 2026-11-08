@@ -20,9 +20,9 @@
 
 ## 4. Agent skill
 
-- [ ] 4.1 Add skills/nexora/SKILL.md and correct every command, flag and path against the CLI and guides.
-- [ ] 4.2 Add scripts/package-skill.sh producing dist/nexora-skill.zip with nexora/ at the root; confirm dist/ is ignored.
-- [ ] 4.3 Run every skill command as written in a temporary `nexora init --project demo` folder outside the repository.
+- [x] 4.1 Add skills/nexora/SKILL.md and correct every command, flag and path against the CLI and guides.
+- [x] 4.2 Add scripts/package-skill.sh producing dist/nexora-skill.zip with nexora/ at the root; confirm dist/ is ignored.
+- [x] 4.3 Run every skill command as written in a temporary `nexora init --project demo` folder outside the repository.
 
 ## 5. Guides and site
 
