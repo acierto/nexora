@@ -170,3 +170,25 @@ macOS arm64 archive matched its published SHA-256 checksum; its binary reported
 `nexora v0.3.0` and validated the 25-item existing-docs example.
 [Pages deployment](https://github.com/acierto/nexora/actions/runs/40310771414)
 succeeded, and the live site matched the updated `docs/index.html` byte for byte.
+
+## Windows release — v1.0.0
+
+Verified on 2026-11-08 on Windows 11 Pro ARM64 (build 26300) in a QEMU VM, using
+`scripts/release-build.sh v0.0.0-test` archives and the procedure in
+[`scripts/windows/README.md`](https://github.com/acierto/nexora/blob/main/scripts/windows/README.md).
+
+| Check | Result |
+| --- | --- |
+| `irm …/install.ps1 \| iex` over HTTP, Windows PowerShell 5.1 | Detected arm64, verified checksum and version, installed to `%LOCALAPPDATA%\Programs\nexora` |
+| Second install run | PATH entry not duplicated; machine PATH unchanged; no staging left |
+| Zip with a wrong checksum | `checksum mismatch`, installed `nexora.exe` unchanged |
+| `NEXORA_VERSION` differing from the executable | Refused with the reported and expected versions |
+| `version`, `init`, `validate`, `sync --agent claude`, `resolve --agent claude --file README.md` | Exit 0 |
+| `resolve --file src\main.go` (backslash), `resolve --native`, `sync --check`, `list --json` | Exit 0 |
+| CRLF-converted knowledge and synced files | `validate` and `sync --check` exit 0; item versions equal the macOS digests |
+| `mcp` with `initialize` and `tools/list`, then EOF | Valid JSON-RPC responses; exit 0 |
+| `init` in an initialized folder, unknown flag | Exit 1 and 2 |
+| `nexora_windows_amd64.zip` (x64 PE, run under Windows 11 x64 emulation) | Same command set, same exit codes |
+
+The CRLF finding came from this check: before v1.0.0, a Git for Windows checkout
+changed item versions and made `sync --check` report hand edits.

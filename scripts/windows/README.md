@@ -8,9 +8,16 @@ the Freeboard project ([`acierto/freeboard`](https://github.com/acierto/freeboar
 
 Requirements (macOS on Apple Silicon): Homebrew QEMU, a checkout of Freeboard next
 to this repository, and the ISOs that Freeboard's `start.sh` expects in
-`~/Downloads/freeboard-winvm/` (`windows.iso`, Microsoft's Windows 11 Arm64 ISO,
-and `virtio-win.iso`). The first start installs Windows unattended and takes a
-while; later starts boot the existing disk.
+`~/soft/vms/freeboard-windows/` (override the parent folder with `VMS_DIR`):
+`windows.iso`, Microsoft's Windows 11 Arm64 ISO, and `virtio-win.iso`. The first
+start installs Windows unattended and takes about an hour; later starts boot the
+existing disk. If the installer's "Press any key to boot from CD" prompt times out
+and the UEFI shell appears, reset the VM and press a key in its window during boot.
+`ssh.sh` answers once first-logon setup has installed OpenSSH. That step downloads
+OpenSSH from Windows Update and can take an hour or more while the screen stays
+black; do not reset the VM during it, or Windows shows "Why did my PC restart?"
+on the next boot. The VM is long-lived and shared with other projects: reuse it,
+never delete or recreate it.
 
 ## 1. Build and start
 
@@ -41,15 +48,19 @@ A second run must not add the directory to the user PATH again.
 
 ## 3. Exercise the CLI
 
-Open a new SSH session so the updated user PATH applies:
+The SSH server's environment predates the PATH change, so load the user PATH
+first, and run test scripts with `-ExecutionPolicy Bypass` (Windows blocks `.ps1`
+files by default; `irm | iex` is not affected):
 
 ```sh
-$VM 'nexora version'
-$VM '$d = Join-Path $env:TEMP "nexora-demo"; Remove-Item -Recurse -Force $d -ErrorAction SilentlyContinue
+$VM '$env:Path += ";" + [Environment]::GetEnvironmentVariable("Path","User"); nexora version'
+$VM '$env:Path += ";" + [Environment]::GetEnvironmentVariable("Path","User")
+     $d = Join-Path $env:TEMP "nexora-demo"; Remove-Item -Recurse -Force $d -ErrorAction SilentlyContinue
      New-Item -ItemType Directory $d | Out-Null; Set-Location $d; Set-Content README.md "# demo"
      nexora init --project demo; nexora validate; nexora sync --agent claude
      nexora resolve --agent claude --file README.md; nexora sync --agent claude --check'
-$VM 'Set-Location (Join-Path $env:TEMP "nexora-demo")
+$VM '$env:Path += ";" + [Environment]::GetEnvironmentVariable("Path","User")
+     Set-Location (Join-Path $env:TEMP "nexora-demo")
      $init = "{""jsonrpc"":""2.0"",""id"":1,""method"":""initialize"",""params"":{""protocolVersion"":""2025-06-18"",""capabilities"":{},""clientInfo"":{""name"":""test"",""version"":""1""}}}"
      $init | nexora mcp'
 ```
@@ -73,7 +84,8 @@ Serve a copy with a wrong checksum and confirm the installer refuses it and keep
 the installed binary:
 
 ```sh
-$VM '$bad = "C:\nexora-test\bad"; New-Item -ItemType Directory -Force $bad | Out-Null
+$VM '$env:Path += ";" + [Environment]::GetEnvironmentVariable("Path","User")
+     $bad = "C:\nexora-test\bad"; New-Item -ItemType Directory -Force $bad | Out-Null
      Copy-Item C:\nexora-test\nexora_windows_arm64.zip $bad
      ("0" * 64) + "  nexora_windows_arm64.zip" | Set-Content "$bad\checksums.txt"
      $env:NEXORA_DOWNLOAD_BASE = $bad

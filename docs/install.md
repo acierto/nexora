@@ -190,8 +190,7 @@ first if you want to be sure the file is the published one.
 Commands in the guides work the same in PowerShell and Command Prompt.
 Configuration paths use `/` and work on Windows too, and `--file` accepts either
 `/` or `\`. Knowledge files checked out with CRLF line endings have the same
-versions as on macOS and Linux. The Windows build is compiled and tested on Linux
-and macOS but not yet exercised on Windows itself; please report problems in the
+versions as on macOS and Linux. Please report Windows problems in the
 [issue tracker](https://github.com/acierto/nexora/issues).
 
 ## Check the installation
