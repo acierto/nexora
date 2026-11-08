@@ -15,8 +15,8 @@
 
 ## 3. Install docs
 
-- [ ] 3.1 Add a Windows section to docs/install.md (one-liner, manual zip, checksum verification, PATH, SmartScreen); keep go install for other systems; drop the "not yet exercised" sentence only if 2.2 passed.
-- [ ] 3.2 Update the README install section with a Windows line.
+- [x] 3.1 Add a Windows section to docs/install.md (one-liner, manual zip, checksum verification, PATH, SmartScreen); keep go install for other systems; drop the "not yet exercised" sentence only if 2.2 passed.
+- [x] 3.2 Update the README install section with a Windows line.
 
 ## 4. Agent skill
 

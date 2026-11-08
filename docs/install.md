@@ -132,6 +132,68 @@ xattr -d com.apple.quarantine ~/.local/bin/nexora
 
 Downloads made with `curl`, including the install script, are not quarantined.
 
+## Windows
+
+Prebuilt binaries for Windows 10 and 11 are published for every release:
+
+| System | Archive |
+| --- | --- |
+| Windows, x64 (most PCs) | [`nexora_windows_amd64.zip`](https://github.com/acierto/nexora/releases/latest/download/nexora_windows_amd64.zip) |
+| Windows on Arm (Snapdragon, Copilot+ PCs) | [`nexora_windows_arm64.zip`](https://github.com/acierto/nexora/releases/latest/download/nexora_windows_arm64.zip) |
+| SHA-256 checksums for all archives | [`checksums.txt`](https://github.com/acierto/nexora/releases/latest/download/checksums.txt) |
+
+### PowerShell install script
+
+```powershell
+irm https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.ps1 | iex
+```
+
+The script picks the archive for your processor, downloads it from the latest
+GitHub release, verifies its SHA-256 checksum, and installs `nexora.exe` into
+`%LOCALAPPDATA%\Programs\nexora`. It adds that folder to your user `PATH` (never
+the system `PATH`) and needs no administrator rights. Open a new terminal
+afterwards so the updated `PATH` applies. It works in Windows PowerShell 5.1 and
+PowerShell 7.
+
+Options, set as environment variables in the same PowerShell session first:
+
+```powershell
+$env:NEXORA_VERSION = "v1.0.0"                        # default: latest
+$env:NEXORA_INSTALL_DIR = "$HOME\bin"                 # default: %LOCALAPPDATA%\Programs\nexora
+irm https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.ps1 | iex
+```
+
+Releases include `install.ps1`, so automation can download a pinned copy from
+`https://github.com/acierto/nexora/releases/download/<version>/install.ps1`.
+`NEXORA_DOWNLOAD_BASE` points the script at a mirror URL or a local folder holding
+the zip and `checksums.txt`. Failed downloads or verification leave an existing
+`nexora.exe` unchanged. The PowerShell script has no `--ensure` mode.
+
+### Manual download on Windows
+
+1. Download your zip and `checksums.txt` from the table above or the
+   [releases page](https://github.com/acierto/nexora/releases/latest).
+2. Check the zip: run `Get-FileHash nexora_windows_amd64.zip` in PowerShell and
+   compare the hash (case-insensitive) with that file's line in `checksums.txt`.
+3. Extract `nexora.exe` into a folder of your choice, for example
+   `%LOCALAPPDATA%\Programs\nexora`, and add that folder to your `PATH`:
+   Settings → System → About → Advanced system settings → Environment Variables,
+   then edit `Path` for your user.
+
+### SmartScreen warning
+
+The Windows binaries are not code-signed yet. The first time you run a
+browser-downloaded `nexora.exe`, Microsoft Defender SmartScreen may show "Windows
+protected your PC". Choose **More info**, then **Run anyway**. Verify the checksum
+first if you want to be sure the file is the published one.
+
+Commands in the guides work the same in PowerShell and Command Prompt.
+Configuration paths use `/` and work on Windows too, and `--file` accepts either
+`/` or `\`. Knowledge files checked out with CRLF line endings have the same
+versions as on macOS and Linux. The Windows build is compiled and tested on Linux
+and macOS but not yet exercised on Windows itself; please report problems in the
+[issue tracker](https://github.com/acierto/nexora/issues).
+
 ## Check the installation
 
 ```shell
@@ -141,10 +203,10 @@ nexora help
 
 `nexora version` prints the release, for example `nexora v0.1.0`.
 
-## Windows, other systems, and other architectures
+## Other systems and architectures
 
-There are no prebuilt binaries for Windows, FreeBSD, or 32-bit systems yet.
-Nexora is plain Go with no C dependencies, so it builds anywhere Go runs:
+There are no prebuilt binaries for FreeBSD or 32-bit systems. Nexora is plain Go
+with no C dependencies, so it builds anywhere Go runs:
 
 1. Install Go 1.23 or newer from [go.dev/dl](https://go.dev/dl/).
 2. Install Nexora:
@@ -153,23 +215,17 @@ Nexora is plain Go with no C dependencies, so it builds anywhere Go runs:
 go install github.com/acierto/nexora/cmd/nexora@latest
 ```
 
-This puts `nexora` (`nexora.exe` on Windows) in Go's binary directory: run
-`go env GOPATH` and look in its `bin` folder, typically `~/go/bin` or
-`%USERPROFILE%\go\bin`. Add that folder to your `PATH`. On Windows: Settings →
-System → About → Advanced system settings → Environment Variables, then edit
-`Path` for your user. From a checkout of the repository, `go build -o nexora ./cmd/nexora`
-builds the binary in place instead.
-
-On Windows, run the commands in PowerShell or Command Prompt as shown in the
-guides, replacing `nexora` with `nexora.exe` if your shell does not add the
-extension. Configuration paths use `/` and work on Windows too. The Windows build
-is compiled and tested on Linux and macOS but not yet exercised on Windows itself;
-please report problems in the [issue tracker](https://github.com/acierto/nexora/issues).
+This puts `nexora` in Go's binary directory: run `go env GOPATH` and look in its
+`bin` folder, typically `~/go/bin`. Add that folder to your `PATH`. From a checkout
+of the repository, `go build -o nexora ./cmd/nexora` builds the binary in place
+instead. The same works on Windows (`%USERPROFILE%\go\bin\nexora.exe`) if you
+prefer building from source.
 
 ## Upgrade and uninstall
 
 Run the install script again to upgrade, or repeat the manual download. With Go,
-run the same `go install` command. To uninstall, delete the `nexora` binary.
+run the same `go install` command. To uninstall, delete the `nexora` binary
+(`nexora.exe` on Windows, and remove its folder from your user `PATH`).
 Nexora writes nothing outside your projects except where you configure it: the
 `.nexora/` folder next to `nexora.yaml` holds the local index and sync manifests.
 

@@ -48,9 +48,11 @@ macOS and Linux:
 curl -fsSL https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.sh | sh
 ```
 
-Windows and other systems: `go install github.com/acierto/nexora/cmd/nexora@latest`
-with Go 1.23 or newer. Details, manual downloads, and checksums are in
-[Install](docs/install.md).
+Windows (PowerShell): `irm https://raw.githubusercontent.com/acierto/nexora/main/scripts/install.ps1 | iex`
+
+Other systems: `go install github.com/acierto/nexora/cmd/nexora@latest` with Go
+1.23 or newer. Details, manual downloads, checksums, and the Windows SmartScreen
+note are in [Install](docs/install.md).
 
 ## Start with project knowledge
 
@@ -72,7 +74,7 @@ The [agent integration guide](docs/agents.md) covers both delivery modes, and th
 
 **Using Nexora**
 
-- [Install](docs/install.md): prebuilt binaries, the install script, Windows and other systems.
+- [Install](docs/install.md): prebuilt binaries for macOS, Linux, and Windows, the install scripts, and other systems.
 - [Quickstart](docs/quickstart.md): from zero to a connected agent.
 - [Write knowledge](docs/knowledge-format.md): rules, skills, references, and decisions.
 - [Docs and Confluence](docs/retrieval.md): index documentation, reuse existing vector tables, embeddings, pgvector.
