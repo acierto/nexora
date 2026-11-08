@@ -11,7 +11,7 @@
 - [ ] 2.1 Build `scripts/release-build.sh v0.0.0-test`, boot the Freeboard Windows 11 ARM64 VM, and install the arm64 zip via install.ps1 with a local NEXORA_DOWNLOAD_BASE.
 - [ ] 2.2 Run version, init, validate, sync --agent claude, resolve --agent claude --file README.md and a brief mcp start on arm64 and amd64; fix failures.
 - [ ] 2.3 Verify install.ps1 checksum-mismatch failure and `irm | iex` style invocation in the VM.
-- [ ] 2.4 Add scripts/windows/README.md describing the repeatable VM test without copying VM scripts.
+- [x] 2.4 Add scripts/windows/README.md describing the repeatable VM test without copying VM scripts.
 
 ## 3. Install docs
 
