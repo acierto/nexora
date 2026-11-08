@@ -172,6 +172,9 @@ becomes `issue-refund`.
 - a generated skill file or the managed block was edited by hand since the last
   sync.
 
+A checkout that only converts line endings to CRLF, as Git for Windows does by
+default, is not an edit and counts as up to date.
+
 Generated skills that no longer apply are removed only if they are unchanged.
 Edit the knowledge files, not the generated output, then sync again. Commit the
 generated files and the manifest together. In CI, `nexora sync --check` fails when

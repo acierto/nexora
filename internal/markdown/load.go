@@ -38,6 +38,9 @@ func Parse(data []byte, source knowledge.Source) (knowledge.Item, error) {
 	if !utf8.Valid(data) {
 		return knowledge.Item{}, fmt.Errorf("invalid UTF-8")
 	}
+	// Line endings do not change knowledge: a CRLF checkout (Git's core.autocrlf
+	// on Windows) has the same content and version as the LF original.
+	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
 	lines := bytes.SplitAfter(data, []byte("\n"))
 	delimiter := func(line []byte) bool {
 		return string(bytes.TrimSuffix(bytes.TrimSuffix(line, []byte("\n")), []byte("\r"))) == "---"

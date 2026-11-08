@@ -17,7 +17,8 @@ field is listed in the [configuration reference](configuration.md).
 
 Every `.md` file in a configured source must be UTF-8 and begin with YAML front
 matter between `---` delimiter lines, followed by a nonempty Markdown body.
-LF and CRLF are accepted and body text is preserved. Other regular files are
+LF and CRLF are accepted; CRLF is read as LF, so body text and versions are
+the same on every platform. Other regular files are
 ignored. One invalid document rejects the entire load; files are never executed.
 
 | Field | Meaning / default |
@@ -122,9 +123,10 @@ use Windows separators; absolute, drive-qualified, UNC, and traversal paths fail
 ## Sources and versions
 
 Each item retains the source ID and a `/`-separated path relative to that source,
-plus a lowercase SHA-256 digest of the original file bytes. Explicit versions
-are retained; absent versions become `sha256:<digest>`. Even a line-ending change
-changes the digest. Load times and filesystem modification times are not versions.
+plus a lowercase SHA-256 digest of the file bytes with CRLF line endings read as
+LF. Explicit versions are retained; absent versions become `sha256:<digest>`. A
+CRLF checkout (Git for Windows' default `core.autocrlf`) keeps the same digest;
+any other byte change, including trailing whitespace, changes it. Load times and filesystem modification times are not versions.
 Duplicate IDs fail with both locations; source order does not override knowledge.
 
 Use dedicated source directories for metadata-bearing knowledge. Keep ordinary

@@ -29,9 +29,14 @@ func TestParse(t *testing.T) {
 			}
 		})
 	}
+	// A CRLF checkout has the same content and version as the LF original.
+	lfItem, err := Parse([]byte(document), knowledge.Source{})
+	if err != nil {
+		t.Fatal(err)
+	}
 	crlf := strings.ReplaceAll(document, "\n", "\r\n")
 	item, err := Parse([]byte(crlf), knowledge.Source{})
-	if err != nil || item.Content != "Write useful tests.\r\n" {
+	if err != nil || item.Content != "Write useful tests.\n" || item.Version != lfItem.Version || item.Source.Digest != lfItem.Source.Digest {
 		t.Fatalf("%+v %v", item, err)
 	}
 	custom := strings.Replace(document, "kind: rule", "kind: rule\nrequired: false\nversion: \"1.0\"\npriority: -1\nstatus: draft\ntags: [go]\napplies_to:\n  projects: [api]\n  agents: [codex]\n  paths: [\"src/**/*.go\"]", 1)

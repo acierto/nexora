@@ -127,3 +127,39 @@ func TestSkillName(t *testing.T) {
 		}
 	}
 }
+
+// Git for Windows converts checkouts to CRLF by default (core.autocrlf). Such a
+// checkout of synced files is up to date; a real edit is still a conflict.
+func TestSyncAcceptsCRLFCheckouts(t *testing.T) {
+	dir := t.TempDir()
+	opt := Options{Agent: "claude", Project: "shop", Dir: dir, Items: items()}
+	plan, err := Plan(opt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Apply(dir, plan); err != nil {
+		t.Fatal(err)
+	}
+	skill := filepath.Join(dir, ".claude", "skills", "add-endpoint", "SKILL.md")
+	for _, file := range []string{filepath.Join(dir, "CLAUDE.md"), skill, filepath.Join(dir, ".nexora", "sync-claude.json")} {
+		data, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(file, []byte(strings.ReplaceAll(string(data), "\n", "\r\n")), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	plan, err = Plan(opt)
+	if err != nil || plan.Changed() || len(plan.Conflicts) > 0 {
+		t.Fatalf("CRLF checkout should be up to date: %+v %v", plan, err)
+	}
+	data, _ := os.ReadFile(skill)
+	if err := os.WriteFile(skill, append(data, []byte("Edited.\r\n")...), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	plan, _ = Plan(opt)
+	if len(plan.Conflicts) != 1 || !strings.Contains(plan.Conflicts[0], "edited by hand") {
+		t.Fatalf("hand edit not detected: %+v", plan.Conflicts)
+	}
+}
