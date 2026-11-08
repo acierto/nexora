@@ -36,4 +36,4 @@
 - [x] 6.1 Run gofmt, go vet, go test ./... (including tests/), sync_docs --check and the CI release build.
 - [x] 6.2 Add the changelog entries and record the release as v1.0.0.
 - [x] 6.3 Validate the change strictly, sync specs and archive the change.
-- [ ] 6.4 After approval, merge to main and publish v1.0.0; verify release assets and checksums.
+- [x] 6.4 After approval, merge to main and publish v1.0.0; verify release assets and checksums.
